@@ -744,18 +744,12 @@ function ClientView({client,isTrainer,onClientUpdate}){
           h("div",{style:{background:C.white,borderRadius:8,padding:10,marginBottom:10,maxHeight:180,overflowY:"auto"}},pendingProg.sections.map((sec,i)=>h("div",{key:i,style:{marginBottom:6}},h("div",{style:{fontSize:10,fontWeight:"bold",color:C.navy,marginBottom:3}},sec.label),sec.exercises.map((ex,j)=>h("div",{key:j,style:{fontSize:11,color:C.gray}},`• ${ex.name} — ${ex.prescription}`))))),
           h("div",{style:{display:"flex",gap:10}},h(Btn,{onClick:()=>{onClientUpdate({...client,days:[...client.days,pendingProg]});setPendingProg(null);},color:C.green,full:true},"✓ Approve & Push to Training"),h(Btn,{onClick:()=>setPendingProg(null),color:C.gray,full:true},"Dismiss"))
         ),
-        !hasProgram&&!isTrainer&&h("div",{style:{padding:32,textAlign:"center",color:C.gray,fontStyle:"italic"}},h("div",{style:{fontSize:40,marginBottom:12}},"🏋️"),h("div",null,"Your program is being prepared. Check back after your first appointment.")),
-        !hasProgram&&isTrainer&&h("div",{style:{padding:24,textAlign:"center"}},
-          h("div",{style:{fontSize:36,marginBottom:12}},"⚙️"),
-          h("div",{style:{fontWeight:"bold",color:C.navy,marginBottom:8}},"No program assigned yet"),
-          h("div",{style:{fontSize:13,color:C.gray,marginBottom:16}},"Use the Workout Builder to create this client's program from scratch or load a template."),
-          h(Btn,{onClick:()=>setShowBuilder(true),color:C.teal,full:true},"⚙ Open Workout Builder")
+        isTrainer&&h("div",{style:{display:"flex",gap:8,marginBottom:10}},
+          h(Btn,{onClick:()=>setShowBuilder(true),color:C.navy,full:true,st:{fontSize:12}},"⚙ Workout Builder"),
+          h(Btn,{onClick:()=>setShowCardio(true),color:C.teal,full:true,st:{fontSize:12}},"🏃 Cardio Builder")
         ),
+        !hasProgram&&!isTrainer&&h("div",{style:{padding:32,textAlign:"center",color:C.gray,fontStyle:"italic"}},h("div",{style:{fontSize:40,marginBottom:12}},"🏋️"),h("div",null,"Your program is being prepared. Check back after your first appointment.")),
         hasProgram&&h("div",null,
-          isTrainer&&h("div",{style:{display:"flex",gap:8,marginBottom:10}},
-            h(Btn,{onClick:()=>setShowBuilder(true),color:C.navy,full:true,st:{fontSize:12}},"⚙ Workout Builder — Change Template or Edit Days"),
-            h(Btn,{onClick:()=>setShowCardio(true),color:C.teal,full:true,st:{fontSize:12}},"🏃 Cardio Builder — Build Weekly Cardio Plan")
-          ),
           h("div",{style:{background:C.tealLight,border:"1px solid "+C.teal+"44",borderRadius:8,padding:"10px 12px",marginBottom:10,fontSize:12,color:C.teal2,lineHeight:1.6}},
             h("div",{style:{fontWeight:"bold",color:C.navy,marginBottom:4}},"📅 How Workout Days Work"),
             "Days shown here are based on the template assigned to this client. As the trainer, you can add, remove, or reorder days using the workout builder. Frequency is determined by the program template — e.g. 3x/week means 3 session days will appear. You can customize each day's exercises using the Swap and Progress buttons on each exercise card."
