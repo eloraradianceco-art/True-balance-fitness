@@ -537,24 +537,10 @@ function AddClientForm({onAdd,onClose}){
   const handleAdd=()=>{
     if(!form.name||!form.email) return;
     const tmpl=TEMPLATES[form.goal];
-    const nc={
-      id:form.email.toLowerCase().replace(/[^a-z0-9]/g,"_"),
-      name:form.name,
-      email:form.email,
-      password:"",
-      role:"client",
-      phase:parseInt(form.phase)||1,
-      focus:form.focus||tmpl.focus,
-      restrictions:form.restrictions?form.restrictions.split(",").map(r=>r.trim()).filter(Boolean):[],
-      days:tmpl.days||[],
-      schedule:[],
-      nutrition:null,
-      invited:true,
-      invitedAt:new Date().toISOString()
-    };
-    onAdd(nc);
-    setSent(true);
+    const nc={id:form.email.toLowerCase().replace(/[^a-z0-9]/g,"_"),name:form.name,email:form.email,password:"",role:"client",phase:parseInt(form.phase)||1,focus:form.focus||tmpl.focus,restrictions:form.restrictions?form.restrictions.split(",").map(r=>r.trim()).filter(Boolean):[],days:tmpl.days||[],schedule:[],nutrition:null,invited:true,invitedAt:new Date().toISOString()};
+    onAdd(nc);setSent(true);
   };
+  const inviteText="Hi "+form.name+", welcome to True Balance Fitness! Subscribe at: [YOUR STRIPE LINK] | Open the app: [YOUR APP URL] | On iPhone tap Share then Add to Home Screen | Sign up with: "+form.email+" | Create your own password | See you soon! — Anthony Anderson CPT";
   return h("div",{style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:16}},
     h("div",{style:{background:C.white,borderRadius:14,width:"100%",maxWidth:460,maxHeight:"90vh",overflowY:"auto",boxShadow:"0 20px 60px rgba(0,0,0,0.3)"}},
       h("div",{style:{background:C.navy,color:C.white,padding:"16px 20px",borderRadius:"14px 14px 0 0",display:"flex",justifyContent:"space-between",alignItems:"center"}},
@@ -565,14 +551,18 @@ function AddClientForm({onAdd,onClose}){
         ? h("div",{style:{padding:28,textAlign:"center"}},
             h("div",{style:{fontSize:36,marginBottom:12}},"✉️"),
             h("div",{style:{fontWeight:"bold",color:C.navy,fontSize:16,marginBottom:8}},form.name+" added!"),
-            h("div",{style:{fontSize:13,color:C.gray,lineHeight:1.7,marginBottom:20}},
-              "Send "+form.name+" this invitation — 1. Subscribe at truebalancefitness.com  2. Open the app at your-app-url.vercel.app  3. On iPhone: tap Share → Add to Home Screen  4. Sign up with: "+form.email+"  5. Create your own password"
-            ),
-            h("div",{style:{background:C.tealLight,border:"1px solid "+C.teal+"44",borderRadius:8,padding:12,marginBottom:16,fontSize:12,color:C.navy,textAlign:"left",lineHeight:1.8}},
-              "📧 Sample invitation to copy — Hi "+form.name+", Welcome to True Balance Fitness! 1. Subscribe: [YOUR STRIPE LINK] 2. Open: [YOUR APP URL] 3. iPhone: Share → Add to Home Screen 4. Sign up with: "+form.email+" 5. Create your password. See you soon! — Anthony Anderson, CPT"
+            h("div",{style:{fontSize:13,color:C.gray,lineHeight:1.7,marginBottom:16}},"Client created. Send them the invitation below to subscribe and set up their account."),
+            h("div",{style:{background:C.tealLight,border:"1px solid "+C.teal+"44",borderRadius:8,padding:12,marginBottom:16,fontSize:12,color:C.navy,textAlign:"left",lineHeight:1.9}},
+              h("div",{style:{fontWeight:"bold",marginBottom:6}},"📧 Invitation to send:"),
+              h("div",null,"1. Subscribe: [YOUR STRIPE LINK]"),
+              h("div",null,"2. Open the app: [YOUR APP URL]"),
+              h("div",null,"3. iPhone: tap Share → Add to Home Screen"),
+              h("div",null,"4. Sign up with: "+form.email),
+              h("div",null,"5. Create your own password"),
+              h("div",{style:{marginTop:6,color:C.teal2,fontStyle:"italic"}},"— Anthony Anderson, CPT | True Balance Fitness")
             ),
             h("div",{style:{display:"flex",gap:10}},
-              h(Btn,{onClick:()=>{navigator.clipboard.writeText("Hi "+form.name+", Welcome to True Balance Fitness! 1. Subscribe: [YOUR STRIPE LINK] 2. Open the app: [YOUR APP URL] 3. iPhone: tap Share → Add to Home Screen 4. Sign up with: "+form.email+" 5. Create your own password. See you soon! — Anthony Anderson, CPT");},color:C.teal,full:true},"Copy Invitation"),
+              h(Btn,{onClick:()=>navigator.clipboard.writeText(inviteText),color:C.teal,full:true},"Copy Invitation"),
               h(Btn,{onClick:onClose,color:C.navy,full:true},"Done")
             )
           )
@@ -580,11 +570,7 @@ function AddClientForm({onAdd,onClose}){
             h(Fld,{label:"FULL NAME"},h(Inp,{value:form.name,onChange:v=>f("name",v),placeholder:"Client full name"})),
             h(Fld,{label:"EMAIL"},h(Inp,{value:form.email,onChange:v=>f("email",v),placeholder:"client@email.com",type:"email"})),
             h(Fld,{label:"PRIMARY GOAL TEMPLATE"},h(Sel,{value:form.goal,onChange:v=>f("goal",v),options:Object.entries(TEMPLATES).map(([k,v])=>[k,v.label])})),
-            h("div",{style:{background:C.tealLight,border:"1px solid "+C.teal+"33",borderRadius:8,padding:10,marginBottom:12,fontSize:12,color:C.teal2}},
-              "✓ Program template will auto-load based on goal
-✓ Client will set their own password when they sign up
-✓ No temporary password needed"
-            ),
+            h("div",{style:{background:C.tealLight,border:"1px solid "+C.teal+"33",borderRadius:8,padding:10,marginBottom:12,fontSize:12,color:C.teal2,lineHeight:1.7}},"Program auto-loads from template. Client sets own password on signup. No temp password needed."),
             h(Fld,{label:"STARTING PHASE"},h(Sel,{value:form.phase,onChange:v=>f("phase",v),options:[["1","Phase 1 — Foundation"],["2","Phase 2 — Strength"],["3","Phase 3 — Power"]]})),
             h(Fld,{label:"FOCUS / NOTES (optional)"},h(Inp,{value:form.focus,onChange:v=>f("focus",v),placeholder:"e.g. Right knee pain, postpartum..."})),
             h(Fld,{label:"RESTRICTIONS (comma separated)"},h(Inp,{value:form.restrictions,onChange:v=>f("restrictions",v),placeholder:"e.g. No overhead, spinal rods..."})),
