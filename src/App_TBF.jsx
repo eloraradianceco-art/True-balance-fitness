@@ -29,9 +29,42 @@ const CUES={"Glute Bridge":"Lie on your back, knees bent, feet flat. Before lift
 
 const PROG={"Glute Bridge":["Single Leg Glute Bridge","Band Glute Bridge","Dumbbell Hip Thrust","Barbell Glute Bridge","Barbell Hip Thrust"],"Clamshell":["Clamshell with Band","Mini Band Isometric Clamshell","Side Lying Leg Ext"],"Lateral Raise — Both Arms":["Lateral Raise — 5 lb DB","Dumbbell Lateral Raise","Cable Lateral Raise","Lateral Raise Machine"],"Wall Angels":["Single Arm Wall Angel","Wall Angels with Band"],"Prone Y Raise":["Prone Y Raise — Light DB","Lower Trap Lv2","Lower Trap Lv3","TRX Y Deltoid Fly"],"Sidelying External Rotation — Bilateral":["Cable Standing External Shoulder Rotation","Band Standing External Shoulder Rotation"],"Face Pull — Cable or Band":["Cable Face Pull","Cable Kneeling Face Pull","Band Face Pull to Y"],"Serratus Anterior — Wall Push-Up Plus":["Serratus Plank Level Two","Cable Seated Scapular Protraction"],"Seated Cable Row — Neutral Grip":["Dumbbell Single Arm Bent Over Row","Barbell Bent Over Row","Scapular Retraction Inverted Row"],"Lat Pulldown":["Neutral Grip Lat Pulldown","Machine Assisted Pull Up","Chin Up"],"Dead Bug":["Deadbug Lv1","Deadbug Lv2","Deadbug Lv3"],"TVA Draw-In — Supine":["TVA Draw-In — Seated","TVA Draw-In — Standing","Pallof Press — Band"],"Chin Tucks":["Cervical Neck Retractions Lv2","Neck Retractions with Swiss Ball"],"Seated Scapular Retraction — Lower Trap":["Lower Trap Lv1","Lower Trap Lv2","Lower Trap Lv3","Prone Y Raise"],"Kneeling Hip Flexor Stretch":["Thomas Stretch","90/90 Hip External Rotation Stretch","Couch Stretch"],"Hamstring Bridge — Heel Drive":["Exercise Ball Hamstring Curl","Prone Lying Hamstring Curl Machine"],"Sit-to-Stand":["Sit-to-Stand — One Hand","Sit-to-Stand — No Hands","Body Weight Squat"],"Pallof Press — Band":["Cable Half Kneeling Pallof Press","Cable Split Stance Pallof Press"],"Forearm Plank":["High Plank","Plank with Leg Lift","Copenhagen Plank"],"Bird Dog":["Bird-Dog Off Bench","Dead Bug"],"Dumbbell Bench Press":["Barbell Bench Press","Dumbbell Incline Bench Press"],"Push-Up":["Push-Up to Side Plank","Close Grip Push Up","Decline Push Up"]};
 
-const ALL_EX=[...["Adductor Release","Lat Release","Levator","Outside Calf Release","Pec Minor Release","Peroneal Release","Piriformis Release","QL Release","Rhomboids SMR","TFL Release","Full Quad Release","Bicep Femoris Release","Suboccipital Release","Calcaneus SMR","Pec Minor Release — Lacrosse Ball","Left QL Release"].map(n=>({name:n,cat:"Release"})),...["Doorway Pec Stretch","Kneeling Hip Flexor Stretch","Lat Stretch","Levator Scap Stretch","QL Stretch","Thomas Stretch","Standing Gastrocnemius Calf Stretch","Swiss Ball Lat Stretch","Childs Pose","Pigeon Stretch","Thoracic Extension — Foam Roller","90/90 Hip External Rotation Stretch","90/90 Hamstring Stretch","Adductor Stretch — Side-Lying","Calf Stretch — Bent Knee","Active Thoracic Extension","Cat Cow","Inchworm","Lying Figure Four Stretch","Lateral Neck Stretch"].map(n=>({name:n,cat:"Mobility"})),...["Clamshell","Dead Bug","Bird Dog","TVA Draw-In — Supine","Chin Tucks","Wall Angels","Prone Y Raise","Sidelying External Rotation — Bilateral","Serratus Anterior — Wall Push-Up Plus","Seated Scapular Retraction — Lower Trap","Standing Glute Squeeze","Glute Bridge","Hamstring Bridge — Heel Drive","Sit-to-Stand","Mini Band Lateral Walk (High)","Band X Walks","Tib Anterior Lifts","Arch Lift","Inner Calf Raises","Side Plank Lv1","Single Leg Balance","Glute Max","Medial Hamstring"].map(n=>({name:n,cat:"Activation"})),...["Forearm Plank","Pallof Press — Band","Copenhagen Plank","Flutter Kicks","Bear Crawl Shoulder Tap","Reverse Crunch","Mountain Climbers","Bicycle Crunch","Active Hollow Hold","Lateral Plank Walk"].map(n=>({name:n,cat:"Core"})),...["Lat Pulldown","Neutral Grip Lat Pulldown","Seated Cable Row — Neutral Grip","Dumbbell Single Arm Bent Over Row","Face Pull — Cable or Band","Rear Delt Fly Machine","Barbell Bent Over Row","TRX Y Deltoid Fly","Chest Supported Lower Trap","Lower Trap Lv1","Lower Trap Lv2","Lower Trap Lv3","Dumbbell Rear Delt Row","Cable Lateral Raise","Dumbbell Lateral Raise","Lateral Raise Machine","Cable Face Pull","Band Pull Apart","Machine Assisted Pull Up","Chin Up","Lateral Raise — Both Arms"].map(n=>({name:n,cat:"Upper Pull"})),...["Push-Up","Dumbbell Bench Press","Barbell Bench Press","Dumbbell Incline Bench Press","Barbell Overhead Press","Dumbbell Shoulder Press","Seated Shoulder Press Machine","Chest Press Machine","Close Grip Push Up","Diamond Push Up"].map(n=>({name:n,cat:"Upper Push"})),...["Glute Bridge","Barbell Glute Bridge","Barbell Hip Thrust","Dumbbell Hip Thrust","Body Weight Glute Bridge","Leg Press","Dumbbell Romanian Deadlift","Barbell Romanian Deadlift","Barbell Deadlift","Hex Bar Deadlift","Barbell Squat","Dumbbell Goblet Squat","Body Weight Squat","Seated Hamstring Curl Machine","Prone Lying Hamstring Curl Machine","Dumbbell Step Ups","Body Weight Step Up","Dumbbell Walking Lunge","Dumbbell Split Squat","Dumbbell Standing Calf Raise","Seated Calf Raise Machine","Hamstring Bridge — Heel Drive","Single Leg Glute Bridge","Heels Elevated Goblet Squat"].map(n=>({name:n,cat:"Lower"})),...["Exercise Bike","Treadmill Walk","Treadmill Incline Walk","Row Machine","Zone 2 — Incline Walk / Bike","HIIT Intervals","Jumping Jacks","Mountain Climbers"].map(n=>({name:n,cat:"Cardio"})),...["Sit-to-Stand","Pallof Press — Cable","Cable Standing Low to High Chop","Dumbbell Renegade Row","Single Leg Balance with Reach","Suitcase Carry","Farmers Walk"].map(n=>({name:n,cat:"Integration"}))];
+const ALL_EX=[...["Adductor Release","Lat Release","Levator","Outside Calf Release","Pec Minor Release","Peroneal Release","Piriformis Release","QL Release","Rhomboids SMR","TFL Release","Full Quad Release","Bicep Femoris Release","Suboccipital Release","Calcaneus SMR","Pec Minor Release — Lacrosse Ball","Left QL Release"].map(n=>({name:n,cat:"Release"})),...["Doorway Pec Stretch","Kneeling Hip Flexor Stretch","Lat Stretch","Levator Scap Stretch","QL Stretch","Thomas Stretch","Standing Gastrocnemius Calf Stretch","Swiss Ball Lat Stretch","Childs Pose","Pigeon Stretch","Thoracic Extension — Foam Roller","90/90 Hip External Rotation Stretch","90/90 Hamstring Stretch","Adductor Stretch — Side-Lying","Calf Stretch — Bent Knee","Active Thoracic Extension","Cat Cow","Inchworm","Lying Figure Four Stretch","Lateral Neck Stretch"].map(n=>({name:n,cat:"Mobility"})),...["Clamshell","Dead Bug","Bird Dog","TVA Draw-In — Supine","Chin Tucks","Wall Angels","Prone Y Raise","Sidelying External Rotation — Bilateral","Serratus Anterior — Wall Push-Up Plus","Seated Scapular Retraction — Lower Trap","Standing Glute Squeeze","Glute Bridge","Hamstring Bridge — Heel Drive","Sit-to-Stand","Mini Band Lateral Walk (High)","Band X Walks","Tib Anterior Lifts","Arch Lift","Inner Calf Raises","Side Plank Lv1","Single Leg Balance","Glute Max","Medial Hamstring"].map(n=>({name:n,cat:"Activation"})),...["Forearm Plank","Pallof Press — Band","Copenhagen Plank","Flutter Kicks","Bear Crawl Shoulder Tap","Reverse Crunch","Mountain Climbers","Bicycle Crunch","Active Hollow Hold","Lateral Plank Walk"].map(n=>({name:n,cat:"Core"})),...["Lat Pulldown","Neutral Grip Lat Pulldown","Seated Cable Row — Neutral Grip","Dumbbell Single Arm Bent Over Row","Face Pull — Cable or Band","Rear Delt Fly Machine","Barbell Bent Over Row","TRX Y Deltoid Fly","Chest Supported Lower Trap","Lower Trap Lv1","Lower Trap Lv2","Lower Trap Lv3","Dumbbell Rear Delt Row","Cable Lateral Raise","Dumbbell Lateral Raise","Lateral Raise Machine","Cable Face Pull","Band Pull Apart","Machine Assisted Pull Up","Chin Up","Lateral Raise — Both Arms"].map(n=>({name:n,cat:"Upper Pull"})),...["Push-Up","Dumbbell Bench Press","Barbell Bench Press","Dumbbell Incline Bench Press","Barbell Overhead Press","Dumbbell Shoulder Press","Seated Shoulder Press Machine","Chest Press Machine","Close Grip Push Up","Diamond Push Up"].map(n=>({name:n,cat:"Upper Push"})),...["Glute Bridge","Barbell Glute Bridge","Barbell Hip Thrust","Dumbbell Hip Thrust","Body Weight Glute Bridge","Leg Press","Dumbbell Romanian Deadlift","Barbell Romanian Deadlift","Barbell Deadlift","Hex Bar Deadlift","Barbell Squat","Dumbbell Goblet Squat","Body Weight Squat","Seated Hamstring Curl Machine","Prone Lying Hamstring Curl Machine","Dumbbell Step Ups","Body Weight Step Up","Dumbbell Walking Lunge","Dumbbell Split Squat","Dumbbell Standing Calf Raise","Seated Calf Raise Machine","Hamstring Bridge — Heel Drive","Single Leg Glute Bridge","Heels Elevated Goblet Squat"].map(n=>({name:n,cat:"Lower"})),...["Exercise Bike","Treadmill Walk","Treadmill Incline Walk","Row Machine","Zone 2 — Incline Walk / Bike","HIIT Intervals","Jumping Jacks","Mountain Climbers"].map(n=>({name:n,cat:"Cardio"})),...["Sit-to-Stand","Pallof Press — Cable","Cable Standing Low to High Chop","Dumbbell Renegade Row","Single Leg Balance with Reach","Suitcase Carry","Farmers Walk","Cable Half Kneeling Pallof Press","Single Arm Row","Single Arm Wall Angel","Single Leg Touchdown","Scapular Push Up","Push Up to Side Plank"].map(n=>({name:n,cat:"Integration"})),
+...["Bosu Ball Squat","Hex Bar Deadlift","Body Weight Lateral Lunge","Body Weight Split Squat","Dumbbell Deadlift","Roman Chair Back Extensions","Body Weight Glute Kickback","Body Weight 3 Way Calf Raise","Leg Extension w/ Ankle Weight","Bicep Femoris Stretch","Swiss Ball Hip Thrust","Dumbbell Goblet Split Squat","Seated Hip Abduction Machine","Seated Leg Press","Seated Leg Extension Machine","Exercise Ball Hamstring Curl","Assisted Pistol Squat","Kettlebell Goblet Squat","Single Leg Press","Dumbbell Suitcase Walking Lunge","Front Box Jump"].map(n=>({name:n,cat:"Lower"})),
+...["Scapular Retraction Inverted Row","Barbell Incline Chest Supported Row","Alternating Dumbbell Cross Body Hammer Curl","Seated Dumbbell Bent Over Reverse Fly","Cable Seated Supinated Lat Pulldown","TRX T Deltoid Fly","Barbell Bicep Curl","ITY","Weighted Chest Supported IYT","Barbell Inverted Row","Bicep Curl Machine","Cable Kneeling Face Pull","Cable Half Kneeling Single Arm High Row","Cable Single Arm Lateral Raise","Dumbbell Shrug"].map(n=>({name:n,cat:"Upper Pull"})),
+...["Cable Standing Chest Fly","Cable Bar Tricep Pushdown","Dumbbell Tricep Kickback","Seated Tricep Extension Machine","Exercise Ball Dumbbell Chest Press","Cable Rope Tricep Pushdown","Bench Dips","Dumbbell Floor Press","Barbell Shoulder Press","Ez Bar Skullcrusher","Lying Dumbbell Tricep Extension","Incline Chest Press Machine","Cable Cross Body Tricep Extension","Cable Crossover","Cable Incline Bench Press","Cable Incline Chest Fly"].map(n=>({name:n,cat:"Upper Push"})),
+...["Bosu Ball Plank","Psoas March","Superman","Standing Cable Wood Chop","Rectus Ab Crunch","Side Plank Lv2","Side Plank Lv3","Exercise Ball Stir the Pot","Side Lying Oblique Crunch","Exercise Ball Crunch","Exercise Ball Torso Rotation","Ab Crunch Machine","Hanging Oblique Knee Raise","Plank with Twist"].map(n=>({name:n,cat:"Core"})),
+...["Cervical Neck Flexion","Lateral Neck Flexion Exercise","PNF Carry Away","Shoulder External Rotation on Wall","Side Lying Leg Extension","Mini Band Clamshell","Post Serratus Activation","Lower Trap Lv1","Lower Trap Lv2","Lower Trap Lv3"].map(n=>({name:n,cat:"Activation"})),
+...["Arm Circles Forward & Backward","Anterior Shoulder & Chest Stretch","Wrist Extension","Anterior Adductor Stretch","Cat Stretch","Outside Calf Stretch","Shoulder Stretch","Exercise Ball Chest Stretch","Standing Biceps Stretch","Leg-Up Hamstring Stretch","Standing Hamstring and Calf Stretch","Walking High Knees"].map(n=>({name:n,cat:"Mobility"})),
+...["Post Adductor Release","Posterior Delt Release","Outside Calf Release","Outside Quad Release","Foam Roll Spinal Erectors"].map(n=>({name:n,cat:"Release"})),
+...["Ice Skater","Burpee"].map(n=>({name:n,cat:"Cardio"}))
+];
 
-const ALL_FOODS=[...["Chicken breast","Lean ground beef","Salmon","Tuna (canned)","Eggs","Egg whites","Greek yogurt","Cod","Turkey breast","Shrimp","Pork tenderloin","Sardines","Cottage cheese","Edamame","Tempeh","Black beans","Lentils"].map(n=>({name:n,cat:"Protein"})),...["Jasmine rice","Brown rice","Sweet potato","White potato","Oats","Kodiak pancake mix","Quinoa","Banana","Pineapple","Blueberries","Strawberries","Mixed berries","Ezekiel bread","Farro","Chickpeas","Beets","Butternut squash"].map(n=>({name:n,cat:"Carbs"})),...["Avocado","Olive oil","Walnuts","Almonds","Pecans","Cashews","Almond butter","Natural peanut butter","Chia seeds","Flaxseeds","Coconut oil","Grass-fed butter","Dark chocolate (85%+)","Pumpkin seeds"].map(n=>({name:n,cat:"Fats"})),...["Spinach","Kale","Arugula","Asparagus","Broccoli","Zucchini","Mushrooms","Bell peppers","Cucumber","Celery","Tomatoes","Garlic","Brussels sprouts","Cauliflower","Green beans","Cabbage","Romaine lettuce"].map(n=>({name:n,cat:"Veggies"})),...["Banana","Apple","Orange","Pineapple","Blueberries","Strawberries","Raspberries","Blackberries","Mango","Watermelon","Kiwi","Grapefruit","Pomegranate"].map(n=>({name:n,cat:"Fruits"})),...["Honey","Electrolytes","Protein powder (whey)","Creatine","Turmeric","Ginger","Apple cider vinegar","Bone broth"].map(n=>({name:n,cat:"Extras"}))];
+const ALL_FOODS=[
+  ...["Chicken breast","Lean ground beef","Salmon","Tuna (canned)","Eggs","Egg whites","Greek yogurt","Cod","Turkey breast","Shrimp","Pork tenderloin","Sardines","Cottage cheese","Edamame","Tempeh","Black beans","Lentils"].map(n=>({name:n,cat:"Protein",goals:["fat_loss","muscle_gain","recomp","gut_support"]})),
+  ...["Jasmine rice","Brown rice","Sweet potato","White potato","Oats","Kodiak pancake mix","Quinoa","Banana","Pineapple","Blueberries","Strawberries","Mixed berries","Ezekiel bread","Farro","Chickpeas","Beets","Butternut squash"].map(n=>({name:n,cat:"Carbs",goals:["muscle_gain","recomp","performance"]})),
+  ...["Avocado","Olive oil","Walnuts","Almonds","Pecans","Cashews","Almond butter","Natural peanut butter","Chia seeds","Flaxseeds","Coconut oil","Grass-fed butter","Dark chocolate (85%+)","Pumpkin seeds"].map(n=>({name:n,cat:"Fats",goals:["fat_loss","recomp","gut_support"]})),
+  ...["Spinach","Kale","Arugula","Asparagus","Broccoli","Zucchini","Mushrooms","Bell peppers","Cucumber","Celery","Tomatoes","Garlic","Brussels sprouts","Cauliflower","Green beans","Cabbage","Romaine lettuce"].map(n=>({name:n,cat:"Veggies",goals:["fat_loss","recomp","gut_support","muscle_gain"]})),
+  ...["Banana","Apple","Orange","Pineapple","Blueberries","Strawberries","Raspberries","Blackberries","Mango","Watermelon","Kiwi","Grapefruit","Pomegranate"].map(n=>({name:n,cat:"Fruits",goals:["muscle_gain","performance","fat_loss"]})),
+  ...["Honey","Electrolytes","Protein powder (whey)","Creatine","Turmeric","Ginger","Apple cider vinegar","Bone broth"].map(n=>({name:n,cat:"Extras",goals:["muscle_gain","gut_support","performance"]}))
+];
+
+const MEAL_TEMPLATE_MAP={
+  breakfast:{required:["Protein"],optional:["Carbs","Fruits","Fats"],note:"Start with protein. Add carbs or fruit for energy. Optional fat for satiety."},
+  lunch:{required:["Protein","Carbs","Veggies"],optional:["Fats"],note:"Full meal. Protein + carb + veggie every time."},
+  dinner:{required:["Protein","Carbs","Veggies"],optional:["Fats"],note:"Protein + carb + veggie. Lighter carbs if evening."},
+  snack1:{required:["Protein"],optional:["Fruits","Carbs"],note:"Protein-first snack. Add fruit or carb for energy."},
+  snack2:{required:["Protein"],optional:["Fats","Extras"],note:"Recovery or fat-focused support snack."}
+};
+
+const GOAL_FOOD_BIAS={
+  fat_loss:{prefer:["Protein","Veggies","Fruits"],limit:["Fats"],note:"Prioritize fullness, recovery, and steady energy."},
+  muscle_gain:{prefer:["Protein","Carbs","Extras"],limit:[],note:"Fuel performance, recovery, and muscle growth."},
+  recomp:{prefer:["Protein","Veggies"],limit:[],note:"Support muscle retention while keeping calories controlled."},
+  gut_support:{prefer:["Protein","Veggies","Fruits"],limit:["Fats"],note:"Keep digestion calm while maintaining adequate intake."},
+  performance:{prefer:["Carbs","Protein","Extras"],limit:[],note:"Maximize training output and recovery speed."}
+};
+
 
 const TEMPLATES={
 posture:{label:"Posture Correction",focus:"Corrective Exercise | Posture Correction",phase:1,days:[{title:"SESSION — CORRECTIVE UPPER BODY",type:"session",sections:[{label:"WARM-UP / RELEASE",color:C.navy,exercises:[{name:"Pec Minor Release — Lacrosse Ball",prescription:"60 sec each side",cue:""},{name:"Thoracic Extension — Foam Roller",prescription:"60 sec",cue:""}]},{label:"CORRECTIVE ACTIVATION",color:C.teal,exercises:[{name:"Chin Tucks",prescription:"3 x 10 x 2s hold",cue:""},{name:"Wall Angels",prescription:"3 x 10 slow",cue:""},{name:"Prone Y Raise",prescription:"3 x 12",cue:""},{name:"Face Pull — Cable or Band",prescription:"3 x 15",cue:""}]},{label:"STRENGTH",color:C.navy2,exercises:[{name:"Seated Cable Row — Neutral Grip",prescription:"3 x 12",cue:""},{name:"Glute Bridge",prescription:"3 x 15 x 2s hold",cue:""},{name:"Dead Bug",prescription:"3 x 8 each",cue:""}]}]}]},
@@ -252,33 +285,88 @@ function AssessmentForm({client,isTrainer,existing,onSave}){
 function NutritionView({client}){
   const dM=client.nutrition?.macros||{protein:{pct:32,grams:160},carbs:{pct:43,grams:215},fat:{pct:25,grams:56}};
   const dC=client.nutrition?.calories||2000;
-  const [calories,setCalories]=useState(()=>LS.get(`tbf_cals_${client.id}`,dC));
-  const [macros,setMacros]=useState(()=>LS.get(`tbf_macros_${client.id}`,dM));
-  const [mS,setMS]=useState({});const [mW,setMW]=useState({});
+  const [calories,setCalories]=useState(()=>LS.get("tbf_cals_"+client.id,dC));
+  const [macros,setMacros]=useState(()=>LS.get("tbf_macros_"+client.id,dM));
+  const [goalFilter,setGoalFilter]=useState(()=>LS.get("tbf_goal_"+client.id,"recomp"));
+  const [mealFoods,setMealFoods]=useState(()=>LS.get("tbf_meals_"+client.id,{}));
+  const [swapTarget,setSwapTarget]=useState(null);
+  const [swapSearch,setSwapSearch]=useState("");
   const [showCalc,setShowCalc]=useState(false);
   const [showConv,setShowConv]=useState(false);
   const [conv,setConv]=useState({lbs:"",kg:"",feet:"",inches:"",cm:""});
   const [cf,setCf]=useState({weight:"",height:"",age:"",sex:"male",activity:"moderate",goal:"maintenance"});
   const [cr,setCr]=useState(null);
 
+  const MEAL_KEYS=["breakfast","lunch","dinner","snack1","snack2"];
+  const MEAL_LABELS={breakfast:"Breakfast",lunch:"Lunch",dinner:"Dinner",snack1:"Snack 1",snack2:"Snack 2"};
+
+  const bias=GOAL_FOOD_BIAS[goalFilter]||GOAL_FOOD_BIAS.recomp;
+
+  // Generate a meal from template rules + goal bias
+  const genMeal=(mealKey)=>{
+    const tmpl=MEAL_TEMPLATE_MAP[mealKey];
+    const foods=[];
+    const getByCat=(cat)=>{
+      const pool=ALL_FOODS.filter(f=>f.cat===cat);
+      const preferred=pool.filter(f=>f.goals&&f.goals.includes(goalFilter));
+      const src=preferred.length>0?preferred:pool;
+      return src[Math.floor(Math.random()*src.length)]?.name||null;
+    };
+    tmpl.required.forEach(cat=>{const f=getByCat(cat);if(f)foods.push({name:f,cat});});
+    tmpl.optional.forEach(cat=>{
+      const skip=bias.limit.includes(cat);
+      if(!skip&&Math.random()>0.4){const f=getByCat(cat);if(f)foods.push({name:f,cat});}
+    });
+    return foods;
+  };
+
+  const getMealFoods=(key)=>mealFoods[key]||genMeal(key);
+
+  const swapFood=(mealKey,idx,newFood)=>{
+    const current=getMealFoods(mealKey);
+    const updated=[...current];
+    updated[idx]={...updated[idx],name:newFood};
+    const newMeals={...mealFoods,[mealKey]:updated};
+    setMealFoods(newMeals);
+    LS.set("tbf_meals_"+client.id,newMeals);
+    setSwapTarget(null);setSwapSearch("");
+  };
+
+  const regenMeal=(key)=>{
+    const newMeals={...mealFoods,[key]:genMeal(key)};
+    setMealFoods(newMeals);
+    LS.set("tbf_meals_"+client.id,newMeals);
+  };
+
+  const regenAll=()=>{
+    const newMeals={};
+    MEAL_KEYS.forEach(k=>{newMeals[k]=genMeal(k);});
+    setMealFoods(newMeals);
+    LS.set("tbf_meals_"+client.id,newMeals);
+  };
+
   const calcConv=(field,val)=>{
     const v=parseFloat(val)||0;
     if(field==="lbs") setConv(p=>({...p,lbs:val,kg:(v*0.453592).toFixed(1)}));
     else if(field==="kg") setConv(p=>({...p,kg:val,lbs:(v*2.20462).toFixed(1)}));
     else if(field==="feet"||field==="inches"){
-      const f=field==="feet"?v:parseFloat(conv.feet)||0;
-      const i=field==="inches"?v:parseFloat(conv.inches)||0;
-      const totalCm=((f*12)+i)*2.54;
-      setConv(p=>({...p,[field]:val,cm:totalCm.toFixed(1)}));
+      const f2=field==="feet"?v:parseFloat(conv.feet)||0;
+      const i2=field==="inches"?v:parseFloat(conv.inches)||0;
+      setConv(p=>({...p,[field]:val,cm:((f2*12+i2)*2.54).toFixed(1)}));
     } else if(field==="cm"){
-      const totalIn=v/2.54;
-      const ft=Math.floor(totalIn/12);
-      const ins=(totalIn%12).toFixed(1);
+      const totalIn=v/2.54;const ft=Math.floor(totalIn/12);const ins=(totalIn%12).toFixed(1);
       setConv(p=>({...p,cm:val,feet:ft,inches:ins}));
     }
   };
 
-  const adj=(type,pct)=>{const oth=["protein","carbs","fat"].filter(t=>t!==type);const rem=100-pct;const total=oth.reduce((s,t)=>s+macros[t].pct,0);const newM={...macros,[type]:{pct,grams:Math.round(calories*(pct/100)/(type==="fat"?9:4))}};oth.forEach(t=>{const np=total===0?Math.round(rem/2):Math.round(macros[t].pct*(rem/total));newM[t]={pct:np,grams:Math.round(calories*(np/100)/(t==="fat"?9:4))};});setMacros(newM);LS.set(`tbf_macros_${client.id}`,newM);};
+  const adj=(type,pct)=>{
+    const oth=["protein","carbs","fat"].filter(t=>t!==type);
+    const rem=100-pct;
+    const total=oth.reduce((s,t)=>s+macros[t].pct,0);
+    const newM={...macros,[type]:{pct,grams:Math.round(calories*(pct/100)/(type==="fat"?9:4))}};
+    oth.forEach(t=>{const np=total===0?Math.round(rem/2):Math.round(macros[t].pct*(rem/total));newM[t]={pct:np,grams:Math.round(calories*(np/100)/(t==="fat"?9:4))};});
+    setMacros(newM);LS.set("tbf_macros_"+client.id,newM);
+  };
 
   const calc=()=>{
     const w=parseFloat(cf.weight),ht=parseFloat(cf.height),a=parseFloat(cf.age);
@@ -287,44 +375,51 @@ function NutritionView({client}){
     const actF={sedentary:1.2,light:1.375,moderate:1.55,active:1.725,very_active:1.9}[cf.activity]||1.55;
     const tdee=Math.round(bmr*actF);
     const goalCals=cf.goal==="loss"?tdee-500:cf.goal==="gain"?tdee+300:tdee;
-    const protG=Math.round(w*2.2);
-    const fatG=Math.round(goalCals*0.25/9);
+    const protG=Math.round(w*2.2);const fatG=Math.round(goalCals*0.25/9);
     const carbG=Math.round((goalCals-(protG*4)-(fatG*9))/4);
-    const protPct=Math.round((protG*4/goalCals)*100);
-    const fatPct=Math.round((fatG*9/goalCals)*100);
-    const carbPct=100-protPct-fatPct;
-    setCr({calories:goalCals,protein:{pct:protPct,grams:protG},carbs:{pct:carbPct,grams:carbG},fat:{pct:fatPct,grams:fatG},tdee});
+    const protPct=Math.round((protG*4/goalCals)*100);const fatPct=Math.round((fatG*9/goalCals)*100);
+    setCr({calories:goalCals,protein:{pct:protPct,grams:protG},carbs:{pct:100-protPct-fatPct,grams:carbG},fat:{pct:fatPct,grams:fatG},tdee});
   };
 
-  const applyCalc=()=>{if(!cr) return;setCalories(cr.calories);setMacros(cr);LS.set(`tbf_cals_${client.id}`,cr.calories);LS.set(`tbf_macros_${client.id}`,cr);};
-
-  // Auto meal plan generator
-  const genMealPlan=()=>{
-    const protG=macros.protein.grams;
-    const carbG=macros.carbs.grams;
-    const fatG=macros.fat.grams;
-    return [
-      {label:"Meal 1 — Morning",foods:["Egg whites","Eggs","Spinach","Avocado"],note:`~${Math.round(protG*0.25)}g protein | ${Math.round(fatG*0.35)}g fat | Low carb morning window`},
-      {label:"Meal 2 — Mid Morning",foods:["Greek yogurt","Blueberries","Walnuts"],note:`~${Math.round(protG*0.15)}g protein | Light snack`},
-      {label:"Meal 3 — Pre-Workout",foods:["Chicken breast","Jasmine rice","Banana"],note:`~${Math.round(protG*0.25)}g protein | ${Math.round(carbG*0.35)}g carbs | Fuel session`},
-      {label:"Meal 4 — Post-Workout",foods:["Salmon","Sweet potato","Broccoli"],note:`~${Math.round(protG*0.25)}g protein | ${Math.round(carbG*0.35)}g carbs | Recovery window`},
-      {label:"Meal 5 — Evening",foods:["Lean ground beef","Mixed veggies","Olive oil"],note:`~${Math.round(protG*0.20)}g protein | ${Math.round(fatG*0.35)}g fat | Low carb evening`},
-    ];
+  const applyCalc=()=>{
+    if(!cr) return;
+    setCalories(cr.calories);setMacros(cr);
+    LS.set("tbf_cals_"+client.id,cr.calories);LS.set("tbf_macros_"+client.id,cr);
   };
 
   const MB=({label,pct,grams,color,type})=>h("div",{style:{marginBottom:16}},
     h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:4}},
       h("span",{style:{fontWeight:"bold",color,fontSize:13}},label),
-      h("span",{style:{color:C.navy,fontWeight:"bold",fontSize:13}},`${pct}% — ${grams}g`)
+      h("span",{style:{color:C.navy,fontWeight:"bold",fontSize:13}},pct+"% — "+grams+"g")
     ),
-    h("input",{type:"range",min:5,max:70,value:pct,onChange:e=>adj(type,parseInt(e.target.value)),style:{accentColor:color}})
+    h("input",{type:"range",min:5,max:70,value:pct,onChange:e=>adj(type,parseInt(e.target.value)),style:{accentColor:color,width:"100%"}})
   );
 
-  const meals=mW[0]?Object.values(mW):genMealPlan();
+  // Swap modal
+  const swapModal=swapTarget&&h("div",{style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:999,display:"flex",alignItems:"flex-end",justifyContent:"center"}},
+    h("div",{style:{background:C.white,borderRadius:"16px 16px 0 0",width:"100%",maxWidth:480,padding:20,maxHeight:"70vh",overflowY:"auto"}},
+      h("div",{style:{fontWeight:"bold",color:C.navy,fontSize:15,marginBottom:4}},"Swap: "+swapTarget.name),
+      h("div",{style:{fontSize:11,color:C.gray,marginBottom:12}},"Same category swaps shown first"),
+      h(Inp,{value:swapSearch,onChange:setSwapSearch,placeholder:"Search for a replacement..."}),
+      h("div",{style:{marginTop:10}},
+        ALL_FOODS
+          .filter(f=>swapSearch.length>1?f.name.toLowerCase().includes(swapSearch.toLowerCase()):f.cat===swapTarget.cat)
+          .filter(f=>f.name!==swapTarget.name)
+          .slice(0,12)
+          .map((f,i)=>h("div",{key:i,onClick:()=>swapFood(swapTarget.mealKey,swapTarget.idx,f.name),
+            style:{padding:"10px 12px",cursor:"pointer",borderBottom:"1px solid "+C.grayBorder,display:"flex",justifyContent:"space-between",alignItems:"center"}},
+            h("span",{style:{fontSize:13,color:C.navy}},f.name),
+            h(Tag,{label:f.cat,color:f.cat===swapTarget.cat?C.teal:C.gray})
+          ))
+      ),
+      h(Btn,{onClick:()=>{setSwapTarget(null);setSwapSearch("");},color:C.gray,full:true,st:{marginTop:12}},"Cancel")
+    )
+  );
 
   return h("div",{style:{paddingBottom:24}},
-    // Converter
-    h(Btn,{onClick:()=>setShowConv(!showConv),color:showConv?C.gray:C.navy,full:true,st:{marginBottom:8}},"⇄ Unit Converter (lbs ↔ kg | ft+in ↔ cm)"),
+    swapModal,
+    // Unit Converter
+    h(Btn,{onClick:()=>setShowConv(!showConv),color:showConv?C.gray:C.navy,full:true,st:{marginBottom:8}},"⇄ Unit Converter  (lbs ↔ kg  |  ft+in ↔ cm)"),
     showConv&&h(Card,null,h(CardH,{t:"UNIT CONVERTER"}),h(CardB,null,
       h("div",{style:{fontWeight:"bold",color:C.navy,fontSize:12,marginBottom:8}},"Weight"),
       h(G2,null,
@@ -333,19 +428,17 @@ function NutritionView({client}){
       ),
       h("div",{style:{fontWeight:"bold",color:C.navy,fontSize:12,marginBottom:8,marginTop:4}},"Height"),
       h(G2,null,
-        h("div",null,
-          h(G2,null,
-            h(Fld,{label:"FEET"},h(Inp,{value:conv.feet,onChange:v=>calcConv("feet",v),placeholder:"5"})),
-            h(Fld,{label:"INCHES"},h(Inp,{value:conv.inches,onChange:v=>calcConv("inches",v),placeholder:"10"}))
-          )
-        ),
-        h(Fld,{label:"CENTIMETERS (cm)"},h(Inp,{value:conv.cm,onChange:v=>calcConv("cm",v),placeholder:"e.g. 178"}))
+        h("div",null,h(G2,null,
+          h(Fld,{label:"FEET"},h(Inp,{value:conv.feet,onChange:v=>calcConv("feet",v),placeholder:"5"})),
+          h(Fld,{label:"INCHES"},h(Inp,{value:conv.inches,onChange:v=>calcConv("inches",v),placeholder:"10"}))
+        )),
+        h(Fld,{label:"CENTIMETERS"},h(Inp,{value:conv.cm,onChange:v=>calcConv("cm",v),placeholder:"e.g. 178"}))
       )
     )),
     // Calculator
     h(Btn,{onClick:()=>setShowCalc(!showCalc),color:showCalc?C.gray:C.teal,full:true,st:{marginBottom:8}},"📊 Calorie & Macro Calculator"),
     showCalc&&h(Card,null,h(CardH,{t:"CALORIE & MACRO CALCULATOR"}),h(CardB,null,
-      h("div",{style:{fontSize:11,color:C.gray,fontStyle:"italic",marginBottom:10}},"Enter weight in kg, height in cm. Use converter above if needed."),
+      h("div",{style:{fontSize:11,color:C.gray,fontStyle:"italic",marginBottom:10}},"Enter weight in kg and height in cm. Use converter above if needed."),
       h(G2,null,
         h(Fld,{label:"WEIGHT (kg)"},h(Inp,{value:cf.weight,onChange:v=>setCf(p=>({...p,weight:v})),placeholder:"e.g. 84"})),
         h(Fld,{label:"HEIGHT (cm)"},h(Inp,{value:cf.height,onChange:v=>setCf(p=>({...p,height:v})),placeholder:"e.g. 178"}))
@@ -354,18 +447,18 @@ function NutritionView({client}){
         h(Fld,{label:"AGE"},h(Inp,{value:cf.age,onChange:v=>setCf(p=>({...p,age:v})),placeholder:"e.g. 35"})),
         h(Fld,{label:"SEX"},h(Sel,{value:cf.sex,onChange:v=>setCf(p=>({...p,sex:v})),options:[["male","Male"],["female","Female"]]}))
       ),
-      h(Fld,{label:"ACTIVITY LEVEL"},h(Sel,{value:cf.activity,onChange:v=>setCf(p=>({...p,activity:v})),options:[["sedentary","Sedentary (desk job, no exercise)"],["light","Light (1-3x/week)"],["moderate","Moderate (3-5x/week)"],["active","Active (6-7x/week)"],["very_active","Very Active (2x/day)"]]})),
+      h(Fld,{label:"ACTIVITY LEVEL"},h(Sel,{value:cf.activity,onChange:v=>setCf(p=>({...p,activity:v})),options:[["sedentary","Sedentary (desk job)"],["light","Light (1-3x/week)"],["moderate","Moderate (3-5x/week)"],["active","Active (6-7x/week)"],["very_active","Very Active (2x/day)"]]})),
       h(Fld,{label:"GOAL"},h("div",{style:{display:"flex",gap:8}},
         [["loss","Weight Loss",C.red],["maintenance","Maintenance",C.teal],["gain","Muscle Gain",C.green]].map(([v,lb,col])=>
-          h("div",{key:v,onClick:()=>setCf(p=>({...p,goal:v})),style:{flex:1,textAlign:"center",padding:"8px 4px",borderRadius:8,cursor:"pointer",border:`2px solid ${cf.goal===v?col:C.grayBorder}`,background:cf.goal===v?col+"18":C.white}},
+          h("div",{key:v,onClick:()=>setCf(p=>({...p,goal:v})),style:{flex:1,textAlign:"center",padding:"8px 4px",borderRadius:8,cursor:"pointer",border:"2px solid "+(cf.goal===v?col:C.grayBorder),background:cf.goal===v?col+"18":C.white}},
             h("div",{style:{fontWeight:"bold",color:cf.goal===v?col:C.gray,fontSize:11}},lb)
           )
         )
       )),
-      h(Btn,{onClick:calc,color:C.teal,full:true},"Calculate Targets"),
+      h(Btn,{onClick:calc,color:C.teal,full:true,st:{marginTop:8}},"Calculate"),
       cr&&h("div",{style:{marginTop:14,padding:14,background:C.tealLight,borderRadius:8}},
-        h("div",{style:{fontWeight:"bold",color:C.navy,fontSize:15,marginBottom:4,textAlign:"center"}},`${cr.calories.toLocaleString()} Calories / day`),
-        h("div",{style:{fontSize:12,color:C.gray,textAlign:"center",marginBottom:10}},`TDEE: ${cr.tdee.toLocaleString()} cal`),
+        h("div",{style:{fontWeight:"bold",color:C.navy,fontSize:15,marginBottom:4,textAlign:"center"}},cr.calories.toLocaleString()+" calories / day"),
+        h("div",{style:{fontSize:12,color:C.gray,textAlign:"center",marginBottom:10}},"TDEE: "+cr.tdee.toLocaleString()+" cal"),
         h("div",{style:{display:"flex",gap:8,marginBottom:12}},
           [["Protein",cr.protein.grams+"g",C.teal],["Carbs",cr.carbs.grams+"g",C.amber],["Fat",cr.fat.grams+"g",C.red]].map(([lb,v,col])=>
             h("div",{key:lb,style:{flex:1,textAlign:"center",background:col+"18",borderRadius:8,padding:"8px 4px"}},
@@ -378,35 +471,57 @@ function NutritionView({client}){
       )
     )),
     // Macro targets
-    h(Card,null,h(CardH,{t:`DAILY TARGET — ${calories.toLocaleString()} CAL`}),h(CardB,null,
+    h(Card,null,h(CardH,{t:"DAILY TARGET — "+calories.toLocaleString()+" CAL"}),h(CardB,null,
       h(MB,{label:"Protein",pct:macros.protein.pct,grams:macros.protein.grams,color:C.teal,type:"protein"}),
       h(MB,{label:"Carbohydrates",pct:macros.carbs.pct,grams:macros.carbs.grams,color:C.amber,type:"carbs"}),
       h(MB,{label:"Fat",pct:macros.fat.pct,grams:macros.fat.grams,color:C.red,type:"fat"}),
       h("div",{style:{fontSize:10,color:C.gray,textAlign:"center",fontStyle:"italic"}},"Drag sliders to adjust macro split")
     )),
-    // Auto meal plan
-    h(Card,null,h(CardH,{t:"MEAL PLAN",color:C.teal}),h(CardB,null,
-      h("div",{style:{fontSize:11,color:C.gray,fontStyle:"italic",marginBottom:12}},"Auto-generated from your macro targets. Tap any food to swap it."),
-      genMealPlan().map((meal,mi)=>{
-        const foods=mW[mi]||meal.foods;
-        const search=mS[mi]||"";
-        const results=search.length>1?ALL_FOODS.filter(f=>f.name.toLowerCase().includes(search.toLowerCase())).slice(0,8):[];
-        return h("div",{key:mi,style:{marginBottom:14,background:C.grayLight,borderRadius:8,padding:10}},
-          h("div",{style:{fontWeight:"bold",color:C.navy,fontSize:12,marginBottom:2}},meal.label),
-          h("div",{style:{fontSize:11,color:C.teal2,marginBottom:8,fontStyle:"italic"}},meal.note),
-          h("div",{style:{display:"flex",flexWrap:"wrap",gap:6,marginBottom:8}},
-            foods.map((food,fi)=>h("div",{key:fi,style:{background:C.white,border:`1px solid ${C.grayBorder}`,borderRadius:6,padding:"3px 10px",fontSize:12,color:C.navy,cursor:"pointer"},
-              onClick:()=>setMS(p=>({...p,[mi]:p[mi]===food?"":food}))},food))
-          ),
-          h(Inp,{value:search,onChange:v=>setMS(p=>({...p,[mi]:v})),placeholder:"Swap a food — type to search...",st:{fontSize:12}}),
-          results.length>0&&h("div",{style:{background:C.white,border:`1px solid ${C.grayBorder}`,borderRadius:6,marginTop:4,maxHeight:140,overflowY:"auto"}},
-            results.map((f,i)=>h("div",{key:i,onClick:()=>{const nf=[...foods];const idx=nf.indexOf(search);if(idx>-1)nf[idx]=f.name;else nf.push(f.name);setMW(p=>({...p,[mi]:nf}));setMS(p=>({...p,[mi]:""}));},style:{padding:"6px 10px",cursor:"pointer",fontSize:12,color:C.navy,display:"flex",justifyContent:"space-between",borderBottom:`1px solid ${C.grayBorder}`}},
-              h("span",null,f.name),h(Tag,{label:f.cat,color:C.teal})
-            ))
+    // Goal filter
+    h(Card,null,h(CardH,{t:"NUTRITION GOAL"}),h(CardB,null,
+      h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}},
+        Object.entries(GOAL_FOOD_BIAS).map(([k,v])=>
+          h("div",{key:k,onClick:()=>{setGoalFilter(k);LS.set("tbf_goal_"+client.id,k);regenAll();},
+            style:{textAlign:"center",padding:"8px",borderRadius:8,cursor:"pointer",border:"2px solid "+(goalFilter===k?C.teal:C.grayBorder),background:goalFilter===k?C.tealLight:C.white}},
+            h("div",{style:{fontWeight:"bold",color:goalFilter===k?C.teal:C.navy,fontSize:12}},k.replace("_"," ").replace(/\w/g,c=>c.toUpperCase())),
+            h("div",{style:{fontSize:10,color:C.gray,marginTop:2}},v.note.slice(0,40)+"...")
           )
-        );
-      })
+        )
+      ),
+      h("div",{style:{background:C.tealLight,border:"1px solid "+C.teal+"33",borderRadius:8,padding:"8px 12px",fontSize:12,color:C.teal2}},bias.note)
     )),
+    // Meal builder
+    h(Card,null,
+      h("div",{style:{background:C.navy,color:C.white,padding:"9px 14px",fontSize:11,fontWeight:"bold",letterSpacing:1,display:"flex",justifyContent:"space-between",alignItems:"center"}},
+        "MEAL PLAN",
+        h("button",{onClick:regenAll,style:{background:C.teal,border:"none",color:C.white,borderRadius:5,padding:"3px 10px",fontSize:11,cursor:"pointer",fontFamily:"Georgia,serif"}},"↺ Regenerate All")
+      ),
+      h(CardB,null,
+        h("div",{style:{fontSize:11,color:C.gray,fontStyle:"italic",marginBottom:12}},"Built from your goal and macro targets. Tap any food to swap it."),
+        MEAL_KEYS.map(mealKey=>{
+          const tmpl=MEAL_TEMPLATE_MAP[mealKey];
+          const foods=getMealFoods(mealKey);
+          return h("div",{key:mealKey,style:{marginBottom:16,background:C.grayLight,borderRadius:10,padding:12}},
+            h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}},
+              h("div",null,
+                h("div",{style:{fontWeight:"bold",color:C.navy,fontSize:13}},MEAL_LABELS[mealKey]),
+                h("div",{style:{fontSize:11,color:C.teal2,fontStyle:"italic"}},tmpl.note)
+              ),
+              h("button",{onClick:()=>regenMeal(mealKey),style:{background:C.white,border:"1px solid "+C.grayBorder,borderRadius:5,padding:"3px 8px",fontSize:10,cursor:"pointer",color:C.gray,fontFamily:"Georgia,serif"}},"↺")
+            ),
+            h("div",{style:{display:"flex",flexWrap:"wrap",gap:6}},
+              foods.map((food,fi)=>h("div",{key:fi,
+                onClick:()=>setSwapTarget({...food,mealKey,idx:fi}),
+                style:{background:C.white,border:"1px solid "+(swapTarget?.mealKey===mealKey&&swapTarget?.idx===fi?C.teal:C.grayBorder),borderRadius:20,padding:"5px 12px",fontSize:12,color:C.navy,cursor:"pointer",display:"flex",alignItems:"center",gap:6}},
+                h("span",null,food.name),
+                h(Tag,{label:food.cat,color:C.teal})
+              ))
+            )
+          );
+        })
+      )
+    ),
+    // Supplements
     client.nutrition?.supplements&&h(Card,null,h(CardH,{t:"SUPPLEMENT TIMING",color:C.teal}),h(CardB,null,
       client.nutrition.supplements.map((s,i)=>h("div",{key:i,style:{marginBottom:i<client.nutrition.supplements.length-1?12:0}},
         h("div",{style:{fontWeight:"bold",color:C.navy,fontSize:12,marginBottom:4}},s.timing),
