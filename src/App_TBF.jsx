@@ -460,8 +460,259 @@ function SessionNotes({client,isTrainer}){
   );
 }
 
+
+function WorkoutBuilder({client,onUpdate,onClose}){
+  const [days,setDays]=useState(()=>JSON.parse(JSON.stringify(client.days||[])));
+  const [activeDay,setActiveDay]=useState(0);
+  const [activeSec,setActiveSec]=useState(null);
+  const [search,setSearch]=useState("");
+  const [tmplKey,setTmplKey]=useState("");
+  const [saved,setSaved]=useState(false);
+  const results=search.length>1?ALL_EX.filter(e=>e.name.toLowerCase().includes(search.toLowerCase())).slice(0,12):[];
+  const SECTION_COLORS=[C.navy,C.teal,C.teal2,C.navy2,C.purple,C.amber];
+
+  const addDay=()=>{
+    const newDay={title:"NEW DAY — "+["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"][days.length%7],type:"session",sections:[]};
+    setDays(p=>[...p,newDay]);setActiveDay(days.length);
+  };
+  const removeDay=di=>{const nd=days.filter((_,i)=>i!==di);setDays(nd);setActiveDay(Math.max(0,Math.min(activeDay,nd.length-1)));};
+  const renameDay=(di,title)=>setDays(p=>p.map((d,i)=>i===di?{...d,title}:d));
+  const addSection=di=>{
+    const sec={label:"NEW BLOCK",color:SECTION_COLORS[days[di].sections.length%SECTION_COLORS.length],exercises:[]};
+    setDays(p=>p.map((d,i)=>i===di?{...d,sections:[...d.sections,sec]}:d));
+    setActiveSec(days[di].sections.length);
+  };
+  const removeSection=(di,si)=>setDays(p=>p.map((d,i)=>i===di?{...d,sections:d.sections.filter((_,j)=>j!==si)}:d));
+  const renameSection=(di,si,label)=>setDays(p=>p.map((d,i)=>i===di?{...d,sections:d.sections.map((s,j)=>j===si?{...s,label:label.toUpperCase()}:s)}:d));
+  const addExercise=(di,si,name)=>{
+    const ex={name,prescription:"3 x 12",cue:CUES[name]||""};
+    setDays(p=>p.map((d,i)=>i===di?{...d,sections:d.sections.map((s,j)=>j===si?{...s,exercises:[...s.exercises,ex]}:s)}:d));
+    setSearch("");
+  };
+  const removeExercise=(di,si,ei)=>setDays(p=>p.map((d,i)=>i===di?{...d,sections:d.sections.map((s,j)=>j===si?{...s,exercises:s.exercises.filter((_,k)=>k!==ei)}:s)}:d));
+  const updateRx=(di,si,ei,prescription)=>setDays(p=>p.map((d,i)=>i===di?{...d,sections:d.sections.map((s,j)=>j===si?{...s,exercises:s.exercises.map((e,k)=>k===ei?{...e,prescription}:e)}:s)}:d));
+  const moveEx=(di,si,ei,dir)=>{
+    setDays(p=>p.map((d,i)=>{
+      if(i!==di) return d;
+      return {...d,sections:d.sections.map((s,j)=>{
+        if(j!==si) return s;
+        const exs=[...s.exercises];
+        const ni=ei+dir;
+        if(ni<0||ni>=exs.length) return s;
+        [exs[ei],exs[ni]]=[exs[ni],exs[ei]];
+        return {...s,exercises:exs};
+      })};
+    }));
+  };
+  const applyTemplate=()=>{
+    if(!tmplKey||!TEMPLATES[tmplKey]) return;
+    setDays(JSON.parse(JSON.stringify(TEMPLATES[tmplKey].days)));
+    setActiveDay(0);setActiveSec(null);setTmplKey("");
+  };
+  const handleSave=()=>{onUpdate({...client,days});setSaved(true);setTimeout(()=>setSaved(false),2000);};
+
+  const curDay=days[activeDay];
+
+  return h("div",{style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:999,display:"flex",flexDirection:"column"}},
+    h("div",{style:{background:C.white,height:"100%",display:"flex",flexDirection:"column",maxWidth:700,margin:"0 auto",width:"100%",boxShadow:"0 0 40px rgba(0,0,0,0.4)"}},
+      // Header
+      h("div",{style:{background:C.navy,color:C.white,padding:"14px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}},
+        h("div",null,
+          h("div",{style:{fontWeight:"bold",fontSize:16}},"Workout Builder"),
+          h("div",{style:{fontSize:11,color:C.tealLight,marginTop:2}},client.name)
+        ),
+        h("div",{style:{display:"flex",gap:8}},
+          h(Btn,{onClick:handleSave,color:saved?C.green:C.teal,small:true},saved?"✓ Saved":"Save Program"),
+          h(Btn,{onClick:onClose,color:C.red,small:true},"Close")
+        )
+      ),
+      // Template loader
+      h("div",{style:{background:C.amberLight,padding:"10px 14px",borderBottom:"1px solid "+C.grayBorder,display:"flex",gap:8,alignItems:"center",flexShrink:0}},
+        h("div",{style:{fontSize:12,color:C.navy,fontWeight:"bold",flexShrink:0}},"Load Template:"),
+        h("select",{value:tmplKey,onChange:e=>setTmplKey(e.target.value),style:{...istyle,flex:1,fontSize:12,padding:"6px 10px"}},
+          h("option",{value:""},"— choose template to load —"),
+          Object.entries(TEMPLATES).map(([k,v])=>h("option",{key:k,value:k},v.label))
+        ),
+        h(Btn,{onClick:applyTemplate,color:C.amber,small:true},"Apply")
+      ),
+      // Day tabs
+      h("div",{style:{display:"flex",gap:0,overflowX:"auto",borderBottom:"1px solid "+C.grayBorder,flexShrink:0,background:C.grayLight}},
+        days.map((d,di)=>h("div",{key:di,style:{display:"flex",alignItems:"center",borderRight:"1px solid "+C.grayBorder}},
+          h("button",{onClick:()=>setActiveDay(di),style:{padding:"8px 12px",border:"none",background:di===activeDay?C.white:C.grayLight,fontWeight:di===activeDay?"bold":"normal",color:di===activeDay?C.navy:C.gray,cursor:"pointer",fontSize:11,whiteSpace:"nowrap",borderBottom:di===activeDay?"2px solid "+C.teal:"2px solid transparent"}},
+            "Day "+(di+1)
+          ),
+          days.length>1&&h("button",{onClick:()=>removeDay(di),style:{background:"none",border:"none",color:C.red,cursor:"pointer",padding:"0 6px",fontSize:14}},"×")
+        )),
+        h("button",{onClick:addDay,style:{padding:"8px 12px",border:"none",background:C.grayLight,color:C.teal,cursor:"pointer",fontSize:13,fontWeight:"bold",flexShrink:0}},"+Day")
+      ),
+      // Day editor
+      h("div",{style:{flex:1,overflowY:"auto",padding:14}},
+        curDay&&h("div",null,
+          // Day title
+          h(Fld,{label:"DAY TITLE"},h(Inp,{value:curDay.title,onChange:v=>renameDay(activeDay,v),placeholder:"e.g. MONDAY — PUSH + ZONE 2"})),
+          h(Fld,{label:"TYPE"},h(Sel,{value:curDay.type,onChange:v=>setDays(p=>p.map((d,i)=>i===activeDay?{...d,type:v}:d)),options:[["session","Gym Session"],["home","Home Program"],["cardio","Cardio Only"],["rest","Rest Day"]]})),
+          // Sections
+          curDay.sections.map((sec,si)=>h("div",{key:si,style:{background:C.grayLight,borderRadius:10,padding:10,marginBottom:10,border:"1px solid "+C.grayBorder}},
+            // Section header
+            h("div",{style:{display:"flex",gap:8,alignItems:"center",marginBottom:8}},
+              h("div",{style:{width:14,height:14,borderRadius:3,background:sec.color,flexShrink:0}}),
+              h("input",{value:sec.label,onChange:e=>renameSection(activeDay,si,e.target.value),style:{flex:1,border:"1px solid "+C.grayBorder,borderRadius:6,padding:"4px 8px",fontSize:12,fontWeight:"bold",fontFamily:"Georgia,serif",color:C.navy}}),
+              h("select",{value:sec.color,onChange:e=>setDays(p=>p.map((d,i)=>i===activeDay?{...d,sections:d.sections.map((s,j)=>j===si?{...s,color:e.target.value}:s)}:d)),style:{border:"1px solid "+C.grayBorder,borderRadius:6,padding:"4px",fontSize:11,fontFamily:"Georgia,serif"}},
+                [[C.navy,"Navy"],[C.teal,"Teal"],[C.teal2,"Dark Teal"],[C.navy2,"Navy 2"],[C.amber,"Amber"],[C.red,"Red"],[C.green,"Green"]].map(([v,l])=>h("option",{key:v,value:v},l))
+              ),
+              h("button",{onClick:()=>removeSection(activeDay,si),style:{background:"none",border:"none",color:C.red,cursor:"pointer",fontSize:16,padding:"0 4px"}},"×")
+            ),
+            // Exercises in section
+            sec.exercises.map((ex,ei)=>h("div",{key:ei,style:{background:C.white,border:"1px solid "+C.grayBorder,borderRadius:7,padding:"8px 10px",marginBottom:6,display:"flex",gap:8,alignItems:"flex-start"}},
+              h("div",{style:{flex:1}},
+                h("div",{style:{fontWeight:"bold",fontSize:13,color:C.navy,marginBottom:4}},ex.name),
+                h("input",{value:ex.prescription,onChange:e=>updateRx(activeDay,si,ei,e.target.value),style:{width:"100%",border:"1px solid "+C.grayBorder,borderRadius:5,padding:"3px 8px",fontSize:12,fontFamily:"Georgia,serif",color:C.teal2}})
+              ),
+              h("div",{style:{display:"flex",flexDirection:"column",gap:3}},
+                h("button",{onClick:()=>moveEx(activeDay,si,ei,-1),disabled:ei===0,style:{background:C.grayLight,border:"none",borderRadius:4,cursor:"pointer",padding:"2px 6px",fontSize:10,opacity:ei===0?0.3:1}},"▲"),
+                h("button",{onClick:()=>moveEx(activeDay,si,ei,1),disabled:ei===sec.exercises.length-1,style:{background:C.grayLight,border:"none",borderRadius:4,cursor:"pointer",padding:"2px 6px",fontSize:10,opacity:ei===sec.exercises.length-1?0.3:1}},"▼"),
+                h("button",{onClick:()=>removeExercise(activeDay,si,ei),style:{background:"none",border:"none",color:C.red,cursor:"pointer",fontSize:14,padding:"2px 4px"}},"×")
+              )
+            )),
+            // Add exercise to section
+            si===activeSec&&h("div",{style:{marginTop:6}},
+              h(Inp,{value:search,onChange:setSearch,placeholder:"Search 500+ exercises to add..."}),
+              results.length>0&&h("div",{style:{background:C.white,border:"1px solid "+C.grayBorder,borderRadius:6,marginTop:4,maxHeight:160,overflowY:"auto"}},
+                results.map((e,i)=>h("div",{key:i,onClick:()=>addExercise(activeDay,si,e.name),style:{padding:"7px 10px",cursor:"pointer",fontSize:12,color:C.navy,display:"flex",justifyContent:"space-between",borderBottom:"1px solid "+C.grayBorder}},
+                  h("span",null,e.name),h(Tag,{label:e.cat,color:C.teal})
+                ))
+              )
+            ),
+            h("div",{style:{display:"flex",gap:6,marginTop:6}},
+              h(Btn,{onClick:()=>setActiveSec(si===activeSec?null:si),color:activeSec===si?C.navy:C.tealLight,fg:activeSec===si?C.white:C.navy,small:true},activeSec===si?"✓ Done Adding":"+ Add Exercise")
+            )
+          )),
+          h(Btn,{onClick:()=>addSection(activeDay),color:C.grayLight,fg:C.navy,full:true},"+ Add Block to This Day")
+        )
+      )
+    )
+  );
+}
+
+
+function CardioBuilder({client,onUpdate,onClose}){
+  const [plan,setPlan]=useState(()=>{
+    const saved=LS.get("tbf_cardio_"+client.id,null);
+    return saved||{weeklyGoal:"3",primaryType:"zone2",sessions:[]};
+  });
+  const [saved,setSaved]=useState(false);
+
+  const CARDIO_TYPES=[
+    {id:"zone2",label:"Zone 2",desc:"Aerobic base building",rx:"HR 120-140 | Conversational pace",color:C.teal,equipment:["Incline Treadmill","Stationary Bike","Outdoor Walk","Elliptical","Row Machine"]},
+    {id:"hiit",label:"HIIT",desc:"High intensity intervals",rx:"Max effort intervals | 1x/week only",color:C.red,equipment:["Treadmill Sprints","Bike Sprints","Jump Rope","Battle Ropes","Sled Push"]},
+    {id:"liss",label:"LISS",desc:"Low intensity steady state",rx:"HR 100-120 | Easy effort",color:C.green,equipment:["Walking","Swimming","Cycling","Light Bike","Elliptical"]},
+    {id:"active_recovery",label:"Active Recovery",desc:"Blood flow & recovery",rx:"Very light movement | No fatigue",color:C.navy2,equipment:["Easy Walk","Gentle Bike","Light Yoga","Foam Rolling","Swimming"]},
+    {id:"sport",label:"Sport Specific",desc:"In-season training",rx:"Per sport demands",color:C.purple,equipment:["Agility Ladder","Cone Drills","Sport Drills","Jump Training","Speed Work"]},
+  ];
+
+  const addSession=()=>{
+    const s={day:"Monday",type:"zone2",duration:"30",intensity:"moderate",equipment:"Stationary Bike",notes:""};
+    setPlan(p=>({...p,sessions:[...p.sessions,s]}));
+  };
+  const updateSession=(i,field,val)=>setPlan(p=>({...p,sessions:p.sessions.map((s,j)=>j===i?{...s,[field]:val}:s)}));
+  const removeSession=i=>setPlan(p=>({...p,sessions:p.sessions.filter((_,j)=>j!==i)}));
+  const handleSave=()=>{LS.set("tbf_cardio_"+client.id,plan);onUpdate({...client,cardioPlan:plan});setSaved(true);setTimeout(()=>setSaved(false),2000);};
+
+  const weekTotal=plan.sessions.length;
+  const zone2Count=plan.sessions.filter(s=>s.type==="zone2").length;
+  const hiitCount=plan.sessions.filter(s=>s.type==="hiit").length;
+
+  return h("div",{style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:999,display:"flex",flexDirection:"column"}},
+    h("div",{style:{background:C.white,height:"100%",display:"flex",flexDirection:"column",maxWidth:700,margin:"0 auto",width:"100%",boxShadow:"0 0 40px rgba(0,0,0,0.4)"}},
+      // Header
+      h("div",{style:{background:C.navy,color:C.white,padding:"14px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}},
+        h("div",null,
+          h("div",{style:{fontWeight:"bold",fontSize:16}},"Cardio Builder"),
+          h("div",{style:{fontSize:11,color:C.tealLight,marginTop:2}},client.name)
+        ),
+        h("div",{style:{display:"flex",gap:8}},
+          h(Btn,{onClick:handleSave,color:saved?C.green:C.teal,small:true},saved?"✓ Saved":"Save Plan"),
+          h(Btn,{onClick:onClose,color:C.red,small:true},"Close")
+        )
+      ),
+      h("div",{style:{flex:1,overflowY:"auto",padding:14}},
+        // Summary
+        h(Card,null,h(CardH,{t:"WEEKLY CARDIO SUMMARY",color:C.teal}),h(CardB,null,
+          h(G2,null,
+            h(Fld,{label:"WEEKLY CARDIO GOAL (sessions)"},
+              h(Sel,{value:plan.weeklyGoal,onChange:v=>setPlan(p=>({...p,weeklyGoal:v})),options:[["1","1x/week"],["2","2x/week"],["3","3x/week"],["4","4x/week"],["5","5x/week"],["6","6x/week"],["7","Daily"]]})
+            ),
+            h(Fld,{label:"PRIMARY FOCUS"},
+              h(Sel,{value:plan.primaryType,onChange:v=>setPlan(p=>({...p,primaryType:v})),options:CARDIO_TYPES.map(t=>[t.id,t.label+" — "+t.desc])})
+            )
+          ),
+          h("div",{style:{display:"flex",gap:8,marginTop:4}},
+            [["Total Sessions",weekTotal,C.navy],["Zone 2",zone2Count,C.teal],["HIIT",hiitCount,C.red]].map(([lb,val,col])=>
+              h("div",{key:lb,style:{flex:1,textAlign:"center",background:col+"11",border:"1px solid "+col+"33",borderRadius:8,padding:"8px 4px"}},
+                h("div",{style:{fontSize:22,fontWeight:"bold",color:col}},val),
+                h("div",{style:{fontSize:10,color:C.gray}},lb)
+              )
+            )
+          ),
+          hiitCount>1&&h("div",{style:{background:C.amberLight,border:"1px solid "+C.amber+"44",borderRadius:8,padding:"8px 12px",marginTop:10,fontSize:12,color:C.amber,fontWeight:"bold"}},"⚠️ HIIT Warning: More than 1 HIIT session per week increases injury and overtraining risk. Consider replacing with Zone 2 or Active Recovery.")
+        )),
+        // Cardio type reference
+        h(Card,null,h(CardH,{t:"CARDIO TYPE REFERENCE"}),h(CardB,{p:10},
+          CARDIO_TYPES.map(t=>h("div",{key:t.id,style:{display:"flex",gap:10,alignItems:"flex-start",marginBottom:10,paddingBottom:10,borderBottom:"1px solid "+C.grayBorder}},
+            h("div",{style:{background:t.color,borderRadius:6,padding:"4px 8px",fontSize:10,fontWeight:"bold",color:C.white,flexShrink:0,minWidth:80,textAlign:"center"}},t.label),
+            h("div",{style:{flex:1}},
+              h("div",{style:{fontSize:12,color:C.navy,fontWeight:"bold"}},t.rx),
+              h("div",{style:{fontSize:11,color:C.gray}},t.desc)
+            )
+          ))
+        )),
+        // Sessions
+        h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}},
+          h("div",{style:{fontWeight:"bold",color:C.navy,fontSize:14}},"Weekly Sessions"),
+          h(Btn,{onClick:addSession,color:C.teal,small:true},"+ Add Session")
+        ),
+        plan.sessions.length===0&&h("div",{style:{textAlign:"center",padding:24,color:C.gray,fontStyle:"italic",background:C.grayLight,borderRadius:8,marginBottom:12}},"No cardio sessions yet. Tap + Add Session to build the weekly plan."),
+        plan.sessions.map((s,i)=>{
+          const typeInfo=CARDIO_TYPES.find(t=>t.id===s.type)||CARDIO_TYPES[0];
+          return h(Card,{key:i},
+            h("div",{style:{background:typeInfo.color,color:C.white,padding:"8px 12px",display:"flex",justifyContent:"space-between",alignItems:"center"}},
+              h("span",{style:{fontWeight:"bold",fontSize:12}},s.day+" — "+typeInfo.label),
+              h("button",{onClick:()=>removeSession(i),style:{background:"none",border:"none",color:C.white,cursor:"pointer",fontSize:16}},"×")
+            ),
+            h(CardB,null,
+              h(G2,null,
+                h(Fld,{label:"DAY"},h(Sel,{value:s.day,onChange:v=>updateSession(i,"day",v),options:["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"].map(d=>[d,d])})),
+                h(Fld,{label:"TYPE"},h(Sel,{value:s.type,onChange:v=>updateSession(i,"type",v),options:CARDIO_TYPES.map(t=>[t.id,t.label])}))
+              ),
+              h(G2,null,
+                h(Fld,{label:"DURATION (min)"},h(Sel,{value:s.duration,onChange:v=>updateSession(i,"duration",v),options:[["15","15 min"],["20","20 min"],["25","25 min"],["30","30 min"],["35","35 min"],["40","40 min"],["45","45 min"],["50","50 min"],["60","60 min"]]})),
+                h(Fld,{label:"INTENSITY"},h(Sel,{value:s.intensity,onChange:v=>updateSession(i,"intensity",v),options:[["light","Light — Easy effort"],["moderate","Moderate — Zone 2"],["hard","Hard — HIIT"],["max","Max — All out"]]}))
+              ),
+              h(Fld,{label:"EQUIPMENT / MODALITY"},h(Sel,{value:s.equipment,onChange:v=>updateSession(i,"equipment",v),options:typeInfo.equipment.map(e=>[e,e])})),
+              h(Fld,{label:"TRAINER NOTES",mb:0},h(TA,{value:s.notes,onChange:v=>updateSession(i,"notes",v),placeholder:"HR target, intensity cues, specific instructions...",rows:2}))
+            )
+          );
+        }),
+        plan.sessions.length>0&&h("div",{style:{background:C.tealLight,border:"1px solid "+C.teal+"44",borderRadius:10,padding:12,marginTop:4}},
+          h("div",{style:{fontWeight:"bold",color:C.navy,fontSize:13,marginBottom:8}},"Weekly Cardio Summary for Client"),
+          plan.sessions.map((s,i)=>{
+            const t=CARDIO_TYPES.find(ct=>ct.id===s.type)||CARDIO_TYPES[0];
+            return h("div",{key:i,style:{display:"flex",gap:8,alignItems:"center",marginBottom:6}},
+              h("div",{style:{background:t.color,color:C.white,borderRadius:4,padding:"2px 8px",fontSize:10,fontWeight:"bold",minWidth:80,textAlign:"center"}},s.day),
+              h("div",{style:{fontSize:12,color:C.navy}},t.label+" | "+s.duration+" min | "+s.equipment),
+              s.notes&&h("div",{style:{fontSize:11,color:C.gray,fontStyle:"italic"}}," — "+s.notes)
+            );
+          })
+        )
+      )
+    )
+  );
+}
+
 function ClientView({client,isTrainer,onClientUpdate}){
   const [tab,setTab]=useState("plan");
+  const [showBuilder,setShowBuilder]=useState(false);
+  const [showCardio,setShowCardio]=useState(false);
   const [di,setDi]=useState(0);
   const [assessment,setAssessment]=useState(()=>LS.get(`tbf_assess_${client.id}`,null));
   const [pendingProg,setPendingProg]=useState(null);
@@ -494,7 +745,17 @@ function ClientView({client,isTrainer,onClientUpdate}){
           h("div",{style:{display:"flex",gap:10}},h(Btn,{onClick:()=>{onClientUpdate({...client,days:[...client.days,pendingProg]});setPendingProg(null);},color:C.green,full:true},"✓ Approve & Push to Training"),h(Btn,{onClick:()=>setPendingProg(null),color:C.gray,full:true},"Dismiss"))
         ),
         !hasProgram&&!isTrainer&&h("div",{style:{padding:32,textAlign:"center",color:C.gray,fontStyle:"italic"}},h("div",{style:{fontSize:40,marginBottom:12}},"🏋️"),h("div",null,"Your program is being prepared. Check back after your first appointment.")),
+        !hasProgram&&isTrainer&&h("div",{style:{padding:24,textAlign:"center"}},
+          h("div",{style:{fontSize:36,marginBottom:12}},"⚙️"),
+          h("div",{style:{fontWeight:"bold",color:C.navy,marginBottom:8}},"No program assigned yet"),
+          h("div",{style:{fontSize:13,color:C.gray,marginBottom:16}}},"Use the Workout Builder to create this client's program from scratch or load a template."),
+          h(Btn,{onClick:()=>setShowBuilder(true),color:C.teal,full:true},"⚙ Open Workout Builder")
+        ),
         hasProgram&&h("div",null,
+          isTrainer&&h("div",{style:{display:"flex",gap:8,marginBottom:10}},
+            h(Btn,{onClick:()=>setShowBuilder(true),color:C.navy,full:true,st:{fontSize:12}},"⚙ Workout Builder — Change Template or Edit Days"),
+            h(Btn,{onClick:()=>setShowCardio(true),color:C.teal,full:true,st:{fontSize:12}},"🏃 Cardio Builder — Build Weekly Cardio Plan")
+          ),
           h("div",{style:{background:C.tealLight,border:"1px solid "+C.teal+"44",borderRadius:8,padding:"10px 12px",marginBottom:10,fontSize:12,color:C.teal2,lineHeight:1.6}},
             h("div",{style:{fontWeight:"bold",color:C.navy,marginBottom:4}},"📅 How Workout Days Work"),
             "Days shown here are based on the template assigned to this client. As the trainer, you can add, remove, or reorder days using the workout builder. Frequency is determined by the program template — e.g. 3x/week means 3 session days will appear. You can customize each day's exercises using the Swap and Progress buttons on each exercise card."
@@ -526,7 +787,9 @@ tab==="assess"&&h(AssessmentForm,{client,isTrainer,existing:assessment,onSave:ha
       tab==="notes"&&h(SessionNotes,{client,isTrainer}),
       tab==="pain"&&h(PainLog,{client}),
       tab==="comp"&&h(Compliance,{client})
-    )
+    ),
+    showBuilder&&h(WorkoutBuilder,{client,onUpdate:c=>{onClientUpdate(c);setShowBuilder(false);},onClose:()=>setShowBuilder(false)}),
+    showCardio&&h(CardioBuilder,{client,onUpdate:c=>{onClientUpdate(c);setShowCardio(false);},onClose:()=>setShowCardio(false)})
   );
 }
 
