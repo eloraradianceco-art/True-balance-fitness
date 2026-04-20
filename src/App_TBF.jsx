@@ -1673,23 +1673,27 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
   // Load clients from Supabase on mount (trainer only)
   useEffect(()=>{
     if(!supabase||!autoTrainer) return;
-    supabase.from("tbf_clients").select("*").then(({data,error})=>{
-      if(error){console.warn("Load clients:",error.message);return;}
-      if(!data||data.length===0){setClientsLoaded(true);return;}
-      const mapped=data.map(r=>({
-        id:r.email.toLowerCase().replace(/[^a-z0-9]/g,"_"),
-        name:r.name,email:r.email,role:"client",
-        phase:r.phase||1,focus:r.focus||"",
-        restrictions:typeof r.restrictions==="string"?JSON.parse(r.restrictions||"[]"):r.restrictions||[],
-        goal:r.goal_template||"posture",
-        invitedAt:r.invited_at,
-        days:r.days?JSON.parse(r.days):TEMPLATES[r.goal_template||"posture"]?.days||[],
-        schedule:[],nutrition:null,password:"",supabase_id:r.id
-      }));
-      setClients(mapped);
-      LS.set("tbf_clients",mapped);
-      setClientsLoaded(true);
-    });
+    supabase.from("tbf_clients").select("*")
+      .then(({data,error})=>{
+        if(error){console.warn("Load clients:",error.message);setClientsLoaded(true);return;}
+        if(!data||data.length===0){setClientsLoaded(true);return;}
+        try{
+          const mapped=data.map(r=>({
+            id:r.email.toLowerCase().replace(/[^a-z0-9]/g,"_"),
+            name:r.name,email:r.email,role:"client",
+            phase:r.phase||1,focus:r.focus||"",
+            restrictions:typeof r.restrictions==="string"?JSON.parse(r.restrictions||"[]"):r.restrictions||[],
+            goal:r.goal_template||"posture",
+            invitedAt:r.invited_at,
+            days:r.days?JSON.parse(r.days):TEMPLATES[r.goal_template||"posture"]?.days||[],
+            schedule:[],nutrition:null,password:"",supabase_id:r.id
+          }));
+          setClients(mapped);
+          LS.set("tbf_clients",mapped);
+        }catch(e){console.warn("Client map error:",e.message);}
+        setClientsLoaded(true);
+      })
+      .catch(e=>{console.warn("tbf_clients fetch failed:",e.message);setClientsLoaded(true);});
   },[autoTrainer]);
 
   const handleAddClient=async c=>{
@@ -1720,8 +1724,12 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
   const isTrainer=user?.role==="trainer";
   // If signed in via Supabase and not the hardcoded trainer,
   // find this user's client profile by email
-  const supabaseClientProfile = !isTrainer && supabaseUser ? 
-    clients.find(c=>c.email&&c.email.toLowerCase()===supabaseUser.email?.toLowerCase()) : null;
+  const supabaseClientProfile = (() => {
+    try{
+      if(isTrainer||!supabaseUser) return null;
+      return clients.find(c=>c.email&&c.email.toLowerCase()===(supabaseUser.email||"").toLowerCase())||null;
+    }catch(e){return null;}
+  })();
   // If signed in via Supabase as trainer email — skip inner login entirely
   if(autoTrainer){
     const effectiveUser = TRAINER_U;
@@ -1743,7 +1751,11 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
     if(screen==="register") return h(Register,{onRegister:handleLogin,onBack:()=>setScreen("login")});
     if(screen==="login"||!user) return h(Login,{onLogin:handleLogin,onRegister:()=>setScreen("register")});
   }
-  const effectiveUser = supabaseUser ? (supabaseClientProfile||{id:supabaseUser.id,name:supabaseUser.email,role:"client",email:supabaseUser.email,days:[],schedule:[],nutrition:null,phase:1,focus:"",restrictions:[]}) : user;
+  const effectiveUser = supabaseUser
+    ? (supabaseClientProfile||{id:supabaseUser.id,name:supabaseUser.email||"Client",
+        role:"client",email:supabaseUser.email||"",days:[],schedule:[],
+        nutrition:null,phase:1,focus:"Your trainer is setting up your program.",restrictions:[]})
+    : user;
   const effectiveIsTrainer = isTrainer || (supabaseProfile?.role==="trainer");
   const activeClient=isTrainer?viewing:supabaseClientProfile||clients.find(c=>c.id===user?.id)||user;
   return h("div",{style:{minHeight:"100vh",background:C.cream}},
