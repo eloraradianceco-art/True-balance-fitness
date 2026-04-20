@@ -1562,13 +1562,46 @@ function AddClientForm({onAdd,onClose}){
   );
 }
 
-function TrainerRoster({clients,onSelect,onAddClient}){
+function TrainerRoster({clients,onSelect,onAddClient,onDeleteClient}){
+  const [confirmDelete,setConfirmDelete]=useState(null);
   return h("div",{style:{padding:16}},
-    h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}},h("div",{style:{fontWeight:"bold",color:C.navy,fontSize:16}},"Client Roster"),h(Btn,{onClick:onAddClient,color:C.teal,small:true},"+ Add Client")),
+    confirmDelete&&h("div",{style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:20}},
+      h("div",{style:{background:C.white,borderRadius:14,padding:28,maxWidth:340,width:"100%",textAlign:"center"}},
+        h("div",{style:{fontSize:22,marginBottom:12}},"⚠️"),
+        h("div",{style:{fontWeight:"bold",color:C.navy,fontSize:16,marginBottom:8}},"Delete "+confirmDelete.name+"?"),
+        h("div",{style:{fontSize:13,color:C.gray,marginBottom:20}},"This removes them from the roster and Supabase. Their Supabase login account is not affected."),
+        h("div",{style:{display:"flex",gap:10}},
+          h(Btn,{onClick:()=>setConfirmDelete(null),color:C.grayLight,fg:C.navy,full:true},"Cancel"),
+          h(Btn,{onClick:()=>{onDeleteClient(confirmDelete);setConfirmDelete(null);},color:C.red,full:true},"Yes, Delete")
+        )
+      )
+    ),
+    h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}},
+      h("div",{style:{fontWeight:"bold",color:C.navy,fontSize:16}},"Client Roster"),
+      h(Btn,{onClick:onAddClient,color:C.teal,small:true},"+ Add Client")
+    ),
     clients.length===0&&h("div",{style:{textAlign:"center",color:C.gray,padding:40,fontStyle:"italic"}},"No clients yet. Add your first client above."),
-    clients.map(c=>{const hasA=LS.get(`tbf_assess_${c.id}`,null)!==null;return h("div",{key:c.id,onClick:()=>onSelect(c),style:{background:C.white,borderRadius:10,boxShadow:"0 1px 6px rgba(0,0,0,0.07)",padding:"14px 16px",marginBottom:10,cursor:"pointer",borderLeft:`4px solid ${C.teal}`,display:"flex",justifyContent:"space-between",alignItems:"center"}},h("div",null,h("div",{style:{fontWeight:"bold",color:C.navy,fontSize:15}},c.name),h("div",{style:{fontSize:11,color:C.gray,marginTop:2}},c.focus),h("div",{style:{marginTop:6,display:"flex",flexWrap:"wrap",gap:4}},h(Pill,{label:`Phase ${c.phase}`,color:C.teal}),hasA?h(Pill,{label:"✓ Assessment",color:C.green}):h(Pill,{label:"No Assessment",color:C.amber}),c.restrictions?.slice(0,1).map((r,i)=>h(Pill,{key:i,label:r,color:C.red})))),h("span",{style:{color:C.teal,fontSize:24}},"›"));})
+    clients.map(c=>{
+      const hasA=LS.get(`tbf_assess_${c.id}`,null)!==null;
+      return h("div",{key:c.id,style:{background:C.white,borderRadius:10,boxShadow:"0 1px 6px rgba(0,0,0,0.07)",padding:"14px 16px",marginBottom:10,borderLeft:`4px solid ${C.teal}`,display:"flex",justifyContent:"space-between",alignItems:"center"}},
+        h("div",{onClick:()=>onSelect(c),style:{flex:1,cursor:"pointer"}},
+          h("div",{style:{fontWeight:"bold",color:C.navy,fontSize:15}},c.name),
+          h("div",{style:{fontSize:11,color:C.gray,marginTop:2}},c.email||(c.focus||"")),
+          h("div",{style:{marginTop:6,display:"flex",flexWrap:"wrap",gap:4}},
+            h(Pill,{label:`Phase ${c.phase}`,color:C.teal}),
+            hasA?h(Pill,{label:"✓ Assessment",color:C.green}):h(Pill,{label:"No Assessment",color:C.amber}),
+            c.restrictions?.slice(0,1).map((r,i)=>h(Pill,{key:i,label:r,color:C.red}))
+          )
+        ),
+        h("div",{style:{display:"flex",gap:8,alignItems:"center",marginLeft:10}},
+          h("button",{onClick:()=>onSelect(c),style:{background:"none",border:"none",color:C.teal,fontSize:24,cursor:"pointer",lineHeight:1}},"›"),
+          h("button",{onClick:e=>{e.stopPropagation();setConfirmDelete(c);},style:{background:"none",border:"none",color:C.red,fontSize:18,cursor:"pointer",lineHeight:1,padding:"4px"}},"✕")
+        )
+      );
+    })
   );
 }
+
 
 function Register({onRegister,onBack}){
   const [form,setForm]=useState({name:"",email:"",password:"",confirm:"",goal:"posture"});
@@ -1635,8 +1668,30 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
   const [viewing,setViewing]=useState(null);
   const [showAdd,setShowAdd]=useState(false);
   const [clients,setClients]=useState(()=>LS.get("tbf_clients",INIT));
-  const handleLogin=u=>{setUser(u);setScreen("app");};
-  const handleLogout=()=>{setUser(null);setViewing(null);LS.del("tbf_session");setScreen("login");if(window.__tbf_signout)window.__tbf_signout();};
+  const [clientsLoaded,setClientsLoaded]=useState(false);
+
+  // Load clients from Supabase on mount (trainer only)
+  useEffect(()=>{
+    if(!supabase||!autoTrainer) return;
+    supabase.from("tbf_clients").select("*").then(({data,error})=>{
+      if(error){console.warn("Load clients:",error.message);return;}
+      if(!data||data.length===0){setClientsLoaded(true);return;}
+      const mapped=data.map(r=>({
+        id:r.email.toLowerCase().replace(/[^a-z0-9]/g,"_"),
+        name:r.name,email:r.email,role:"client",
+        phase:r.phase||1,focus:r.focus||"",
+        restrictions:typeof r.restrictions==="string"?JSON.parse(r.restrictions||"[]"):r.restrictions||[],
+        goal:r.goal_template||"posture",
+        invitedAt:r.invited_at,
+        days:r.days?JSON.parse(r.days):TEMPLATES[r.goal_template||"posture"]?.days||[],
+        schedule:[],nutrition:null,password:"",supabase_id:r.id
+      }));
+      setClients(mapped);
+      LS.set("tbf_clients",mapped);
+      setClientsLoaded(true);
+    });
+  },[autoTrainer]);
+
   const handleAddClient=async c=>{
     const u=[...clients,c];setClients(u);LS.set("tbf_clients",u);setShowAdd(false);
     if(supabase){
@@ -1645,9 +1700,20 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
           email:c.email,name:c.name,role:"client",phase:c.phase,
           focus:c.focus,restrictions:JSON.stringify(c.restrictions||[]),
           goal_template:c.goal||"posture",invited_at:c.invitedAt,
+          days:JSON.stringify(c.days||[]),
           trainer_id:window.__tbf_user?.id||null
         },{onConflict:"email"});
       }catch(e){console.warn("Supabase client save:",e.message);}
+    }
+  };
+  const handleDeleteClient=async c=>{
+    const updated=clients.filter(x=>x.id!==c.id);
+    setClients(updated);LS.set("tbf_clients",updated);
+    if(viewing?.id===c.id) setViewing(null);
+    if(supabase){
+      try{
+        await supabase.from("tbf_clients").delete().eq("email",c.email);
+      }catch(e){console.warn("Supabase client delete:",e.message);}
     }
   };
   const handleClientUpdate=updated=>{const list=clients.map(c=>c.id===updated.id?updated:c);setClients(list);LS.set("tbf_clients",list);if(viewing?.id===updated.id) setViewing(updated);};
@@ -1669,7 +1735,7 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
         )
       ),
       showAdd&&h(AddClientForm,{onAdd:handleAddClient,onClose:()=>setShowAdd(false)}),
-      !viewing&&h(TrainerRoster,{clients:clients.filter(c=>c.role==="client"),onSelect:c=>setViewing(c),onAddClient:()=>setShowAdd(true)}),
+      !viewing&&h(TrainerRoster,{clients:clients.filter(c=>c.role==="client"),onSelect:c=>setViewing(c),onAddClient:()=>setShowAdd(true),onDeleteClient:handleDeleteClient}),
       viewing&&h(ClientView,{client:viewing,isTrainer:true,onClientUpdate:handleClientUpdate})
     );
   }
