@@ -1662,6 +1662,30 @@ function Login({onLogin,onRegister}){
   );
 }
 
+
+class ClientErrorBoundary extends React.Component {
+  constructor(props){super(props);this.state={hasError:false,error:null};}
+  static getDerivedStateFromError(error){return {hasError:true,error};}
+  componentDidCatch(error,info){console.error("ClientView crash:",error,info);}
+  render(){
+    if(this.state.hasError){
+      return h("div",{style:{minHeight:"100vh",background:C.cream,display:"flex",alignItems:"center",justifyContent:"center",padding:24}},
+        h("div",{style:{background:C.white,borderRadius:14,padding:28,maxWidth:360,width:"100%",textAlign:"center",boxShadow:"0 4px 20px rgba(0,0,0,0.1)"}},
+          h("div",{style:{fontSize:32,marginBottom:12}},"🏋️"),
+          h("div",{style:{fontWeight:"bold",color:C.navy,fontSize:16,marginBottom:8}},"Welcome, "+(this.props.user?.name||"Client")+"!"),
+          h("div",{style:{fontSize:13,color:C.gray,marginBottom:20,lineHeight:1.6}},"Your trainer is setting up your program. Check back after your first session."),
+          h("div",{style:{fontSize:12,color:C.red,background:"#fff0ee",borderRadius:8,padding:"10px 14px",marginBottom:16,textAlign:"left",wordBreak:"break-word"}},
+            "Debug: "+(this.state.error?.message||"Unknown error")
+          ),
+          h("button",{onClick:()=>window.location.reload(),style:{background:C.teal,color:C.white,border:"none",borderRadius:8,padding:"10px 20px",cursor:"pointer",fontFamily:"Georgia,serif",fontWeight:"bold"}},"Reload App")
+        )
+      );
+    }
+    return this.props.children;
+  }
+}
+
+
 function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
   const [user,setUser]=useState(()=>{const s=LS.get("tbf_session");if(!s) return null;if(s.role==="trainer") return TRAINER_U;const clients=LS.get("tbf_clients",INIT);return clients.find(c=>c.id===s.id)||null;});
   const [screen,setScreen]=useState(()=>LS.get("tbf_session")?"app":"login");
@@ -1807,22 +1831,24 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
     showAdd&&h(AddClientForm,{onAdd:handleAddClient,onClose:()=>setShowAdd(false)}),
     effectiveIsTrainer&&!viewing&&h(TrainerRoster,{clients:clients.filter(c=>c.role==="client"),onSelect:c=>setViewing(c),onAddClient:()=>setShowAdd(true)}),
     effectiveIsTrainer&&viewing&&h(ClientView,{client:viewing,isTrainer:true,onClientUpdate:handleClientUpdate}),
-    !effectiveIsTrainer&&h(ClientView,{
-      client:{
-        id:activeClient?.id||"client",
-        name:activeClient?.name||"Client",
-        email:activeClient?.email||"",
-        role:"client",
-        phase:activeClient?.phase||1,
-        focus:activeClient?.focus||"Your trainer is building your program.",
-        restrictions:activeClient?.restrictions||[],
-        days:Array.isArray(activeClient?.days)?activeClient.days:[],
-        schedule:activeClient?.schedule||[],
-        nutrition:activeClient?.nutrition||null
-      },
-      isTrainer:false,
-      onClientUpdate:handleClientUpdate
-    })
+    !effectiveIsTrainer&&h(ClientErrorBoundary,{user:effectiveUser},
+      h(ClientView,{
+        client:{
+          id:activeClient?.id||"client",
+          name:activeClient?.name||"Client",
+          email:activeClient?.email||"",
+          role:"client",
+          phase:activeClient?.phase||1,
+          focus:activeClient?.focus||"Your trainer is building your program.",
+          restrictions:Array.isArray(activeClient?.restrictions)?activeClient.restrictions:[],
+          days:Array.isArray(activeClient?.days)?activeClient.days:[],
+          schedule:Array.isArray(activeClient?.schedule)?activeClient.schedule:[],
+          nutrition:activeClient?.nutrition||null
+        },
+        isTrainer:false,
+        onClientUpdate:handleClientUpdate
+      })
+    )
   );
 }
 
