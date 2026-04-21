@@ -29,6 +29,43 @@ const CUES={"Glute Bridge":"Lie on your back, knees bent, feet flat. Before lift
 
 const PROG={"Glute Bridge":["Single Leg Glute Bridge","Band Glute Bridge","Dumbbell Hip Thrust","Barbell Glute Bridge","Barbell Hip Thrust"],"Clamshell":["Clamshell with Band","Mini Band Isometric Clamshell","Side Lying Leg Ext"],"Lateral Raise — Both Arms":["Lateral Raise — 5 lb DB","Dumbbell Lateral Raise","Cable Lateral Raise","Lateral Raise Machine"],"Wall Angels":["Single Arm Wall Angel","Wall Angels with Band"],"Prone Y Raise":["Prone Y Raise — Light DB","Lower Trap Lv2","Lower Trap Lv3","TRX Y Deltoid Fly"],"Sidelying External Rotation — Bilateral":["Cable Standing External Shoulder Rotation","Band Standing External Shoulder Rotation"],"Face Pull — Cable or Band":["Cable Face Pull","Cable Kneeling Face Pull","Band Face Pull to Y"],"Serratus Anterior — Wall Push-Up Plus":["Serratus Plank Level Two","Cable Seated Scapular Protraction"],"Seated Cable Row — Neutral Grip":["Dumbbell Single Arm Bent Over Row","Barbell Bent Over Row","Scapular Retraction Inverted Row"],"Lat Pulldown":["Neutral Grip Lat Pulldown","Machine Assisted Pull Up","Chin Up"],"Dead Bug":["Deadbug Lv1","Deadbug Lv2","Deadbug Lv3"],"TVA Draw-In — Supine":["TVA Draw-In — Seated","TVA Draw-In — Standing","Pallof Press — Band"],"Chin Tucks":["Cervical Neck Retractions Lv2","Neck Retractions with Swiss Ball"],"Seated Scapular Retraction — Lower Trap":["Lower Trap Lv1","Lower Trap Lv2","Lower Trap Lv3","Prone Y Raise"],"Kneeling Hip Flexor Stretch":["Thomas Stretch","90/90 Hip External Rotation Stretch","Couch Stretch"],"Hamstring Bridge — Heel Drive":["Exercise Ball Hamstring Curl","Prone Lying Hamstring Curl Machine"],"Sit-to-Stand":["Sit-to-Stand — One Hand","Sit-to-Stand — No Hands","Body Weight Squat"],"Pallof Press — Band":["Cable Half Kneeling Pallof Press","Cable Split Stance Pallof Press"],"Forearm Plank":["High Plank","Plank with Leg Lift","Copenhagen Plank"],"Bird Dog":["Bird-Dog Off Bench","Dead Bug"],"Dumbbell Bench Press":["Barbell Bench Press","Dumbbell Incline Bench Press"],"Push-Up":["Push-Up to Side Plank","Close Grip Push Up","Decline Push Up"]};
 
+
+const EX_EXTENDED2 = [
+  // LOWER - More variations
+  ...["Hack Squat Machine","V-Squat Machine","Leg Press — 45 Degree","Leg Press — Horizontal","Leg Press — Single Leg","Leg Extension — Unilateral","Leg Curl — Prone","Leg Curl — Seated","Leg Curl — Standing","Nordic Curl Eccentric","Glute Ham Developer","Reverse Hyper Machine","Hip Abduction Machine — Lying","Hip Extension Machine","Adductor Machine","Abductor Machine","Cable Hip Flexion","Cable Hip Extension","Cable Hip Abduction","Cable Hip Adduction","Banded Clamshell","Banded Donkey Kick","Banded Fire Hydrant","Banded Squat","Banded Romanian Deadlift","Mini Band Walk — Forward","Mini Band Walk — Backward","Lateral Band Walk — Low","Lateral Band Walk — High","X-Band Walk","Monster Walk — Diagonal","Resistance Band Glute Bridge","Resistance Band Hip Thrust","Resistance Band Kickback","Resistance Band Side Step","Resistance Band Squat to Row"].map(n=>({name:n,cat:"Lower"})),
+  ...["Bulgarian Split Squat — Front Foot Elevated","Bulgarian Split Squat — Deficit","Dumbbell Step Up — High Box","Dumbbell Step Up — Lateral","Barbell Step Up","Barbell Lateral Lunge","Barbell Reverse Lunge","Barbell Curtsy Lunge","Barbell Walking Lunge","Smith Machine Lunge","Smith Machine Split Squat","Smith Machine Bulgarian Split Squat","Goblet Squat — Pulse","Goblet Squat — Pause","Goblet Squat — 1.5 Rep","Box Squat — Pause","Tempo Romanian Deadlift","Paused Romanian Deadlift","3-Second Eccentric Squat","3-Second Eccentric RDL","1.5 Rep Romanian Deadlift","Single Leg Press","Leg Press — Narrow Stance","Leg Press — Wide Stance","Leg Press — High Foot","Leg Press — Low Foot","Leg Press — Single Leg Staggered","Reverse Nordic Curl","Tibialis Raise — Loaded","Calf Raise — Single Leg Eccentric"].map(n=>({name:n,cat:"Lower"})),
+
+  // UPPER PULL - More
+  ...["Chest Supported T-Bar Row","Smith Machine Bent Over Row","Cable Face Pull — Rope High","Cable Face Pull — Rope Mid","Cable Rear Delt Row","Cable Reverse Fly","Cable External Rotation — Low","Cable External Rotation — High","Cable Internal Rotation","Cable Shoulder ER — 90/90","Band Pull Apart — Overhand","Band Pull Apart — Underhand","Band Pull Apart — Overhead","Band No Money Drill","Band W Raise","Band T Raise","Band Y Raise","Band I Raise","TRX Row — Supinated","TRX Row — Pronated","TRX Row — Neutral","TRX Y","TRX T","TRX W","TRX Bicep Curl","TRX Tricep Extension","Ring Row — Supinated","Ring Row — Pronated","Gymnastics Ring Pull-Up","Gymnastics Ring Chin-Up","Rope Climb — Legless","Rope Climb — With Legs","Towel Row","Fat Grip Row","Axle Bar Row"].map(n=>({name:n,cat:"Upper Pull"})),
+  ...["Incline Curl — Unilateral","Prone Incline Curl — Bilateral","High Cable Curl — Bilateral","High Cable Curl — Unilateral","Low Cable Curl — Single Arm","Crossbody Cable Curl","Cable Drag Curl","Banded Curl — Supinating","Banded Hammer Curl","Machine Bicep Curl — Bilateral","Machine Bicep Curl — Unilateral","Reverse Barbell Curl","Reverse EZ Bar Curl","Reverse Cable Curl — Bilateral","Reverse Dumbbell Curl","Wrist Roller","Plate Curl","Towel Curl","Finger Curl","Barbell Hold — Timed","Pinch Grip — Plate","Hub Lift","Thick Bar Deadlift","Hex Dumbbell Hold","Bottle Pinch Grip"].map(n=>({name:n,cat:"Upper Pull"})),
+
+  // UPPER PUSH - More  
+  ...["Incline Barbell Press — Narrow","Incline Barbell Press — Wide","Incline Dumbbell Press — Neutral Grip","Incline Cable Fly — Low","Incline Cable Fly — Mid","Decline Dumbbell Fly","Decline Cable Fly","Decline Smith Machine Press","Dumbbell Pullover — Across Bench","Cable Pullover — Single Arm","Pec Dec — Narrow","Pec Dec — Wide","Machine Press — Unilateral","Machine Fly — Unilateral","Smith Machine Incline Press","Smith Machine Decline Press","Floor Fly — Dumbbell","Squeeze Press — Incline","Hip Thrust Press","Landmine Chest Press — Kneeling","Half-Kneeling Landmine Press","Bottoms Up Kettlebell Press — Bilateral","Kettlebell Press — Single Arm","Kettlebell Press — Alternating","Z Press — Dumbbell","Z Press — Kettlebell"].map(n=>({name:n,cat:"Upper Push"})),
+  ...["Lateral Raise — Bent Arm","Lateral Raise — Cable — Behind","Front Raise — Alternating","Front Raise — Supinating","Front Raise — Pronating","Dumbbell Scarecrow","Cable Scarecrow","Dumbbell Rear Delt — Seated","Dumbbell Rear Delt — Prone","Cable Rear Delt — Bilateral","Chest Press to Fly — Cable","Low-to-High Fly — Cable","High-to-Low Fly — Cable","Single Arm Overhead Press — Seated","Single Arm Overhead Press — Standing","Single Arm Overhead Press — Half-Kneeling","Dumbbell Arnold Press — Seated","Dumbbell Arnold Press — Standing","Dumbbell Military Press","Barbell Strict Press","Barbell Push Press","Dumbbell Push Press","Kettlebell Push Press","Handstand Push-Up — Wall","Handstand Push-Up — Freestanding"].map(n=>({name:n,cat:"Upper Push"})),
+  ...["Overhead Tricep Extension — Single Arm Cable","Overhead Tricep Extension — Double Rope","Overhead Tricep Extension — Band","Cable Pushdown — Straight Bar","Cable Pushdown — Neutral Bar","Cable Pushdown — D-Handle","Skull Crusher — Incline","Skull Crusher — Decline","Skull Crusher — Smith Machine","JM Press — Dumbbell","Tricep Dip — Rings Weighted","Tricep Kickback — Incline","Tricep Kickback — Cable — Both Arms","Tricep Extension — Single Arm Machine","Close Grip Push-Up — Elevated Feet","Diamond Push-Up — Elevated Feet","Bench Dip — Weighted","Tricep Destroyer Set","21s Tricep","Tate Press — Incline","Rolling DB Extension","Band Overhead Tricep","Band Pressdown","Rope Pushdown Supinated","Underhand Pushdown"].map(n=>({name:n,cat:"Upper Push"})),
+
+  // CORE - More
+  ...["Weighted Hollow Hold","Weighted L-Sit","Tuck Planche Hold","Straddle Planche Hold","Front Lever Hold","Back Lever Hold","Human Flag Hold","Dragon Flag — Negative","Ab Wheel — Single Arm","Ab Wheel — Feet Elevated","GHD Sit-Up — Weighted","Decline Sit-Up — Weighted","Decline Sit-Up — Twist","Roman Chair Sit-Up","Roman Chair Side Bend","Hanging Leg Raise — Straight","Hanging Leg Raise — Bent","Hanging Knee Raise","Hanging Pike","Toes to Bar","Knees to Elbows","Windshield Wiper — Lying","V-Up — Weighted","Hollow Rock — Weighted","Superman — Weighted","Back Extension — GHD","Back Extension — Hyperextension","Reverse Hyperextension — Hanging","45-Degree Back Extension","Seated Good Morning","Band Pull-Through — Squat","McGill Big 3 — Bird Dog","McGill Big 3 — Curl-Up","McGill Big 3 — Side Plank"].map(n=>({name:n,cat:"Core"})),
+  ...["Anti-Rotation Press — Band","Kneeling Anti-Rotation Press","Half-Kneeling Anti-Rotation Press","Tall Kneeling Cable Chop","Tall Kneeling Cable Lift","Cable Rotation — Low","Cable Rotation — Mid","Cable Rotation — High","Medicine Ball Chest Pass","Medicine Ball Overhead Throw","Medicine Ball Scoop Toss","Medicine Ball Soccer Throw","Medicine Ball Hip Toss","Rotational Medicine Ball Slam","Medicine Ball Wall Ball — Rotational","Landmine Twist — Bilateral","Landmine Twist — Unilateral","Landmine Rainbow","Sandbag Rotation","Sandbag Slam","Slam Ball Rotational Slam","Banded Pallof Press — Overhead","Banded Pallof Press — Row","Half-Kneeling Pallof Press — Overhead","Cable Pallof Press — Kneeling Rotation"].map(n=>({name:n,cat:"Core"})),
+
+  // ACTIVATION - More
+  ...["Supine Dead Bug — Arm Only","Supine Dead Bug — Leg Only","Supine Dead Bug — Contralateral","Supine Dead Bug — Band","Quadruped Bird Dog — Band","Quadruped Bird Dog — Weight","Side Lying Clam — Band Light","Side Lying Clam — Band Heavy","Side Lying Clam — 3-Second Hold","Side Lying Hip Abduction — Band","Side Lying Hip ER — Band","Side Lying Hip IR — Band","Prone Hip ER — Band","Prone Hip Abduction — Band","Prone Cobra","Prone Cobra — Hands Behind Head","Prone Y — Light Dumbbell","Prone T — Light Dumbbell","Prone W — Light Dumbbell","Prone I — Light Dumbbell","Prone IYT — Band","Supine Hip Flexor Activation","90/90 Hip Switch","90/90 Internal Rotation","90/90 External Rotation","Hip CARs — Supine","Shoulder CARs — Wall Supported","Thoracic Rotation — Quadruped","Cat-Cow — Segmental","Pelvic Tilt — Supine","Pelvic Tilt — Quadruped","Rib Flare Correction","Diaphragmatic Breathing","Crocodile Breathing","Box Breathing"].map(n=>({name:n,cat:"Activation"})),
+  ...["Arch Lift — Foot Intrinsics","Toe Spread — Foot Intrinsics","Towel Scrunch","Short Foot Exercise","Single Leg Balance — Eyes Closed","Single Leg Balance — Unstable Surface","Tandem Stance Balance","BOSU Balance — Bilateral","BOSU Balance — Single Leg","Balance Board — Bilateral","Balance Board — Single Leg","Rocker Board Balance","Stability Disc Balance","Proprioceptive Taping Drill","Y-Balance Test — Anterior","Y-Balance Test — Posterolateral","Y-Balance Test — Posteromedial","Star Excursion — Anterior","Star Excursion — Medial","Star Excursion — Posterior","Gait Training — Slow","Gait Training — Side Step","Gait Training — Cross Step","Stork Stand","Clock Balance Drill"].map(n=>({name:n,cat:"Activation"})),
+
+  // MOBILITY - More
+  ...["PNF Hamstring Stretch — Contract-Relax","PNF Hip Flexor Stretch","PNF Pec Stretch","PNF Shoulder IR","PNF Hip ER","FRC Hip CARs","FRC Shoulder CARs","FRC Thoracic CARs","FRC Ankle CARs","FRC Wrist CARs","FRC Neck CARs","Loaded Progressive Stretching — Hamstring","Loaded Progressive Stretching — Hip Flexor","Loaded Progressive Stretching — Adductor","Loaded Progressive Stretching — Shoulder","Loaded Progressive Stretching — Thoracic","Isometric Neck Flexion Hold","Isometric Neck Extension Hold","Isometric Neck Lateral Flexion Hold","Isometric Hip Flexor Hold","Isometric Hamstring Hold","Isometric Pec Hold","Isometric Glute Hold","Isometric Adductor Hold","Isometric Abductor Hold"].map(n=>({name:n,cat:"Mobility"})),
+  ...["Doorway Stretch — High","Doorway Stretch — Low","Corner Chest Stretch","Wall Slide — Thoracic","Wall Slide — Shoulder","Sleeper Stretch — Mild","Sleeper Stretch — Aggressive","Cross Body Stretch — Standing","Cross Body Stretch — Supine","Supine Thoracic Extension over Roller","Supine Thoracic Rotation","Seated Thoracic Rotation","Standing Thoracic Rotation","Cat-Cow — Slow","Cat-Cow — Rhythmic","Child's Pose — Arms Extended","Child's Pose — Arms to Side","Child's Pose — Thread the Needle","Prayer Stretch","Prayer Stretch — Bilateral","Puppy Pose","Lizard Pose","Lizard Pose with Rotation","Half Split","Full Split Attempt","Standing Half Split"].map(n=>({name:n,cat:"Mobility"})),
+
+  // INTEGRATION - More
+  ...["Hang Clean and Jerk","Barbell Complex — 5 Movement","Barbell Complex — 6 Movement","Dumbbell Complex — Romanian Style","Dumbbell Complex — Squat Focus","Kettlebell Complex — Swing Based","Kettlebell Complex — Press Based","Sandbag Complex","Sandbag Carry to Squat","Atlas Stone to Platform","Log Clean and Press","Axle Bar Complex","Medicine Ball Complex — Ground Based","Medicine Ball Complex — Wall Based","Resistance Band Complex","Bodyweight Flow — Lower Focus","Bodyweight Flow — Upper Focus","Bodyweight Flow — Full Body","Animal Flow — Crab Reach","Animal Flow — Ape","Animal Flow — Beast","Animal Flow — Scorpion Reach","Animal Flow — Traveling Beast","Parkour — Precision Jump","Parkour — Rail Balance"].map(n=>({name:n,cat:"Integration"})),
+  ...["Loaded Carry — Bilateral Farmer","Loaded Carry — Offset Farmer","Loaded Carry — Overhead Bilateral","Loaded Carry — Overhead Unilateral","Loaded Carry — Waiter Bilateral","Loaded Carry — Waiter Unilateral","Loaded Carry — Zercher","Loaded Carry — Goblet","Loaded Carry — Cross Body","Loaded Carry — Sandbag Bear Hug","Loaded Carry — Suitcase Bilateral","Loaded Carry — Yoke","Loaded Carry — Belt Squat Walk","Sled Pull — Overhead Bilateral","Sled Pull — Overhead Unilateral","Sled Row — Standing","Sled Row — Seated","Sled Push — Athletic Stance","Sled Push — Sprint Stance","Prowler Push — High Handles","Prowler Push — Low Handles","Prowler Sprint","Assault Bike Sprint","Ski Erg Sprint","Row Erg Sprint"].map(n=>({name:n,cat:"Integration"})),
+
+  // CARDIO - More
+  ...["Sprint — Flat Ground","Sprint — Hill","Sprint — Resisted Band","Sprint — Weighted Vest","Sprint — Parachute","Interval Run — 400m","Interval Run — 800m","Interval Run — Mile Repeats","Tempo Run","Long Slow Distance Run","Fartlek Run","Hill Run — Uphill","Hill Run — Downhill","Trail Run","Sand Run","Stadium Stairs","Bleacher Run","Cone Sprint — 5 Cones","Cone Sprint — Star Pattern","Ladder Run — Forward","Ladder Run — Backward","Ladder Run — Lateral Shuffle","Reactive Sprint — Visual Cue","Reactive Sprint — Auditory Cue","Reactive Agility Drill"].map(n=>({name:n,cat:"Cardio"})),
+  ...["HIIT Circuit — Upper Lower","HIIT Circuit — Push Pull","HIIT Circuit — Full Body","AMRAP Circuit — 5 Movements","AMRAP Circuit — 8 Movements","Tabata — Squat","Tabata — Push-Up","Tabata — Burpee","Tabata — Row","Tabata — Air Bike","EMOM — Squat Focus","EMOM — Pull Focus","EMOM — Push Focus","EMOM — Mixed","For Time — Benchmark","Bear Crawl — Forward","Bear Crawl — Backward","Bear Crawl — Lateral","Crab Walk — Forward","Crab Walk — Lateral","Inchworm — Forward","Inchworm — with Push-Up","Lunge Walk — Overhead Reach","Duck Walk","Broad Jump — Continuous","Frog Jump","Lateral Bound — Continuous","Single Leg Hop — Continuous","Box Step — Continuous","Step Touch — Cardio","Jumping Jack — Weighted Vest","Jumping Jack — Alternating","Star Jump","Tuck Jump — Continuous","Split Jump — Continuous"].map(n=>({name:n,cat:"Cardio"})),
+];
+const ALL_EX_FULL2=[...ALL_EX_FULL,...EX_EXTENDED2];
+
 // EXERCISE_DB — full structured exercise database with cues, video, progressions
 const EXERCISE_DB=[
   // ── LOWER BODY ─────────────────────────────────────────────────────────
@@ -429,7 +466,65 @@ const ALL_EX=[...["Adductor Release","Lat Release","Levator","Outside Calf Relea
 ...["Arm Circles Forward & Backward","Anterior Shoulder & Chest Stretch","Wrist Extension","Anterior Adductor Stretch","Cat Stretch","Outside Calf Stretch","Shoulder Stretch","Exercise Ball Chest Stretch","Standing Biceps Stretch","Leg-Up Hamstring Stretch","Standing Hamstring and Calf Stretch","Walking High Knees"].map(n=>({name:n,cat:"Mobility"})),
 ...["Post Adductor Release","Posterior Delt Release","Outside Calf Release","Outside Quad Release","Foam Roll Spinal Erectors"].map(n=>({name:n,cat:"Release"})),
 ...["Ice Skater","Burpee"].map(n=>({name:n,cat:"Cardio"}))
+
 ];
+
+// ── Extended Exercise Library ─────────────────────────────────────────────
+const EX_EXTENDED = [
+  // LOWER BODY - Squats
+  ...["Pause Squat","Box Squat","Zercher Squat","Safety Bar Squat","Belt Squat","Overhead Squat","Anderson Squat","Hatfield Squat","Spanish Squat","Pin Squat","Tempo Squat 3-0-3","1.5 Rep Squat","Dead Stop Squat","Heels Elevated Back Squat","Wide Stance Squat","Narrow Stance Squat","Sumo Squat","Sissy Squat","Smith Machine Squat","Pendulum Squat","TRX Squat","Landmine Squat","Sandbag Squat","Trap Bar Squat","Bulgarian Split Squat","Rear Foot Elevated Split Squat","Weighted Pistol Squat","Shrimp Squat","Poliquin Step Up","Peterson Step Up","Box Step Up","Lateral Step Up","Cross Behind Lunge","Reverse Lunge","Walking Lunge with Rotation","Deficit Reverse Lunge","Leaning Lunge","Lateral Lunge with Knee Drive","Curtsy Lunge","Skater Squat"].map(n=>({name:n,cat:"Lower"})),
+
+  // LOWER BODY - Hip Hinge
+  ...["Snatch Grip Deadlift","Sumo Deadlift","Deficit Deadlift","Rack Pull","Block Pull","Pause Deadlift","Touch and Go Deadlift","Romanian Deadlift to Shrug","Stiff Leg Deadlift","Good Morning","Banded Good Morning","Safety Bar Good Morning","Cable Pull Through","Kettlebell Swing","Single Arm Kettlebell Swing","Kettlebell Sumo Deadlift","Kettlebell RDL","Single Leg Kettlebell Deadlift","B-Stance Deadlift","B-Stance RDL","Wide Stance RDL","Suitcase Deadlift","Trap Bar RDL","Landmine RDL","Snatch Grip RDL"].map(n=>({name:n,cat:"Lower"})),
+
+  // LOWER BODY - Glutes
+  ...["Cable Kickback","Quadruped Hip Extension","Donkey Kick","Fire Hydrant","Side Lying Hip Abduction","Banded Side Lying Hip Abduction","Monster Walk","Lateral Band Walk","Forward Band Walk","Diagonal Band Walk","Banded Hip Thrust","Single Leg Hip Thrust — Bench","Frog Pump","Banded Frog Pump","Hip Abduction Machine Standing","Cable Hip Abduction","Cable Hip Adduction","Hip Adduction Machine","Sumo Hip Thrust","American Hip Thrust","Seated Hip Abduction Machine","Banded Glute Bridge — Marching","Single Leg Glute Bridge — Foot Elevated","Reverse Hyper","Nordic Hamstring Curl","Inverse Curl","Natural Leg Curl","Sliding Leg Curl","Swiss Ball Leg Curl","Glute Ham Raise","Banded Leg Curl"].map(n=>({name:n,cat:"Lower"})),
+
+  // LOWER BODY - Quads / Calves
+  ...["Leg Extension — Single Leg","Leg Extension — Bilateral","Sissy Squat — Weighted","Terminal Knee Extension","VMO Drop Squat","Cyclist Squat","Tib Raise — Standing","Tib Raise — Seated","Ankle Circles","Heel Walk","Toe Walk","Standing Calf Raise","Donkey Calf Raise","Seated Calf Raise","Single Leg Standing Calf Raise","Leg Press Calf Raise","Smith Machine Calf Raise","Toe Press — Leg Press","Cable Calf Raise","Jump Rope — Calf Finisher","Tibialis Anterior Press"].map(n=>({name:n,cat:"Lower"})),
+
+  // UPPER PULL - Rows
+  ...["Chest Supported Row — Machine","Chest Supported Row — Dumbbell","Chest Supported Row — Barbell","Pendlay Row","Yates Row","Kroc Row","Helms Row","Meadows Row","Seal Row","T-Bar Row","T-Bar Row — Close Grip","T-Bar Row — Wide Grip","Landmine Row","Landmine Row — Single Arm","Cable Row — Wide Grip","Cable Row — Underhand","Cable Row — Single Arm High","Cable Row — Single Arm Low","Machine Row — Hammer","Machine Row — Wide","Machine Row — Narrow","Smith Machine Row","Resistance Band Row — Seated","Resistance Band Row — Standing","Inverted Row — TRX","Inverted Row — Rings","Inverted Row — Overhand","Inverted Row — Underhand","Incline Dumbbell Row","Prone Incline Row — Dumbbell","Prone Incline Row — Barbell","Dumbbell Pullover","Cable Pullover","Straight Arm Pulldown — Rope","Straight Arm Pulldown — Bar"].map(n=>({name:n,cat:"Upper Pull"})),
+
+  // UPPER PULL - Vertical Pull
+  ...["Neutral Grip Lat Pulldown","Wide Grip Lat Pulldown","Single Arm Lat Pulldown — Cable","V-Bar Lat Pulldown","Behind Neck Lat Pulldown","Assisted Pull-Up — Band","Assisted Pull-Up — Machine","Chin-Up","Neutral Grip Pull-Up","Wide Grip Pull-Up","Close Grip Pull-Up","Weighted Pull-Up","L-Sit Pull-Up","Archer Pull-Up","Ring Pull-Up","Typewriter Pull-Up","Commando Pull-Up","Mixed Grip Pull-Up","Scapular Pull-Up","Dead Hang","Active Hang","Towel Pull-Up","Fat Grip Pull-Up","Banded Pull-Apart — Overhead","High Cable Curl"].map(n=>({name:n,cat:"Upper Pull"})),
+
+  // UPPER PULL - Biceps
+  ...["Barbell Curl — Wide Grip","Barbell Curl — Close Grip","Barbell Curl — Reverse","EZ Bar Curl","EZ Bar Curl — Wide","EZ Bar Curl — Reverse","Preacher Curl — Barbell","Preacher Curl — Dumbbell","Preacher Curl — EZ Bar","Preacher Curl — Cable","Concentration Curl","Spider Curl","Incline Dumbbell Curl","Incline Dumbbell Hammer Curl","Cable Curl — Single Arm High","Cable Curl — Single Arm Low","Cable Curl — Bilateral","Cable Curl — Rope","Reverse Cable Curl","Bayesian Curl","21s Curl","Zottman Curl","Cross Body Curl","Waiter Curl","Pinwheel Curl","TRX Bicep Curl","Band Curl","Wrist Curl — Barbell","Wrist Curl — Dumbbell","Reverse Wrist Curl","Finger Extension — Band","Farmers Carry — Single Arm","Axle Bar Hold","Plate Pinch","Rice Bucket Grip Training"].map(n=>({name:n,cat:"Upper Pull"})),
+
+  // UPPER PUSH - Chest
+  ...["Barbell Incline Bench Press","Barbell Decline Bench Press","Dumbbell Incline Press","Dumbbell Decline Press","Dumbbell Fly — Flat","Dumbbell Fly — Incline","Dumbbell Fly — Decline","Cable Fly — Low to High","Cable Fly — High to Low","Cable Fly — Neutral","Machine Chest Fly","Machine Chest Press — Flat","Machine Chest Press — Incline","Smith Machine Bench Press","Smith Machine Incline Press","Push-Up — Wide","Push-Up — Diamond","Push-Up — Deficit","Push-Up — Archer","Push-Up — Ring","Push-Up — TRX","Push-Up — Plyo","Push-Up — Spiderman","Push-Up — T","Landmine Press — Single Arm","Landmine Press — Bilateral","Floor Press — Barbell","Floor Press — Kettlebell","Dumbbell Squeeze Press","Svend Press","Plate Press","Single Arm Cable Press","Cable Crossover — High","Cable Crossover — Mid","Cable Crossover — Low","Pec Deck Machine","Chest Dips — Weighted","Chest Dips — Assisted"].map(n=>({name:n,cat:"Upper Push"})),
+
+  // UPPER PUSH - Shoulders
+  ...["Dumbbell Front Raise","Barbell Front Raise","Cable Front Raise","Plate Front Raise","Cable Y Raise","Dumbbell Y Raise","Band Y Raise","Dumbbell Lateral Raise — Leaning","Machine Lateral Raise","Barbell Upright Row","Cable Upright Row","Dumbbell Upright Row","Dumbbell Rear Delt Fly","Band Rear Delt Fly","Machine Rear Delt Fly — Reverse Pec Deck","Dumbbell Cuban Press","Band Cuban Press","Cable Cuban Rotation","Handstand Push-Up","Pike Push-Up","Wall Walk","Log Press","Axle Press","Push Press","Push Jerk","Split Jerk","Bradford Press","Z Press","Seated DB Shoulder Press","Seated Barbell Shoulder Press","Smith Machine Shoulder Press","Machine Shoulder Press","Bottoms Up Kettlebell Press","Kettlebell Shoulder Press","Single Arm Landmine Press"].map(n=>({name:n,cat:"Upper Push"})),
+
+  // UPPER PUSH - Triceps
+  ...["Close Grip Bench Press","Board Press","JM Press","Tate Press","Rolling Tricep Extension","Overhead Dumbbell Extension — Single Arm","Overhead Dumbbell Extension — Bilateral","Cable Overhead Tricep Extension — Rope","Cable Overhead Tricep Extension — Bar","Cable Pushdown — V-Bar","Cable Pushdown — Single Arm","Cable Pushdown — Reverse","Tricep Dip — Rings","Tricep Dip — Weighted","Tricep Dip — Machine","Skull Crusher — Dumbbell","Skull Crusher — Barbell","Skull Crusher — Cable","Banded Skull Crusher","Incline Skull Crusher","Spider Skull Crusher","Pullover Skull Crusher","Nosebreaker","Tricep Kickback — Single Arm","Tricep Kickback — Cable","Bench Dip — Elevated Feet","Diamond Push-Up","Narrow Push-Up","Band Tricep Pushdown","Tricep Extension — Machine"].map(n=>({name:n,cat:"Upper Push"})),
+
+  // CORE - Anti-Extension
+  ...["Ab Wheel Rollout","Ab Wheel — Kneeling","Ab Wheel — Standing","Barbell Rollout","TRX Fallout","Cable Crunch — Kneeling","Cable Crunch — Standing","Weighted Crunch","Decline Crunch","Reverse Crunch","Leg Raise — Hanging","Leg Raise — Lying","Toe Touch Crunch","V-Up","Hollow Body Hold","Hollow Body Rock","Banana Roll","Dragon Flag","L-Sit Hold — Floor","L-Sit Hold — Parallel Bars","Tuck Hold","Tuck-to-Extension","Windshield Wiper","Hanging Windshield Wiper","GHD Sit-Up","Decline Sit-Up","Weighted Decline Sit-Up","Medicine Ball Crunch","Stability Ball Crunch","Swiss Ball Rollout","Plank Hip Dip","Plank Reach","Plank Row","RKC Plank","Weighted Plank","Stir the Pot — Barbell","Body Saw"].map(n=>({name:n,cat:"Core"})),
+
+  // CORE - Rotational / Obliques
+  ...["Russian Twist","Weighted Russian Twist","Cable Wood Chop — High to Low","Cable Wood Chop — Low to High","Cable Horizontal Chop","Landmine Rotation","Landmine Anti-Rotation","Half-Kneeling Chop","Half-Kneeling Lift","Suitcase Carry — Stationary","Single Arm Farmers Carry","Overhead Carry","Bottoms Up Carry","Waiter Walk","Goblet Carry","Yoke Carry","Sandbag Carry","Keg Carry","Zercher Carry","Bear Hug Carry","Marching Hip Flexor — Band","Oblique V-Up","Side Plank with Row","Side Plank with Hip Abduction","Copenhagen Plank — Short","Copenhagen Adduction","Pallof Press — Tall Kneeling","Pallof Press — Seated","Pallof Hold — Split Stance","Band Chop — Kneeling","Medicine Ball Slam","Medicine Ball Side Slam","Medicine Ball Rotational Throw","Slam Ball Overhead","Tornado Ball"].map(n=>({name:n,cat:"Core"})),
+
+  // ACTIVATION / CORRECTIVE
+  ...["Hip 90/90 Stretch","Hip 90/90 External Rotation","Hip 90/90 Internal Rotation","Hip 90/90 Transition","CARS — Hip","CARS — Shoulder","CARS — Thoracic","Prone Hip ER","Prone Hip IR","Supine Hip ER Stretch","Supine Hip IR Stretch","Pigeon Pose","Half Pigeon","Dragon Pose","Couch Stretch","Deep Squat Hold","Deep Squat with Reach","Goblet Squat Hold","Ankle Dorsiflexion Stretch","Ankle CARs","Calf Smash","Gastrocnemius Stretch","Soleus Stretch","Hamstring Floss","Sciatic Nerve Floss","Cervical CARs","Thoracic CARs","Lumbar CARs","Shoulder CARs","Wrist CARs","Finger CARs","Supination/Pronation","Radial/Ulnar Deviation","Side Lying Thoracic Rotation","Thread the Needle","Open Books","World's Greatest Stretch","Spiderman Stretch","Hip Flexor CARs","Active Straight Leg Raise"].map(n=>({name:n,cat:"Activation"})),
+
+  // MOBILITY
+  ...["Box Hip Flexor Stretch","Lunge with Reach","Lunge with Rotation","Lunge with Hip Circle","Lateral Lunge Stretch","Groin Stretch — Seated","Groin Stretch — Supine","Standing Hip CARs","Supine Figure 4","Figure 4 Hip Stretch","Sleeper Stretch","Cross Body Shoulder Stretch","Overhead Tricep Stretch","Lat Stretch — Doorway","Pec Stretch — Floor","Pec Stretch — Band","Foam Roll IT Band","Foam Roll Hip Flexor","Foam Roll Glutes","Foam Roll Upper Back","Foam Roll Thoracic","Foam Roll Calves","Foam Roll Peroneals","Foam Roll Adductors","Lacrosse Ball Glutes","Lacrosse Ball Thoracic","Lacrosse Ball Pec Minor","Lacrosse Ball Subscapularis","Lacrosse Ball Suboccipitals","Lacrosse Ball Plantar Fascia","Yoga Toe Stretch","Standing Quad Stretch","Supine Quad Stretch","Supine Hamstring Stretch","Seated Hamstring Stretch","Standing Hamstring Stretch","Half Kneeling Hip Flexor with Reach","Tall Kneeling Hip Extension","Quadruped Thoracic Rotation","Quadruped Hip CARs"].map(n=>({name:n,cat:"Mobility"})),
+
+  // RELEASE / SMR
+  ...["Foam Roll Quads","Foam Roll Hamstrings","Foam Roll IT Band","Foam Roll Hip Flexor","Foam Roll Glute Med","Foam Roll Glute Max","Foam Roll Upper Back — T-Spine","Foam Roll Lats — Side Lying","Foam Roll Thoracic Extension","Foam Roll Lower Leg — Anterior","Foam Roll Peroneals","Foam Roll Calves","Lacrosse Ball Calf","Lacrosse Ball Foot","Lacrosse Ball Hip Flexor","Lacrosse Ball Serratus","Lacrosse Ball Thoracic","Lacrosse Ball Mid-Trap","Lacrosse Ball Upper Trap","Lacrosse Ball Scalenes","Vibration Roller Quads","Vibration Roller Hamstrings","Vibration Roller IT Band","Vibration Roller Calves","Vibration Roller Upper Back","Stick Rolling Quads","Stick Rolling Calves","Trigger Point Pec Minor","Trigger Point Subscapularis","Trigger Point QL","Trigger Point TFL","Trigger Point Piriformis","Trigger Point Adductors","Trigger Point Tibialis Anterior","Trigger Point Peroneals"].map(n=>({name:n,cat:"Release"})),
+
+  // CARDIO
+  ...["Row Machine — Steady State","Row Machine — Intervals","Ski Erg — Steady State","Ski Erg — Intervals","Air Bike — Steady State","Air Bike — Intervals","Treadmill Sprint Intervals","Treadmill Incline Walk — Extended","Stair Climber","Step Mill","Versa Climber","Elliptical — Forward","Elliptical — Reverse","Swimming Laps","Pool Running","Cycling — Road","Cycling — Stationary","Cycling — Spin Class","Nordic Ski Machine","Cross Trainer","Jump Rope — Single Under","Jump Rope — Double Under","Jump Rope — Alternating Feet","Jump Rope — High Knees","Shuttle Run","Agility Ladder — In Out","Agility Ladder — Lateral","Agility Ladder — Icky Shuffle","Agility Ladder — Ali Shuffle","Cone Drill — 3 Cone","Cone Drill — 5-10-5","Cone Drill — T-Drill","Sled Push — Heavy","Sled Pull — Heavy","Sled Drag — Backward","Prowler Push","Battle Rope — Alternating","Battle Rope — Bilateral","Battle Rope — Circles","Battle Rope — Slams","Box Jump — Standard","Box Jump — Lateral","Box Jump — Depth","Broad Jump","Broad Jump — Continuous","Single Leg Hop","Lateral Bound","Reactive Bound","Vertical Jump","Squat Jump","Tuck Jump","Power Skip","High Knees — Running","Butt Kicks","A-Skip","B-Skip","C-Skip","Gallop","Carioca","Side Shuffle","Backpedal","Plyometric Push-Up","Explosive Push-Up"].map(n=>({name:n,cat:"Cardio"})),
+
+  // INTEGRATION / FUNCTIONAL
+  ...["Turkish Get-Up","Turkish Get-Up — Partial","Half Turkish Get-Up","Windmill — Kettlebell","Windmill — Dumbbell","Clean — Barbell","Clean — Dumbbell","Clean — Kettlebell","Power Clean","Hang Clean","Hang Power Clean","Push Press","Push Jerk","Split Jerk","Snatch — Barbell","Power Snatch","Hang Snatch","Overhead Squat — Snatch Grip","Thruster — Barbell","Thruster — Dumbbell","Thruster — Kettlebell","Wall Ball","Slam Ball Squat to Press","Sandbag Clean to Press","Sandbag Shouldering","Bear Complex","Man Maker","Devil's Press","Renegade Row","Renegade Row with Push-Up","Single Arm KB Complex","Kettlebell Flow","Barbell Complex","Dumbbell Complex","Medicine Ball Complex","Suitcase Squat","Waiter Squat","Single Arm OHP — Lunge","Rotational Press","Halo — Kettlebell","Around the World — Kettlebell","Figure 8 — Kettlebell","Bottoms Up Press — Carry","Lateral Bound to Stick","Jump to Pull-Up","Box Jump to Pull-Up","Squat to Row","Deadlift to Upright Row","Clean to Press","Romanian Deadlift to Row","Reverse Lunge to Press","Step Up to Press","Single Leg RDL to Row"].map(n=>({name:n,cat:"Integration"})),
+];
+
+// Merge all exercises
+const ALL_EX_FULL=[...ALL_EX,...EX_EXTENDED];
 
 // FOOD_DB — full nutrition data with macros, portions, visual guide
 const FOOD_DB=[
@@ -674,58 +769,90 @@ function ExCard({ex,cid,di,si,ei,isTrainer,onShowInfo}){
   const [checked,setChecked]=useState(()=>LS.get(exK(cid,"chk",di,si,ei),false));
   const [curName,setCurName]=useState(()=>LS.get(exK(cid,"swap",di,si,ei),ex.name));
   const [curPresc,setCurPresc]=useState(()=>LS.get(exK(cid,"presc",di,si,ei),ex.prescription));
+  const [restPeriod,setRestPeriod]=useState(()=>LS.get(exK(cid,"rest",di,si,ei),ex.rest||""));
+  const [isSuperset,setIsSuperset]=useState(()=>LS.get(exK(cid,"super",di,si,ei),false));
+  const [supersetWith,setSupersetWith]=useState(()=>LS.get(exK(cid,"superwith",di,si,ei),""));
   const [panel,setPanel]=useState(null);
   const [search,setSearch]=useState("");
   const [prescEdit,setPrescEdit]=useState(curPresc);
+  const [restEdit,setRestEdit]=useState(restPeriod);
   const [showCue,setShowCue]=useState(false);
   const progs=PROG[ex.name]||PROG[curName]||[];
-  const results=search.length>1?ALL_EX.filter(e=>e.name.toLowerCase().includes(search.toLowerCase())).slice(0,10):[];
-  const vid=VID[curName]||VID[ex.name];
-  const cue=CUES[curName]||CUES[ex.name];
-  const doCheck=()=>{const n=!checked;setChecked(n);LS.set(exK(cid,"chk",di,si,ei),n);if(n){const logs=LS.get(`tbf_comp_${cid}`,[]);logs.push({date:new Date().toISOString().slice(0,10),ex:curName});LS.set(`tbf_comp_${cid}`,logs);}};
-  const tog=p=>setPanel(panel===p?null:p);
-  return h("div",{style:{borderBottom:`1px solid ${C.grayBorder}`,padding:"11px 14px",background:checked?C.greenLight:C.white}},
-    h("div",{style:{display:"flex",gap:10,alignItems:"flex-start"}},
-      h(Chk,{checked,onClick:doCheck}),
-      h("div",{style:{flex:1}},
-        h("div",{style:{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}},
-          h("span",{style:{fontWeight:"bold",fontSize:14,color:checked?C.green:C.navy,textDecoration:checked?"line-through":"none"}},curName),
-          curName!==ex.name&&h(Pill,{label:"swapped",color:C.teal})
-        ),
-        h("div",{style:{fontSize:12,color:C.teal2,fontWeight:"bold",marginTop:2}},curPresc),
-        cue&&h("div",{style:{fontSize:11,color:C.gray,marginTop:3,fontStyle:"italic",lineHeight:1.5}},
-          showCue?cue:cue.slice(0,100)+(cue.length>100?"...":""),
-          cue.length>100&&h("span",{style:{color:C.teal,cursor:"pointer",marginLeft:4,fontWeight:"bold",fontStyle:"normal"},onClick:()=>setShowCue(!showCue)},showCue?" less":" more")
-        ),
-        !cue&&ex.cue&&h("div",{style:{fontSize:11,color:C.gray,marginTop:3,fontStyle:"italic"}},ex.cue),
-        h("div",{style:{display:"flex",gap:6,marginTop:8,flexWrap:"wrap",alignItems:"center"}},
-          h(Btn,{onClick:()=>onShowInfo&&onShowInfo(curName),color:C.navy,small:true},"ℹ Info"),
-          progs.length>0&&h(Btn,{onClick:()=>tog("prog"),color:C.teal,small:true},"↑ Progress"),
-          h(Btn,{onClick:()=>tog("swap"),color:C.navy,small:true},"⇄ Swap"),
-          vid&&h("a",{href:vid,target:"_blank",rel:"noopener noreferrer",style:{background:C.red,color:C.white,borderRadius:7,padding:"5px 12px",fontSize:11,fontWeight:"bold",textDecoration:"none"}},"▶ Video"),
-          isTrainer&&h(Btn,{onClick:()=>{setPrescEdit(curPresc);tog("presc");},color:C.amber,small:true},"✎ Rx")
-        )
+  const results=search.length>1?ALL_EX_FULL2.filter(e=>e.name.toLowerCase().includes(search.toLowerCase())).slice(0,12):[];
+  const tog=(p)=>setPanel(panel===p?null:p);
+  const checkToggle=()=>{const v=!checked;setChecked(v);LS.set(exK(cid,"chk",di,si,ei),v);};
+  const savePresc=()=>{setCurPresc(prescEdit);LS.set(exK(cid,"presc",di,si,ei),prescEdit);setPanel(null);};
+  const saveRest=()=>{setRestPeriod(restEdit);LS.set(exK(cid,"rest",di,si,ei),restEdit);setPanel(null);};
+  const doSwap=(name)=>{setCurName(name);LS.set(exK(cid,"swap",di,si,ei),name);setSearch("");setPanel(null);};
+  const doSuperset=(v)=>{setIsSuperset(v);LS.set(exK(cid,"super",di,si,ei),v);};
+  const doSupersetWith=(v)=>{setSupersetWith(v);LS.set(exK(cid,"superwith",di,si,ei),v);};
+
+  return h("div",{style:{background:C.white,border:`1px solid ${isSuperset?C.amber:C.grayBorder}`,borderRadius:10,padding:"12px 14px",marginBottom:8,
+    borderLeft:isSuperset?`4px solid ${C.amber}`:`4px solid ${checked?C.green:C.teal}`}},
+    h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8}},
+      h("div",{style:{flex:1,minWidth:0}},
+        isSuperset&&h("div",{style:{fontSize:10,color:C.amber,fontWeight:"bold",letterSpacing:1,marginBottom:3}},"SUPERSET"+(supersetWith?` w/ ${supersetWith}`:"")),
+        h("div",{style:{fontWeight:"bold",fontSize:14,color:checked?C.gray:C.navy,textDecoration:checked?"line-through":"none",marginBottom:3}},curName),
+        h("div",{style:{fontSize:12,color:C.teal2}},curPresc),
+        restPeriod&&h("div",{style:{fontSize:11,color:C.amber,marginTop:2}},"Rest: "+restPeriod)
+      ),
+      h("div",{onClick:checkToggle,style:{width:26,height:26,borderRadius:6,border:`2px solid ${checked?C.green:C.grayBorder}`,background:checked?C.green:"transparent",display:"grid",placeItems:"center",cursor:"pointer",flexShrink:0}},
+        checked&&h("span",{style:{color:C.white,fontSize:14,fontWeight:"bold"}},"✓")
       )
     ),
-    panel==="prog"&&h("div",{style:{marginTop:8,background:C.tealLight,border:`1px solid ${C.teal}33`,borderRadius:8,padding:10}},
-      h("div",{style:{fontSize:10,fontWeight:"bold",color:C.teal2,marginBottom:6}},"NEXT PROGRESSIONS"),
-      progs.map((p,i)=>h("div",{key:i,onClick:()=>{setCurName(p);LS.set(exK(cid,"swap",di,si,ei),p);setPanel(null);},style:{padding:"7px 10px",borderRadius:5,cursor:"pointer",fontSize:13,color:C.navy,background:i%2===0?C.white:C.tealLight,marginBottom:2}},`${i+1}. ${p}`))
+    h("div",{style:{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}},
+      h(Btn,{onClick:()=>onShowInfo&&onShowInfo(curName),color:C.navy,small:true},"ℹ Info"),
+      isTrainer&&h(Btn,{onClick:()=>tog("presc"),color:panel==="presc"?C.navy:C.grayLight,fg:panel==="presc"?C.white:C.navy,small:true},"✏ Rx"),
+      isTrainer&&h(Btn,{onClick:()=>tog("rest"),color:panel==="rest"?C.amber:C.grayLight,fg:panel==="rest"?C.white:C.navy,small:true},"⏱ Rest"),
+      isTrainer&&h(Btn,{onClick:()=>tog("swap"),color:panel==="swap"?C.teal:C.grayLight,fg:panel==="swap"?C.white:C.navy,small:true},"⇄ Swap"),
+      isTrainer&&h(Btn,{onClick:()=>doSuperset(!isSuperset),color:isSuperset?C.amber:C.grayLight,fg:isSuperset?C.white:C.navy,small:true},isSuperset?"✓ Superset":"+ Superset"),
+      progs.length>0&&h(Btn,{onClick:()=>tog("prog"),color:C.teal,small:true},"↑ Progress")
     ),
-    panel==="swap"&&h("div",{style:{marginTop:8,background:C.grayLight,border:`1px solid ${C.grayBorder}`,borderRadius:8,padding:10}},
-      h("div",{style:{fontSize:10,fontWeight:"bold",color:C.navy,marginBottom:6}},"SWAP — SEARCH LIBRARY"),
-      h(Inp,{value:search,onChange:setSearch,placeholder:"Type to search 500+ exercises..."}),
-      results.length>0&&h("div",{style:{maxHeight:200,overflowY:"auto",marginTop:6}},
-        results.map((e,i)=>h("div",{key:i,onClick:()=>{setCurName(e.name);LS.set(exK(cid,"swap",di,si,ei),e.name);setSearch("");setPanel(null);},style:{padding:"6px 10px",cursor:"pointer",fontSize:12,color:C.navy,background:i%2===0?C.white:C.grayLight,display:"flex",justifyContent:"space-between",alignItems:"center"}},h("span",null,e.name),h(Tag,{label:e.cat,color:C.teal})))
+    panel==="presc"&&h("div",{style:{marginTop:8,display:"flex",gap:6}},
+      h(Inp,{value:prescEdit,onChange:setPrescEdit,placeholder:"e.g. 3 x 12 | 2s hold"}),
+      h(Btn,{onClick:savePresc,color:C.teal,small:true},"Save")
+    ),
+    panel==="rest"&&h("div",{style:{marginTop:8}},
+      h("div",{style:{fontSize:11,color:C.gray,marginBottom:6}},"Set rest period between sets"),
+      h("div",{style:{display:"flex",gap:6,flexWrap:"wrap",marginBottom:6}},
+        ["30s","45s","60s","90s","2min","3min"].map(r=>h("button",{key:r,onClick:()=>{setRestEdit(r);},
+          style:{padding:"5px 10px",borderRadius:6,border:"1.5px solid",fontSize:11,cursor:"pointer",fontFamily:"Georgia,serif",
+            borderColor:restEdit===r?C.amber:C.grayBorder,background:restEdit===r?C.amberLight:"transparent",color:restEdit===r?C.navy:C.gray}},r))
       ),
-      search.length<=1&&h("div",{style:{color:C.gray,fontSize:11,padding:"4px 0"}},"Type at least 2 characters")
+      h("div",{style:{display:"flex",gap:6}},
+        h(Inp,{value:restEdit,onChange:setRestEdit,placeholder:"Custom (e.g. 2min 30s)"}),
+        h(Btn,{onClick:saveRest,color:C.amber,small:true},"Save"),
+        h(Btn,{onClick:()=>{setRestEdit("");setRestPeriod("");LS.set(exK(cid,"rest",di,si,ei),"");setPanel(null);},color:C.grayLight,fg:C.gray,small:true},"Clear")
+      )
     ),
-    panel==="presc"&&isTrainer&&h("div",{style:{marginTop:8,background:C.amberLight,border:`1px solid ${C.amber}33`,borderRadius:8,padding:10}},
-      h("div",{style:{fontSize:10,fontWeight:"bold",color:C.amber,marginBottom:6}},"EDIT PRESCRIPTION"),
-      h(Inp,{value:prescEdit,onChange:setPrescEdit,placeholder:"Sets x reps..."}),
-      h(Btn,{onClick:()=>{setCurPresc(prescEdit);LS.set(exK(cid,"presc",di,si,ei),prescEdit);setPanel(null);},color:C.amber,small:true,st:{marginTop:8}},"Save")
+    panel==="swap"&&h("div",{style:{marginTop:8}},
+      h(Inp,{value:search,onChange:setSearch,placeholder:"Search 1000+ exercises..."}),
+      results.length>0&&h("div",{style:{background:C.white,border:`1px solid ${C.grayBorder}`,borderRadius:6,marginTop:4,maxHeight:180,overflowY:"auto"}},
+        results.map((e,i)=>h("div",{key:i,onClick:()=>doSwap(e.name),style:{padding:"7px 10px",cursor:"pointer",fontSize:12,color:C.navy,borderBottom:`1px solid ${C.grayBorder}`,display:"flex",justifyContent:"space-between"}},
+          h("span",null,e.name),h(Tag,{label:e.cat,color:C.teal})
+        ))
+      )
+    ),
+    panel==="prog"&&h("div",{style:{marginTop:8}},
+      h("div",{style:{fontSize:11,color:C.gray,marginBottom:6}},"Progression options:"),
+      progs.map((p,i)=>h("div",{key:i,onClick:()=>doSwap(p),style:{padding:"7px 10px",cursor:"pointer",fontSize:12,color:C.navy,background:C.tealLight,borderRadius:6,marginBottom:4,display:"flex",justifyContent:"space-between",alignItems:"center"}},
+        h("span",null,p),h("span",{style:{color:C.teal,fontSize:10}},"Swap →")
+      ))
+    ),
+    isSuperset&&panel==="super"&&h("div",{style:{marginTop:8}},
+      h(Inp,{value:supersetWith,onChange:doSupersetWith,placeholder:"Paired with exercise name..."}),
+      h(Btn,{onClick:()=>setPanel(null),color:C.amber,small:true,st:{marginTop:6}},"Done")
+    ),
+    isSuperset&&panel!=="super"&&h("div",{style:{marginTop:6}},
+      h("div",{style:{fontSize:11,color:C.amber,marginBottom:4}},"Superset paired with:"),
+      h("div",{style:{display:"flex",gap:6}},
+        h(Inp,{value:supersetWith,onChange:doSupersetWith,placeholder:"Exercise name..."}),
+        h("div",{style:{fontSize:11,color:C.gray,alignSelf:"center"}},{/*inline*/})
+      )
     )
   );
 }
+
 
 function DayView({client,di,isTrainer}){
   const day=client.days[di];
@@ -1190,7 +1317,7 @@ function WorkoutBuilder({client,onUpdate,onClose}){
   const [search,setSearch]=useState("");
   const [tmplKey,setTmplKey]=useState("");
   const [saved,setSaved]=useState(false);
-  const results=search.length>1?ALL_EX.filter(e=>e.name.toLowerCase().includes(search.toLowerCase())).slice(0,12):[];
+  const results=search.length>1?ALL_EX_FULL2.filter(e=>e.name.toLowerCase().includes(search.toLowerCase())).slice(0,20):[];
   const SECTION_COLORS=[C.navy,C.teal,C.teal2,C.navy2,C.purple,C.amber];
 
   const addDay=()=>{
