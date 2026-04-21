@@ -64,7 +64,6 @@ const EX_EXTENDED2 = [
   ...["Sprint — Flat Ground","Sprint — Hill","Sprint — Resisted Band","Sprint — Weighted Vest","Sprint — Parachute","Interval Run — 400m","Interval Run — 800m","Interval Run — Mile Repeats","Tempo Run","Long Slow Distance Run","Fartlek Run","Hill Run — Uphill","Hill Run — Downhill","Trail Run","Sand Run","Stadium Stairs","Bleacher Run","Cone Sprint — 5 Cones","Cone Sprint — Star Pattern","Ladder Run — Forward","Ladder Run — Backward","Ladder Run — Lateral Shuffle","Reactive Sprint — Visual Cue","Reactive Sprint — Auditory Cue","Reactive Agility Drill"].map(n=>({name:n,cat:"Cardio"})),
   ...["HIIT Circuit — Upper Lower","HIIT Circuit — Push Pull","HIIT Circuit — Full Body","AMRAP Circuit — 5 Movements","AMRAP Circuit — 8 Movements","Tabata — Squat","Tabata — Push-Up","Tabata — Burpee","Tabata — Row","Tabata — Air Bike","EMOM — Squat Focus","EMOM — Pull Focus","EMOM — Push Focus","EMOM — Mixed","For Time — Benchmark","Bear Crawl — Forward","Bear Crawl — Backward","Bear Crawl — Lateral","Crab Walk — Forward","Crab Walk — Lateral","Inchworm — Forward","Inchworm — with Push-Up","Lunge Walk — Overhead Reach","Duck Walk","Broad Jump — Continuous","Frog Jump","Lateral Bound — Continuous","Single Leg Hop — Continuous","Box Step — Continuous","Step Touch — Cardio","Jumping Jack — Weighted Vest","Jumping Jack — Alternating","Star Jump","Tuck Jump — Continuous","Split Jump — Continuous"].map(n=>({name:n,cat:"Cardio"})),
 ];
-const ALL_EX_FULL2=[...ALL_EX_FULL,...EX_EXTENDED2];
 
 // EXERCISE_DB — full structured exercise database with cues, video, progressions
 const EXERCISE_DB=[
@@ -525,6 +524,7 @@ const EX_EXTENDED = [
 
 // Merge all exercises
 const ALL_EX_FULL=[...ALL_EX,...EX_EXTENDED];
+const ALL_EX_FULL2=[...ALL_EX_FULL,...EX_EXTENDED2];
 
 // FOOD_DB — full nutrition data with macros, portions, visual guide
 const FOOD_DB=[
