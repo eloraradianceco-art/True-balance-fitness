@@ -23,7 +23,111 @@ const Tag=({label,color=C.teal})=>h("span",{style:{background:color,color:C.whit
 const Chk=({checked,onClick})=>h("div",{onClick,style:{width:22,height:22,borderRadius:5,border:`2px solid ${checked?C.green:C.grayBorder}`,background:checked?C.green:C.white,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0}},checked&&h("span",{style:{color:C.white,fontSize:12,fontWeight:"bold"}},"✓"));
 const G2=({children})=>h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}},children);
 
-const VID={"Glute Bridge":"https://www.youtube.com/results?search_query=glute+bridge+form","Clamshell":"https://www.youtube.com/results?search_query=clamshell+exercise","Dead Bug":"https://www.youtube.com/results?search_query=dead+bug+exercise+core","Chin Tucks":"https://www.youtube.com/results?search_query=chin+tuck+neck+retraction","Wall Angels":"https://www.youtube.com/results?search_query=wall+angels+posture","Prone Y Raise":"https://www.youtube.com/results?search_query=prone+Y+raise+lower+trap","Face Pull — Cable or Band":"https://www.youtube.com/results?search_query=face+pull+form","Sidelying External Rotation — Bilateral":"https://www.youtube.com/results?search_query=sidelying+external+rotation","Serratus Anterior — Wall Push-Up Plus":"https://www.youtube.com/results?search_query=serratus+anterior+push+up+plus","Lat Pulldown":"https://exrx.net/WeightExercises/LatissimusDorsi/CBUnderhndPulldown","Seated Cable Row — Neutral Grip":"https://exrx.net/WeightExercises/BackGeneral/CBSeatedRow","TVA Draw-In — Supine":"https://www.youtube.com/results?search_query=TVA+draw+in+activation","Kneeling Hip Flexor Stretch":"https://www.youtube.com/results?search_query=kneeling+hip+flexor+stretch","Doorway Pec Stretch":"https://www.youtube.com/results?search_query=doorway+pec+stretch","Thoracic Extension — Foam Roller":"https://www.youtube.com/results?search_query=thoracic+extension+foam+roller","Dumbbell Bench Press":"https://exrx.net/WeightExercises/PectoralSternal/DBBenchPress","Push-Up":"https://exrx.net/WeightExercises/PectoralSternal/WtPushup","Bird Dog":"https://www.youtube.com/results?search_query=bird+dog+exercise","Forearm Plank":"https://www.youtube.com/results?search_query=forearm+plank+form","Pallof Press — Band":"https://www.youtube.com/results?search_query=pallof+press","Hamstring Bridge — Heel Drive":"https://www.youtube.com/results?search_query=hamstring+bridge+heel+drive","Sit-to-Stand":"https://www.youtube.com/results?search_query=sit+to+stand+rehab","Zone 2 — Incline Walk / Bike":"https://www.youtube.com/results?search_query=zone+2+cardio","Lateral Raise — Both Arms":"https://exrx.net/WeightExercises/DeltoidLateral/DBLateralRaise","Seated Scapular Retraction — Lower Trap":"https://www.youtube.com/results?search_query=seated+scapular+retraction","QL Release":"https://www.youtube.com/results?search_query=QL+foam+roll","TFL Release":"https://www.youtube.com/results?search_query=TFL+foam+roll","Piriformis Release":"https://www.youtube.com/results?search_query=piriformis+foam+roll","Adductor Release":"https://www.youtube.com/results?search_query=adductor+foam+roll","Lat Release":"https://www.youtube.com/results?search_query=lat+foam+roll","Pec Minor Release — Lacrosse Ball":"https://www.youtube.com/results?search_query=pec+minor+lacrosse+ball","Left QL Release":"https://www.youtube.com/results?search_query=QL+foam+roll","Standing Glute Squeeze":"https://www.youtube.com/results?search_query=standing+glute+activation","Copenhagen Plank":"https://www.youtube.com/results?search_query=copenhagen+plank"};
+const VID={
+  // Lower Body
+  "Glute Bridge":"https://www.youtube.com/results?search_query=glute+bridge+form+tutorial",
+  "Clamshell":"https://www.youtube.com/results?search_query=clamshell+exercise+form",
+  "Hip Thrust":"https://www.youtube.com/results?search_query=barbell+hip+thrust+form",
+  "Dumbbell Hip Thrust":"https://www.youtube.com/results?search_query=dumbbell+hip+thrust+form",
+  "Bodyweight Squat":"https://www.youtube.com/results?search_query=bodyweight+squat+perfect+form",
+  "Goblet Squat":"https://www.youtube.com/results?search_query=goblet+squat+form+tutorial",
+  "Barbell Squat":"https://www.youtube.com/results?search_query=barbell+back+squat+form",
+  "Bulgarian Split Squat":"https://www.youtube.com/results?search_query=bulgarian+split+squat+form",
+  "Romanian Deadlift":"https://www.youtube.com/results?search_query=romanian+deadlift+form+tutorial",
+  "Dumbbell Romanian Deadlift":"https://www.youtube.com/results?search_query=dumbbell+romanian+deadlift+form",
+  "Barbell Romanian Deadlift":"https://www.youtube.com/results?search_query=barbell+romanian+deadlift+form",
+  "Barbell Deadlift":"https://www.youtube.com/results?search_query=conventional+deadlift+form+tutorial",
+  "Trap Bar Deadlift":"https://www.youtube.com/results?search_query=trap+bar+deadlift+form",
+  "Single Leg Romanian Deadlift":"https://www.youtube.com/results?search_query=single+leg+RDL+form",
+  "Leg Press":"https://www.youtube.com/results?search_query=leg+press+form+foot+placement",
+  "Walking Lunge":"https://www.youtube.com/results?search_query=walking+lunge+form",
+  "Reverse Lunge":"https://www.youtube.com/results?search_query=reverse+lunge+form+tutorial",
+  "Lateral Lunge":"https://www.youtube.com/results?search_query=lateral+lunge+form",
+  "Step Up":"https://www.youtube.com/results?search_query=step+up+exercise+form",
+  "Hack Squat Machine":"https://www.youtube.com/results?search_query=hack+squat+machine+form",
+  "Seated Hamstring Curl Machine":"https://www.youtube.com/results?search_query=seated+leg+curl+form",
+  "Leg Extension Machine":"https://www.youtube.com/results?search_query=leg+extension+machine+form",
+  "Standing Calf Raise":"https://www.youtube.com/results?search_query=standing+calf+raise+form",
+  "Seated Calf Raise":"https://www.youtube.com/results?search_query=seated+calf+raise+form",
+  "Good Morning":"https://www.youtube.com/results?search_query=good+morning+exercise+form",
+  "Kettlebell Swing":"https://www.youtube.com/results?search_query=kettlebell+swing+form+tutorial",
+  "Sumo Deadlift":"https://www.youtube.com/results?search_query=sumo+deadlift+form+tutorial",
+  "Box Squat":"https://www.youtube.com/results?search_query=box+squat+form+tutorial",
+  "Pause Squat":"https://www.youtube.com/results?search_query=pause+squat+form",
+  // Upper Pull
+  "Pull-Up":"https://www.youtube.com/results?search_query=pull+up+form+tutorial",
+  "Chin-Up":"https://www.youtube.com/results?search_query=chin+up+form+tutorial",
+  "Lat Pulldown":"https://www.youtube.com/results?search_query=lat+pulldown+form+tutorial",
+  "Neutral Grip Lat Pulldown":"https://www.youtube.com/results?search_query=neutral+grip+lat+pulldown+form",
+  "Barbell Row":"https://www.youtube.com/results?search_query=barbell+row+form+tutorial",
+  "Dumbbell Row":"https://www.youtube.com/results?search_query=dumbbell+row+form",
+  "Seated Cable Row":"https://www.youtube.com/results?search_query=seated+cable+row+form",
+  "Cable Row":"https://www.youtube.com/results?search_query=cable+row+form+tutorial",
+  "T-Bar Row":"https://www.youtube.com/results?search_query=T+bar+row+form",
+  "Face Pull":"https://www.youtube.com/results?search_query=face+pull+exercise+form",
+  "Band Pull Apart":"https://www.youtube.com/results?search_query=band+pull+apart+form",
+  "Inverted Row":"https://www.youtube.com/results?search_query=inverted+row+form",
+  "Straight Arm Pulldown":"https://www.youtube.com/results?search_query=straight+arm+pulldown+form",
+  "Barbell Curl":"https://www.youtube.com/results?search_query=barbell+curl+form",
+  "Dumbbell Curl":"https://www.youtube.com/results?search_query=dumbbell+curl+form",
+  "Hammer Curl":"https://www.youtube.com/results?search_query=hammer+curl+form",
+  "Preacher Curl":"https://www.youtube.com/results?search_query=preacher+curl+form",
+  "Cable Curl":"https://www.youtube.com/results?search_query=cable+curl+form",
+  "Incline Dumbbell Curl":"https://www.youtube.com/results?search_query=incline+dumbbell+curl+form",
+  // Upper Push
+  "Push-Up":"https://www.youtube.com/results?search_query=perfect+push+up+form",
+  "Bench Press":"https://www.youtube.com/results?search_query=barbell+bench+press+form",
+  "Dumbbell Bench Press":"https://www.youtube.com/results?search_query=dumbbell+bench+press+form",
+  "Incline Bench Press":"https://www.youtube.com/results?search_query=incline+bench+press+form",
+  "Incline Dumbbell Press":"https://www.youtube.com/results?search_query=incline+dumbbell+press+form",
+  "Overhead Press":"https://www.youtube.com/results?search_query=overhead+press+form+tutorial",
+  "Dumbbell Shoulder Press":"https://www.youtube.com/results?search_query=dumbbell+shoulder+press+form",
+  "Lateral Raise":"https://www.youtube.com/results?search_query=lateral+raise+form+tutorial",
+  "Lateral Raise — Both Arms":"https://www.youtube.com/results?search_query=lateral+raise+form+tutorial",
+  "Front Raise":"https://www.youtube.com/results?search_query=front+raise+exercise+form",
+  "Rear Delt Fly":"https://www.youtube.com/results?search_query=rear+delt+fly+form",
+  "Cable Fly":"https://www.youtube.com/results?search_query=cable+fly+form",
+  "Dumbbell Fly":"https://www.youtube.com/results?search_query=dumbbell+fly+form",
+  "Chest Dip":"https://www.youtube.com/results?search_query=chest+dip+form",
+  "Tricep Dip":"https://www.youtube.com/results?search_query=tricep+dip+form",
+  "Skull Crusher":"https://www.youtube.com/results?search_query=skull+crusher+form",
+  "Tricep Pushdown":"https://www.youtube.com/results?search_query=tricep+pushdown+form",
+  "Overhead Tricep Extension":"https://www.youtube.com/results?search_query=overhead+tricep+extension+form",
+  "Tricep Kickback":"https://www.youtube.com/results?search_query=tricep+kickback+form",
+  "Close Grip Bench Press":"https://www.youtube.com/results?search_query=close+grip+bench+press+form",
+  "Landmine Press":"https://www.youtube.com/results?search_query=landmine+press+form",
+  // Core
+  "Plank":"https://www.youtube.com/results?search_query=plank+form+tutorial",
+  "Side Plank":"https://www.youtube.com/results?search_query=side+plank+form",
+  "Dead Bug":"https://www.youtube.com/results?search_query=dead+bug+exercise+form",
+  "Bird Dog":"https://www.youtube.com/results?search_query=bird+dog+exercise+form",
+  "Pallof Press":"https://www.youtube.com/results?search_query=pallof+press+form",
+  "Suitcase Carry":"https://www.youtube.com/results?search_query=suitcase+carry+exercise+form",
+  "Farmers Carry":"https://www.youtube.com/results?search_query=farmers+carry+form",
+  "Ab Wheel Rollout":"https://www.youtube.com/results?search_query=ab+wheel+rollout+form",
+  "Hollow Body Hold":"https://www.youtube.com/results?search_query=hollow+body+hold+form",
+  "Hanging Leg Raise":"https://www.youtube.com/results?search_query=hanging+leg+raise+form",
+  "Cable Crunch":"https://www.youtube.com/results?search_query=cable+crunch+form",
+  "Russian Twist":"https://www.youtube.com/results?search_query=russian+twist+form",
+  "McGill Curl Up":"https://www.youtube.com/results?search_query=mcgill+curl+up+form",
+  // Corrective / Activation
+  "Wall Angels":"https://www.youtube.com/results?search_query=wall+angels+exercise+form",
+  "Chin Tucks":"https://www.youtube.com/results?search_query=chin+tuck+exercise+form",
+  "Thoracic Extension":"https://www.youtube.com/results?search_query=thoracic+extension+foam+roller",
+  "Hip 90/90 Stretch":"https://www.youtube.com/results?search_query=90+90+hip+stretch+form",
+  "World's Greatest Stretch":"https://www.youtube.com/results?search_query=worlds+greatest+stretch+form",
+  "Kneeling Hip Flexor Stretch":"https://www.youtube.com/results?search_query=kneeling+hip+flexor+stretch",
+  "TVA Draw-In":"https://www.youtube.com/results?search_query=TVA+draw+in+exercise",
+  "TVA Draw-In — Supine":"https://www.youtube.com/results?search_query=TVA+draw+in+supine",
+  "90/90 Breathing":"https://www.youtube.com/results?search_query=90+90+breathing+exercise",
+  "Diaphragmatic Breathing":"https://www.youtube.com/results?search_query=diaphragmatic+breathing+exercise",
+  "Turkish Get-Up":"https://www.youtube.com/results?search_query=turkish+get+up+form+tutorial",
+  "Cross-Crawl":"https://www.youtube.com/results?search_query=cross+crawl+exercise+neurological",
+  "Foam Roll Upper Back":"https://www.youtube.com/results?search_query=foam+roll+upper+back+thoracic",
+  "Foam Roll IT Band":"https://www.youtube.com/results?search_query=foam+roll+IT+band",
+  "Foam Roll Quads":"https://www.youtube.com/results?search_query=foam+roll+quads+form",
+  "Pec Minor Release — Lacrosse Ball":"https://www.youtube.com/results?search_query=pec+minor+release+lacrosse+ball",
+};
 
 const CUES={"Glute Bridge":"Lie on your back, knees bent, feet flat. Before lifting ANYTHING — squeeze your butt cheeks together first like cracking a walnut. THEN push your hips up. Hold 2 seconds. Feel this in your butt, not your lower back. Think: SQUEEZE then LIFT.","Clamshell":"Lie on your side, knees bent at 45 degrees, feet touching. Keep feet together the whole time. Open your top knee toward the ceiling — HIPS STAY STILL. Don't rock backward. Feel the burn on the outside of your hip.","Dead Bug":"Lie on your back. Press your lower back FLAT to the floor. Arms up, knees up, shins parallel to floor. Slowly lower your right arm and left leg at the SAME TIME. Back must stay flat. Bring them back. Switch sides. Exhale as you lower.","Chin Tucks":"Sit tall. Slide your head straight BACK — not down, not up — making a double chin. Feel a gentle stretch at the base of your skull. Hold 2 seconds. Think turtle pulling its head into its shell — straight back.","Wall Angels":"Stand with your back against a wall. Head, shoulder blades, and lower back ALL touch the wall. Arms up like a goalpost, backs of hands on wall. Slowly slide arms up like a snow angel, keeping everything touching the wall.","Prone Y Raise":"Lie face down. Arms in a Y shape, thumbs up. Squeeze shoulder blades DOWN your back first — like putting them in your back pockets. THEN lift your arms. Feel this under your shoulder blades, not in your neck.","Face Pull — Cable or Band":"Pull toward your EARS — not your nose — while spreading elbows wide and high. At the end, elbows are higher than wrists. Hold 1 second. Feel the squeeze between your shoulder blades.","Sidelying External Rotation — Bilateral":"Lie on your side. Pin top elbow against your ribs — it does NOT leave your side. Bend elbow to 90 degrees. Rotate forearm UP like opening a gate. Feel this in the back of your shoulder.","Serratus Anterior — Wall Push-Up Plus":"Hands on wall at shoulder height. Push toward wall — at the very END, push extra and let shoulder blades spread apart and wrap around your rib cage. That extra push is the plus. Hold 1 second.","TVA Draw-In — Supine":"Without holding your breath, gently draw your belly button toward your spine about 20% — like bracing for a light poke. Breathe NORMALLY while holding. Not a crunch. A deep quiet squeeze.","Kneeling Hip Flexor Stretch":"Kneel on one knee. Tuck your pelvis under — like you have a tail between your legs. Feel the stretch at the very front top of your hip. Don't lean forward — stand tall and tuck under.","Doorway Pec Stretch":"Stand in a doorway. Arm at 90 degrees, forearm on frame. Step same-side foot forward and let your chest rotate away. Feel the stretch across your chest. Hold at least 45 seconds.","Thoracic Extension — Foam Roller":"Place roller across your MID-back between shoulder blades — NOT lower back. Support your head. Gently arch over the roller and breathe in. Work slowly up and down between shoulder blades and base of neck only.","Hamstring Bridge — Heel Drive":"Lie on back. Slide feet FURTHER away than normal bridge. Toes slightly inward. Drive heels into floor like dragging them toward your body. This fires hamstrings. THEN lift hips.","Sit-to-Stand":"Sit on edge of chair. Feet flat, hip-width apart. Lean your chest FORWARD over your knees first. Squeeze glutes and push through heels to stand. No rocking. No momentum.","Pallof Press — Band":"Anchor band at belly button height. Stand sideways. Hold with both hands at chest. Push hands straight out and HOLD 2 seconds. The band wants to twist you — resist that rotation completely.","Lateral Raise — Both Arms":"Lead with your ELBOWS — like pushing wings out to the sides. Lift to shoulder height. Pinky slightly higher than thumb at top. Lower SLOWLY — 3 full seconds down.","Seated Scapular Retraction — Lower Trap":"Sit upright, lean slightly forward. Pull shoulder blades DOWN and BACK — like sliding them into your back pockets. Not just back — DOWN and back. Hold 2 seconds.","Lat Pulldown":"Before pulling — push chest up slightly and let shoulder blades DROP. Pull bar toward upper chest, leading with ELBOWS. Control the return slowly — 3 full seconds. Feel this along the sides of your back.","Seated Cable Row — Neutral Grip":"Extend arms fully forward — feel shoulder blades spread apart. Pull elbows straight back. At the end, shoulder blades squeeze TOGETHER and DOWN. Torso stays upright. Return slowly.","Bird Dog":"On all fours, hands under shoulders, knees under hips. Extend right arm forward and left leg back SIMULTANEOUSLY. Reach long. Hips stay SQUARE to the floor. Hold 2 seconds.","Forearm Plank":"Forearms on floor, elbows under shoulders. Body in a straight line from heels to head. Squeeze quads, squeeze glutes, draw belly button gently in. One rigid plank of wood.","Standing Glute Squeeze":"Stand tall. Squeeze BOTH glutes as hard as you can — like holding a quarter between your cheeks. Hold 10 full seconds. Do this every single time you stand from a chair throughout your day.","Zone 2 — Incline Walk / Bike":"Zone 2 means talking is slightly uncomfortable but totally possible. If you can chat effortlessly — go harder. If you can't finish a sentence — slow down. Target: 120–140 heartbeats per minute. Steady the entire time.","Dumbbell Bench Press":"Lower slowly until upper arms just below parallel — elbows at 45 degrees from body. Feel stretch across chest. Push up and slightly toward each other at the top. Breathe out as you push.","Push-Up":"Hands slightly wider than shoulders, body in a straight line. Lower slowly 2–3 seconds, elbows at 45 degrees. Chest nearly touches floor. Push the floor AWAY from you back to start."};
 
@@ -683,17 +787,13 @@ const exK=(cid,t,di,si,ei)=>`tbf_${t}_${cid}_${di}_${si}_${ei}`;
 
 function ExerciseModal({ex,onClose}){
   const db=EXERCISE_DB.find(e=>e.name===ex)||null;
-  const vid=VID[ex]||db?.video||null;
+  const buildFallbackVid=(name)=>`https://www.youtube.com/results?search_query=${encodeURIComponent(name+' exercise form tutorial')}`;
+  const vid=VID[ex]||db?.video||buildFallbackVid(ex);
   const cue=CUES[ex]||null;
   const prog=PROG[ex]||db?.progression||[];
   const regr=db?.regression||[];
-  if(!db&&!cue&&!vid) return h("div",{style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:20},onClick:onClose},
-    h("div",{style:{background:C.white,borderRadius:14,padding:24,maxWidth:420,width:"100%"},onClick:e=>e.stopPropagation()},
-      h("div",{style:{fontWeight:"bold",color:C.navy,fontSize:16,marginBottom:8}},ex),
-      h("div",{style:{color:C.gray,fontSize:13,fontStyle:"italic"}},"No detailed info available for this exercise yet."),
-      h(Btn,{onClick:onClose,color:C.navy,full:true,st:{marginTop:16}},"Close")
-    )
-  );
+  // Always render full modal - no early bail-out
+  
   return h("div",{style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",zIndex:999,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end"},onClick:onClose},
     h("div",{style:{background:C.white,borderRadius:"16px 16px 0 0",width:"100%",maxWidth:520,maxHeight:"90vh",overflowY:"auto"},onClick:e=>e.stopPropagation()},
       h("div",{style:{background:C.navy,color:C.white,padding:"14px 18px",borderRadius:"16px 16px 0 0",display:"flex",justifyContent:"space-between",alignItems:"center"}},
@@ -704,8 +804,8 @@ function ExerciseModal({ex,onClose}){
         h("button",{onClick:onClose,style:{background:"none",border:"none",color:C.white,fontSize:22,cursor:"pointer",lineHeight:1}},"×")
       ),
       h("div",{style:{padding:16}},
-        // Video link
-        (vid||db?.video)&&h("a",{href:vid||db?.video,target:"_blank",rel:"noopener noreferrer",style:{display:"block",background:C.tealLight,border:"1px solid "+C.teal+"44",borderRadius:10,padding:"10px 14px",marginBottom:14,textDecoration:"none",textAlign:"center"}},
+        // Video link — always shown
+        vid&&h("a",{href:vid,target:"_blank",rel:"noopener noreferrer",style:{display:"block",background:C.tealLight,border:"1px solid "+C.teal+"44",borderRadius:10,padding:"10px 14px",marginBottom:14,textDecoration:"none",textAlign:"center"}},
           h("span",{style:{color:C.teal,fontWeight:"bold",fontSize:13}},"▶ Watch Demo Video")
         ),
         // Muscles
@@ -714,6 +814,20 @@ function ExerciseModal({ex,onClose}){
           h("div",{style:{display:"flex",flexWrap:"wrap",gap:4}},
             db.muscles.map((m,i)=>h(Pill,{key:i,label:m,color:C.teal})),
             (db.secondary||[]).map((m,i)=>h(Pill,{key:"s"+i,label:m,color:C.gray}))
+          )
+        ),
+        // General form reminders for any exercise without specific cues
+        !db&&!cue&&h("div",{style:{marginBottom:14}},
+          h("div",{style:{fontSize:10,fontWeight:"bold",color:C.navy,letterSpacing:1,marginBottom:8}},"GENERAL FORM PRINCIPLES"),
+          h("div",{style:{background:C.tealLight,borderRadius:8,padding:"10px 12px",fontSize:13,color:C.navy,lineHeight:1.7}},
+            [
+              "✦ Brace your core before each rep — like you're about to take a punch.",
+              "✦ Control the eccentric (lowering) phase — 2-3 seconds down.",
+              "✦ Drive through your target muscle, not momentum.",
+              "✦ Breathe out on the effort, in on the release.",
+              "✦ Stop 1-2 reps before form breaks down."
+            ].join("
+")
           )
         ),
         // Cues
@@ -764,6 +878,146 @@ function ExerciseModal({ex,onClose}){
     )
   );
 }
+
+
+// ── Set Logger with Auto-Progression ─────────────────────────────────────
+function SetLogger({ex, cid, di, si, ei, prescription}) {
+  // Parse sets from prescription e.g. "3 x 12" or "4 x 8-10"
+  const parseSets = (presc) => {
+    if (!presc) return 3;
+    const m = presc.match(/(\d+)\s*[x×]/i);
+    return m ? parseInt(m[1]) : 3;
+  };
+  const parseReps = (presc) => {
+    if (!presc) return '';
+    const m = presc.match(/[x×]\s*([\d\-]+)/i);
+    return m ? m[1] : '';
+  };
+  const parseWeight = (presc) => {
+    if (!presc) return '';
+    const m = presc.match(/(\d+(?:\.\d+)?)\s*(?:lbs?|kg)/i);
+    return m ? m[1] : '';
+  };
+
+  const logKey = `tbf_setlog_${cid}_${di}_${si}_${ei}`;
+  const [sets, setSets] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(logKey) || 'null') || []; } catch { return []; }
+  });
+  const [open, setOpen] = useState(false);
+  const [editIdx, setEditIdx] = useState(null);
+  const [entryWeight, setEntryWeight] = useState(() => parseWeight(prescription));
+  const [entryReps, setEntryReps] = useState(() => parseReps(prescription));
+  const [entryRpe, setEntryRpe] = useState('');
+  const [autoNote, setAutoNote] = useState('');
+  const totalSets = parseSets(prescription);
+
+  const save = (updated) => {
+    setSets(updated);
+    try { localStorage.setItem(logKey, JSON.stringify(updated)); } catch {}
+  };
+
+  const checkProgression = (logs) => {
+    // Auto-progression rule: if all sets hit top of rep range at target weight → suggest progression
+    if (logs.length < totalSets) return null;
+    const targetRepsStr = parseReps(prescription);
+    const topReps = parseInt((targetRepsStr.split('-')[1] || targetRepsStr || '0'));
+    const allHitTop = logs.every(s => parseInt(s.reps) >= topReps && topReps > 0);
+    if (allHitTop) return `✦ All sets hit ${topReps} reps — ready to increase weight or reps next session!`;
+    const avgRpe = logs.reduce((s, l) => s + (parseInt(l.rpe) || 7), 0) / logs.length;
+    if (avgRpe <= 6 && logs.length >= totalSets) return `✦ RPE averaging ${avgRpe.toFixed(1)} — consider adding weight next session`;
+    return null;
+  };
+
+  const logSet = () => {
+    const newSet = {
+      set: sets.length + 1,
+      weight: entryWeight,
+      reps: entryReps,
+      rpe: entryRpe,
+      time: new Date().toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'}),
+      date: new Date().toISOString().slice(0,10)
+    };
+    const updated = editIdx !== null
+      ? sets.map((s, i) => i === editIdx ? {...newSet, set: s.set} : s)
+      : [...sets, newSet];
+    save(updated);
+    setEditIdx(null);
+    setEntryRpe('');
+    const prog = checkProgression(updated);
+    if (prog) setAutoNote(prog);
+  };
+
+  const completedSets = sets.length;
+  const allDone = completedSets >= totalSets;
+
+  return h('div', {style:{marginTop:8, borderTop:'1px solid '+C.grayBorder, paddingTop:8}},
+    h('div', {style:{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:open?10:0}},
+      h('div', {style:{display:'flex', alignItems:'center', gap:8}},
+        h('div', {style:{fontSize:11, fontWeight:'bold', color:allDone?C.green:C.teal, letterSpacing:0.5}},
+          'SETS: '+completedSets+'/'+totalSets
+        ),
+        h('div', {style:{display:'flex', gap:3}},
+          Array.from({length:totalSets}).map((_, i) =>
+            h('div', {key:i, style:{width:10, height:10, borderRadius:'50%', background: i < completedSets ? C.green : C.grayBorder}})
+          )
+        )
+      ),
+      h('button', {onClick:()=>setOpen(!open), style:{fontSize:11, color:C.teal, background:'none', border:'none', cursor:'pointer', fontFamily:'Georgia,serif', fontWeight:'bold'}},
+        open ? '▲ Hide' : '▼ Log Sets'
+      )
+    ),
+    open && h('div', null,
+      // Logged sets
+      sets.length > 0 && h('div', {style:{background:C.tealLight, borderRadius:8, padding:'8px 10px', marginBottom:10}},
+        h('div', {style:{fontSize:10, fontWeight:'bold', color:C.navy, letterSpacing:1, marginBottom:6}}, 'LOGGED SETS'),
+        h('div', {style:{display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:4, fontSize:11, color:C.gray, marginBottom:4, fontWeight:'bold'}},
+          h('div',null,'SET'), h('div',null,'WEIGHT'), h('div',null,'REPS'), h('div',null,'RPE')
+        ),
+        sets.map((s, i) =>
+          h('div', {key:i, style:{display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:4, fontSize:12, color:C.navy, padding:'3px 0', borderTop:'1px solid '+C.teal+'22'}},
+            h('div',{style:{fontWeight:'bold'}}, '#'+s.set),
+            h('div',null, s.weight ? s.weight+'lbs' : '—'),
+            h('div',null, s.reps || '—'),
+            h('div',null, s.rpe ? 'RPE '+s.rpe : '—')
+          )
+        )
+      ),
+      // Entry row
+      !allDone && h('div', {style:{display:'grid', gap:6}},
+        h('div', {style:{fontSize:11, color:C.gray, fontWeight:'bold'}}, 'LOG SET '+(completedSets+1)),
+        h('div', {style:{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:6}},
+          h('div', null,
+            h('div', {style:{fontSize:10, color:C.gray, marginBottom:3}}, 'WEIGHT (lbs)'),
+            h(Inp, {value:entryWeight, onChange:setEntryWeight, placeholder:'135'})
+          ),
+          h('div', null,
+            h('div', {style:{fontSize:10, color:C.gray, marginBottom:3}}, 'REPS'),
+            h(Inp, {value:entryReps, onChange:setEntryReps, placeholder:'12'})
+          ),
+          h('div', null,
+            h('div', {style:{fontSize:10, color:C.gray, marginBottom:3}}, 'RPE (1-10)'),
+            h(Inp, {value:entryRpe, onChange:setEntryRpe, placeholder:'7'})
+          )
+        ),
+        h(Btn, {onClick:logSet, color:C.teal, full:true, st:{marginTop:2}},
+          editIdx !== null ? 'Update Set' : 'Log Set '+( completedSets+1)
+        )
+      ),
+      allDone && h('div', {style:{background:C.greenLight, border:'1px solid '+C.green+'44', borderRadius:8, padding:'8px 12px', fontSize:12, color:C.navy, textAlign:'center', fontWeight:'bold'}},
+        '✓ All '+totalSets+' sets complete!'
+      ),
+      // Auto progression note
+      autoNote && h('div', {style:{background:C.amberLight, border:'1px solid '+C.amber, borderRadius:8, padding:'10px 12px', fontSize:12, color:C.navy, marginTop:8}},
+        autoNote
+      ),
+      // Clear button
+      sets.length > 0 && h('button', {onClick:()=>{save([]);setAutoNote('');}, style:{fontSize:11, color:C.gray, background:'none', border:'none', cursor:'pointer', marginTop:6, fontFamily:'Georgia,serif'}},
+        'Clear log'
+      )
+    )
+  );
+}
+
 
 function ExCard({ex,cid,di,si,ei,isTrainer,onShowInfo}){
   const [checked,setChecked]=useState(()=>LS.get(exK(cid,"chk",di,si,ei),false));
@@ -842,7 +1096,8 @@ function ExCard({ex,cid,di,si,ei,isTrainer,onShowInfo}){
     isSuperset&&h("div",{style:{marginTop:8,display:"flex",gap:6,alignItems:"center"}},
       h("div",{style:{fontSize:11,color:C.amber,flexShrink:0}},"Paired with:"),
       h(Inp,{value:supersetWith,onChange:doSupersetWith,placeholder:"Exercise name..."})
-    )
+    ),
+    h(SetLogger,{ex:curName,cid,di,si,ei,prescription:curPresc})
   );
 }
 
