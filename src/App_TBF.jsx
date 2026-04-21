@@ -1962,4 +1962,32 @@ function AuthGate() {
   return h(App, {supabaseUser: session.user, supabaseProfile: profile, autoTrainer: isTrainerEmail});
 }
 
-export default AuthGate;
+class AppErrorBoundary extends React.Component {
+  constructor(props){super(props);this.state={hasError:false,error:null,info:null};}
+  static getDerivedStateFromError(error){return {hasError:true,error};}
+  componentDidCatch(error,info){
+    this.setState({error,info});
+    console.error("APP CRASH:",error.message,info?.componentStack);
+  }
+  render(){
+    if(this.state.hasError){
+      const msg=this.state.error?.message||"Unknown";
+      const stack=this.state.info?.componentStack||"";
+      return h("div",{style:{minHeight:"100vh",background:"#1a1a2e",display:"flex",alignItems:"center",justifyContent:"center",padding:20}},
+        h("div",{style:{background:"white",borderRadius:12,padding:24,maxWidth:440,width:"100%"}},
+          h("div",{style:{fontWeight:"bold",fontSize:16,color:"#c0392b",marginBottom:12}},"App Error — Please Screenshot This"),
+          h("div",{style:{fontFamily:"monospace",fontSize:12,background:"#fff0ee",borderRadius:6,padding:12,marginBottom:12,wordBreak:"break-all",color:"#c0392b"}},msg),
+          h("div",{style:{fontFamily:"monospace",fontSize:10,background:"#f5f5f5",borderRadius:6,padding:12,maxHeight:200,overflowY:"auto",color:"#555",whiteSpace:"pre-wrap"}},stack.slice(0,800)),
+          h("button",{onClick:()=>this.setState({hasError:false}),style:{marginTop:12,background:"#2980b9",color:"white",border:"none",borderRadius:6,padding:"8px 16px",cursor:"pointer"}},"Try Again")
+        )
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function WrappedAuthGate(){
+  return h(AppErrorBoundary,null,h(AuthGate,null));
+}
+
+export default WrappedAuthGate;
