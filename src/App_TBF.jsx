@@ -1663,225 +1663,6 @@ function Login({onLogin,onRegister}){
 }
 
 
-class ClientErrorBoundary extends React.Component {
-  constructor(props){super(props);this.state={hasError:false,error:null};}
-  static getDerivedStateFromError(error){return {hasError:true,error};}
-  componentDidCatch(error,info){console.error("ClientView crash:",error,info);}
-  render(){
-    if(this.state.hasError){
-      return h("div",{style:{minHeight:"100vh",background:C.cream,display:"flex",alignItems:"center",justifyContent:"center",padding:24}},
-        h("div",{style:{background:C.white,borderRadius:14,padding:28,maxWidth:360,width:"100%",textAlign:"center",boxShadow:"0 4px 20px rgba(0,0,0,0.1)"}},
-          h("div",{style:{fontSize:32,marginBottom:12}},"🏋️"),
-          h("div",{style:{fontWeight:"bold",color:C.navy,fontSize:16,marginBottom:8}},"Welcome, "+(this.props.user?.name||"Client")+"!"),
-          h("div",{style:{fontSize:13,color:C.gray,marginBottom:20,lineHeight:1.6}},"Your trainer is setting up your program. Check back after your first session."),
-          h("div",{style:{fontSize:12,color:C.red,background:"#fff0ee",borderRadius:8,padding:"10px 14px",marginBottom:16,textAlign:"left",wordBreak:"break-word"}},
-            "Debug: "+(this.state.error?.message||"Unknown error")
-          ),
-          h("button",{onClick:()=>window.location.reload(),style:{background:C.teal,color:C.white,border:"none",borderRadius:8,padding:"10px 20px",cursor:"pointer",fontFamily:"Georgia,serif",fontWeight:"bold"}},"Reload App")
-        )
-      );
-    }
-    return this.props.children;
-  }
-}
-
-
-function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
-  const [user,setUser]=useState(()=>{const s=LS.get("tbf_session");if(!s) return null;if(s.role==="trainer") return TRAINER_U;const clients=LS.get("tbf_clients",INIT);return clients.find(c=>c.id===s.id)||null;});
-  const [screen,setScreen]=useState(()=>LS.get("tbf_session")?"app":"login");
-  const [viewing,setViewing]=useState(null);
-  const [showAdd,setShowAdd]=useState(false);
-  // When Supabase is available, start empty and wait for server data
-  // This prevents stale localStorage from showing on any device
-  const [clients,setClients]=useState(()=>{
-    if(supabase) return [];
-    return LS.get("tbf_clients",INIT);
-  });
-  const [clientsLoaded,setClientsLoaded]=useState(!supabase);
-  const [clientSelfProfile,setClientSelfProfile]=useState(null);
-
-  // If signed in as a client (not trainer), load own profile from Supabase
-  useEffect(()=>{
-    if(!supabase||!supabaseUser||autoTrainer) return;
-    supabase.from("tbf_clients").select("*").eq("email",supabaseUser.email).single()
-      .then(({data,error})=>{
-        if(error||!data) return;
-        try{
-          setClientSelfProfile({
-            id:data.email.toLowerCase().replace(/[^a-z0-9]/g,"_"),
-            name:data.name,email:data.email,role:"client",
-            phase:data.phase||1,focus:data.focus||"",
-            restrictions:typeof data.restrictions==="string"?JSON.parse(data.restrictions||"[]"):data.restrictions||[],
-            days:data.days?JSON.parse(data.days):TEMPLATES[data.goal_template||"posture"]?.days||[],
-            schedule:[],nutrition:null
-          });
-        }catch(e){console.warn("Client self profile:",e.message);}
-      })
-      .catch(e=>console.warn("Client self load:",e.message));
-  },[supabaseUser?.email,autoTrainer]);
-
-  // Load clients from Supabase on mount (trainer only)
-  useEffect(()=>{
-    if(!supabase||!autoTrainer) return;
-    supabase.from("tbf_clients").select("*")
-      .then(({data,error})=>{
-        if(error){console.warn("Load clients:",error.message);setClientsLoaded(true);return;}
-        if(!data||data.length===0){setClientsLoaded(true);return;}
-        try{
-          const mapped=data.map(r=>({
-            id:r.email.toLowerCase().replace(/[^a-z0-9]/g,"_"),
-            name:r.name,email:r.email,role:"client",
-            phase:r.phase||1,focus:r.focus||"",
-            restrictions:typeof r.restrictions==="string"?JSON.parse(r.restrictions||"[]"):r.restrictions||[],
-            goal:r.goal_template||"posture",
-            invitedAt:r.invited_at,
-            days:r.days?JSON.parse(r.days):TEMPLATES[r.goal_template||"posture"]?.days||[],
-            schedule:[],nutrition:null,password:"",supabase_id:r.id
-          }));
-          setClients(mapped);
-          // Do not cache to localStorage — Supabase is source of truth
-        }catch(e){console.warn("Client map error:",e.message);}
-        setClientsLoaded(true);
-      })
-      .catch(e=>{console.warn("tbf_clients fetch failed:",e.message);setClientsLoaded(true);});
-  },[autoTrainer]);
-
-  const handleAddClient=async c=>{
-    const u=[...clients,c];setClients(u);setShowAdd(false);
-    if(supabase){
-      try{
-        await supabase.from("tbf_clients").upsert({
-          email:c.email,name:c.name,role:"client",phase:c.phase,
-          focus:c.focus,restrictions:JSON.stringify(c.restrictions||[]),
-          goal_template:c.goal||"posture",invited_at:c.invitedAt,
-          days:JSON.stringify(c.days||[]),
-          trainer_id:window.__tbf_user?.id||null
-        },{onConflict:"email"});
-      }catch(e){console.warn("Supabase client save:",e.message);}
-    }
-  };
-  const handleDeleteClient=async c=>{
-    const updated=clients.filter(x=>x.id!==c.id);
-    setClients(updated);
-    if(viewing?.id===c.id) setViewing(null);
-    if(supabase){
-      try{
-        await supabase.from("tbf_clients").delete().eq("email",c.email);
-      }catch(e){console.warn("Supabase client delete:",e.message);}
-    }
-  };
-  const handleClientUpdate=async updated=>{
-    const list=clients.map(c=>c.id===updated.id?updated:c);
-    setClients(list);
-    if(supabase&&updated.email){
-      try{
-        await supabase.from("tbf_clients").update({
-          name:updated.name,phase:updated.phase,focus:updated.focus,
-          restrictions:JSON.stringify(updated.restrictions||[]),
-          days:JSON.stringify(updated.days||[])
-        }).eq("email",updated.email);
-      }catch(e){console.warn("Client update:",e.message);}
-    }
-  };
-  const isTrainer=user?.role==="trainer";
-  // If signed in via Supabase and not the hardcoded trainer,
-  // find this user's client profile by email
-  const supabaseClientProfile = (() => {
-    try{
-      if(isTrainer||!supabaseUser) return null;
-      return clients.find(c=>c.email&&c.email.toLowerCase()===(supabaseUser.email||"").toLowerCase())||null;
-    }catch(e){return null;}
-  })();
-  // If signed in via Supabase as trainer email — skip inner login entirely
-  if(autoTrainer){
-    const effectiveUser = TRAINER_U;
-    const effectiveIsTrainer = true;
-    if(!clientsLoaded) return h("div",{style:{minHeight:"100vh",background:C.navy,display:"flex",alignItems:"center",justifyContent:"center"}},
-      h("div",{style:{color:C.tealLight,fontFamily:"Georgia,serif",fontSize:14,letterSpacing:2}},"LOADING ROSTER...")
-    );
-    return h("div",{style:{minHeight:"100vh",background:C.cream}},
-      h("div",{style:{background:C.navy,padding:"14px 18px",display:"flex",alignItems:"center",justifyContent:"space-between"}},
-        h("div",null,h("div",{style:{color:C.white,fontWeight:"bold",fontSize:17}},viewing?viewing.name:"True Balance Fitness"),h("div",{style:{color:C.tealLight,fontSize:11}},viewing?"Client View":"Trainer Dashboard")),
-        h("div",{style:{display:"flex",gap:8}},
-          viewing&&h(Btn,{onClick:()=>setViewing(null),color:C.tealLight,fg:C.navy,small:true},"← Roster"),
-          h(Btn,{onClick:()=>{LS.del("tbf_session");if(window.__tbf_signout)window.__tbf_signout();},color:C.red,small:true},"Sign Out")
-        )
-      ),
-      showAdd&&h(AddClientForm,{onAdd:handleAddClient,onClose:()=>setShowAdd(false)}),
-      !viewing&&h(TrainerRoster,{clients:clients.filter(c=>c.role==="client"),onSelect:c=>setViewing(c),onAddClient:()=>setShowAdd(true),onDeleteClient:handleDeleteClient}),
-      viewing&&h(ClientView,{client:viewing,isTrainer:true,onClientUpdate:handleClientUpdate})
-    );
-  }
-  if(!supabaseUser){
-    if(screen==="register") return h(Register,{onRegister:handleLogin,onBack:()=>setScreen("login")});
-    if(screen==="login"||!user) return h(Login,{onLogin:handleLogin,onRegister:()=>setScreen("register")});
-  }
-  const effectiveUser = supabaseUser
-    ? (clientSelfProfile||supabaseClientProfile||{id:supabaseUser.id,name:supabaseUser.email||"Client",
-        role:"client",email:supabaseUser.email||"",days:[],schedule:[],
-        nutrition:null,phase:1,focus:"Your trainer is setting up your program.",restrictions:[]})
-    : user;
-  const effectiveIsTrainer = isTrainer || (supabaseProfile?.role==="trainer");
-  const activeClient=effectiveIsTrainer?viewing:effectiveUser;
-  return h("div",{style:{minHeight:"100vh",background:C.cream}},
-    h("div",{style:{background:C.navy,padding:"14px 18px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:100,boxShadow:"0 2px 12px rgba(0,0,0,0.25)"}},
-      h("div",null,h("div",{style:{color:C.white,fontWeight:"bold",fontSize:17}},isTrainer&&viewing?viewing.name:"True Balance Fitness"),h("div",{style:{color:C.tealLight,fontSize:11,marginTop:1}},effectiveIsTrainer&&!viewing?"Trainer Dashboard":effectiveIsTrainer?"Client View":(effectiveUser?.focus||"").split("|")[0]?.trim()||"My Program")),
-      h("div",{style:{display:"flex",gap:8}},isTrainer&&viewing&&h(Btn,{onClick:()=>setViewing(null),color:C.navy2,small:true},"← Roster"),h(Btn,{onClick:()=>{if(window.__tbf_signout)window.__tbf_signout();else handleLogout();},color:C.red,small:true},"Sign Out"))
-    ),
-    showAdd&&h(AddClientForm,{onAdd:handleAddClient,onClose:()=>setShowAdd(false)}),
-    effectiveIsTrainer&&!viewing&&h(TrainerRoster,{clients:clients.filter(c=>c.role==="client"),onSelect:c=>setViewing(c),onAddClient:()=>setShowAdd(true)}),
-    effectiveIsTrainer&&viewing&&h(ClientView,{client:viewing,isTrainer:true,onClientUpdate:handleClientUpdate}),
-    !effectiveIsTrainer&&h(ClientErrorBoundary,{user:effectiveUser},
-      h(ClientView,{
-        client:{
-          id:activeClient?.id||"client",
-          name:activeClient?.name||"Client",
-          email:activeClient?.email||"",
-          role:"client",
-          phase:activeClient?.phase||1,
-          focus:activeClient?.focus||"Your trainer is building your program.",
-          restrictions:Array.isArray(activeClient?.restrictions)?activeClient.restrictions:[],
-          days:Array.isArray(activeClient?.days)?activeClient.days:[],
-          schedule:Array.isArray(activeClient?.schedule)?activeClient.schedule:[],
-          nutrition:activeClient?.nutrition||null
-        },
-        isTrainer:false,
-        onClientUpdate:handleClientUpdate
-      })
-    )
-  );
-}
-
-
-// ── Subscription gate ──────────────────────────────────────────────────────
-function SubscribeScreen() {
-  return h("div", {style:{minHeight:"100vh",background:C.navy,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:24}},
-    h("div", {style:{color:C.white,fontWeight:"bold",fontSize:28,letterSpacing:1}}, "True Balance"),
-    h("div", {style:{color:C.tealLight,fontSize:12,letterSpacing:3,marginBottom:36}}, "FITNESS"),
-    h("div", {style:{background:C.white,borderRadius:14,padding:28,width:"100%",maxWidth:360,boxShadow:"0 8px 32px rgba(0,0,0,0.35)"}},
-      h("div", {style:{fontWeight:"bold",color:C.navy,fontSize:16,marginBottom:8,textAlign:"center"}}, "Choose Your Plan"),
-      h("div", {style:{fontSize:13,color:C.gray,textAlign:"center",marginBottom:20,lineHeight:1.6}}, "Get full access to your corrective exercise programs, assessment tools, and nutrition plans."),
-      h("div", {style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}},
-        h("a", {href:"STRIPE_MONTHLY_LINK",target:"_blank",rel:"noreferrer",style:{textDecoration:"none",display:"block",background:C.tealLight,border:`1.5px solid ${C.teal}`,borderRadius:12,padding:"16px 12px",textAlign:"center"}},
-          h("div", {style:{fontWeight:"bold",color:C.navy,fontSize:13,marginBottom:2}}, "Monthly"),
-          h("div", {style:{fontSize:22,fontWeight:"bold",color:C.teal,marginBottom:2}}, "$XX"),
-          h("div", {style:{fontSize:10,color:C.gray,marginBottom:10}}, "per month"),
-          h("div", {style:{background:C.teal,color:C.white,borderRadius:6,padding:"6px",fontSize:11,fontWeight:"bold"}}, "Subscribe →")
-        ),
-        h("a", {href:"STRIPE_ANNUAL_LINK",target:"_blank",rel:"noreferrer",style:{textDecoration:"none",display:"block",background:C.tealLight,border:`1.5px solid ${C.teal}`,borderRadius:12,padding:"16px 12px",textAlign:"center",position:"relative"}},
-          h("div", {style:{position:"absolute",top:-10,left:"50%",transform:"translateX(-50%)",background:C.teal,color:C.white,fontSize:9,padding:"2px 10px",borderRadius:20,fontWeight:"bold",whiteSpace:"nowrap"}}, "BEST VALUE"),
-          h("div", {style:{fontWeight:"bold",color:C.navy,fontSize:13,marginBottom:2}}, "Annual"),
-          h("div", {style:{fontSize:22,fontWeight:"bold",color:C.teal,marginBottom:2}}, "$XX"),
-          h("div", {style:{fontSize:10,color:C.gray,marginBottom:10}}, "per year"),
-          h("div", {style:{background:C.teal,color:C.white,borderRadius:6,padding:"6px",fontSize:11,fontWeight:"bold"}}, "Subscribe →")
-        )
-      ),
-      h("div", {style:{fontSize:11,color:C.gray,textAlign:"center"}}, "True Balance Fitness · 228-229-6865")
-    )
-  );
-}
-
-// ── Supabase Auth Wrapper ──────────────────────────────────────────────────
 function AuthGate() {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -1893,7 +1674,7 @@ function AuthGate() {
 
   useEffect(() => {
     if (!supabase) { setLoading(false); return; }
-    supabase.auth.getSession().then(( {data: {session} }) => {
+    supabase.auth.getSession().then(({data: {session}}) => {
       setSession(session);
       setLoading(false);
     });
@@ -1906,17 +1687,16 @@ function AuthGate() {
   useEffect(() => {
     if (!session || !supabase) return;
     supabase.from("profiles").select("*").eq("user_id", session.user.id).single()
-      .then(( {data}) => { if (data) setProfile(data); });
+      .then(({data}) => { if (data) setProfile(data); });
   }, [session]);
 
-  if (loading) return h("div", {style:{minHeight:"100vh",background:C.navy,display:"flex",alignItems:"center",justifyContent:"center"}},
-    h("div", {style:{color:C.tealLight,fontFamily:"Georgia,serif",fontSize:14,letterSpacing:2}}, "LOADING...")
+  if (loading) return h("div",{style:{minHeight:"100vh",background:C.navy,display:"flex",alignItems:"center",justifyContent:"center"}},
+    h("div",{style:{color:C.tealLight,fontFamily:"Georgia,serif",fontSize:14,letterSpacing:2}},"LOADING...")
   );
 
-  // If no Supabase configured, run the app directly (dev mode)
   if (!supabase) return h(App, null);
 
-    if (!session) {
+  if (!session) {
     return h("div",{style:{minHeight:"100vh",background:C.navy,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:24}},
       h("div",{style:{color:C.white,fontWeight:"bold",fontSize:28,letterSpacing:1}},"True Balance"),
       h("div",{style:{color:C.tealLight,fontSize:12,letterSpacing:3,marginBottom:36}},"FITNESS"),
@@ -1949,45 +1729,14 @@ function AuthGate() {
     );
   }
 
-  
-  // Signed in — check subscription status
   if (profile && profile.subscription_status === "canceled") {
     return h(SubscribeScreen, null);
   }
 
-  // All good — render the full app
   window.__tbf_signout = () => supabase.auth.signOut();
   window.__tbf_user = session.user;
   const isTrainerEmail = session.user.email === TRAINER_EMAIL;
   return h(App, {supabaseUser: session.user, supabaseProfile: profile, autoTrainer: isTrainerEmail});
 }
 
-class AppErrorBoundary extends React.Component {
-  constructor(props){super(props);this.state={hasError:false,error:null,info:null};}
-  static getDerivedStateFromError(error){return {hasError:true,error};}
-  componentDidCatch(error,info){
-    this.setState({error,info});
-    console.error("APP CRASH:",error.message,info?.componentStack);
-  }
-  render(){
-    if(this.state.hasError){
-      const msg=this.state.error?.message||"Unknown";
-      const stack=this.state.info?.componentStack||"";
-      return h("div",{style:{minHeight:"100vh",background:"#1a1a2e",display:"flex",alignItems:"center",justifyContent:"center",padding:20}},
-        h("div",{style:{background:"white",borderRadius:12,padding:24,maxWidth:440,width:"100%"}},
-          h("div",{style:{fontWeight:"bold",fontSize:16,color:"#c0392b",marginBottom:12}},"App Error — Please Screenshot This"),
-          h("div",{style:{fontFamily:"monospace",fontSize:12,background:"#fff0ee",borderRadius:6,padding:12,marginBottom:12,wordBreak:"break-all",color:"#c0392b"}},msg),
-          h("div",{style:{fontFamily:"monospace",fontSize:10,background:"#f5f5f5",borderRadius:6,padding:12,maxHeight:200,overflowY:"auto",color:"#555",whiteSpace:"pre-wrap"}},stack.slice(0,800)),
-          h("button",{onClick:()=>this.setState({hasError:false}),style:{marginTop:12,background:"#2980b9",color:"white",border:"none",borderRadius:6,padding:"8px 16px",cursor:"pointer"}},"Try Again")
-        )
-      );
-    }
-    return this.props.children;
-  }
-}
-
-function WrappedAuthGate(){
-  return h(AppErrorBoundary,null,h(AuthGate,null));
-}
-
-export default WrappedAuthGate;
+export default AuthGate;
