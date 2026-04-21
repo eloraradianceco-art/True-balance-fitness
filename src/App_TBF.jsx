@@ -1674,6 +1674,27 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
     return LS.get("tbf_clients",INIT);
   });
   const [clientsLoaded,setClientsLoaded]=useState(!supabase);
+  const [clientSelfProfile,setClientSelfProfile]=useState(null);
+
+  // If signed in as a client (not trainer), load own profile from Supabase
+  useEffect(()=>{
+    if(!supabase||!supabaseUser||autoTrainer) return;
+    supabase.from("tbf_clients").select("*").eq("email",supabaseUser.email).single()
+      .then(({data,error})=>{
+        if(error||!data) return;
+        try{
+          setClientSelfProfile({
+            id:data.email.toLowerCase().replace(/[^a-z0-9]/g,"_"),
+            name:data.name,email:data.email,role:"client",
+            phase:data.phase||1,focus:data.focus||"",
+            restrictions:typeof data.restrictions==="string"?JSON.parse(data.restrictions||"[]"):data.restrictions||[],
+            days:data.days?JSON.parse(data.days):TEMPLATES[data.goal_template||"posture"]?.days||[],
+            schedule:[],nutrition:null
+          });
+        }catch(e){console.warn("Client self profile:",e.message);}
+      })
+      .catch(e=>console.warn("Client self load:",e.message));
+  },[supabaseUser?.email,autoTrainer]);
 
   // Load clients from Supabase on mount (trainer only)
   useEffect(()=>{
@@ -1772,21 +1793,36 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
     if(screen==="login"||!user) return h(Login,{onLogin:handleLogin,onRegister:()=>setScreen("register")});
   }
   const effectiveUser = supabaseUser
-    ? (supabaseClientProfile||{id:supabaseUser.id,name:supabaseUser.email||"Client",
+    ? (clientSelfProfile||supabaseClientProfile||{id:supabaseUser.id,name:supabaseUser.email||"Client",
         role:"client",email:supabaseUser.email||"",days:[],schedule:[],
         nutrition:null,phase:1,focus:"Your trainer is setting up your program.",restrictions:[]})
     : user;
   const effectiveIsTrainer = isTrainer || (supabaseProfile?.role==="trainer");
-  const activeClient=isTrainer?viewing:supabaseClientProfile||clients.find(c=>c.id===user?.id)||user;
+  const activeClient=effectiveIsTrainer?viewing:effectiveUser;
   return h("div",{style:{minHeight:"100vh",background:C.cream}},
     h("div",{style:{background:C.navy,padding:"14px 18px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:100,boxShadow:"0 2px 12px rgba(0,0,0,0.25)"}},
-      h("div",null,h("div",{style:{color:C.white,fontWeight:"bold",fontSize:17}},isTrainer&&viewing?viewing.name:"True Balance Fitness"),h("div",{style:{color:C.tealLight,fontSize:11,marginTop:1}},isTrainer&&!viewing?"Trainer Dashboard":isTrainer?"Client View":user.focus?.split("|")[0]?.trim())),
-      h("div",{style:{display:"flex",gap:8}},isTrainer&&viewing&&h(Btn,{onClick:()=>setViewing(null),color:C.navy2,small:true},"← Roster"),h(Btn,{onClick:handleLogout,color:C.red,small:true},"Sign Out"))
+      h("div",null,h("div",{style:{color:C.white,fontWeight:"bold",fontSize:17}},isTrainer&&viewing?viewing.name:"True Balance Fitness"),h("div",{style:{color:C.tealLight,fontSize:11,marginTop:1}},effectiveIsTrainer&&!viewing?"Trainer Dashboard":effectiveIsTrainer?"Client View":(effectiveUser?.focus||"").split("|")[0]?.trim()||"My Program")),
+      h("div",{style:{display:"flex",gap:8}},isTrainer&&viewing&&h(Btn,{onClick:()=>setViewing(null),color:C.navy2,small:true},"← Roster"),h(Btn,{onClick:()=>{if(window.__tbf_signout)window.__tbf_signout();else handleLogout();},color:C.red,small:true},"Sign Out"))
     ),
     showAdd&&h(AddClientForm,{onAdd:handleAddClient,onClose:()=>setShowAdd(false)}),
     effectiveIsTrainer&&!viewing&&h(TrainerRoster,{clients:clients.filter(c=>c.role==="client"),onSelect:c=>setViewing(c),onAddClient:()=>setShowAdd(true)}),
     effectiveIsTrainer&&viewing&&h(ClientView,{client:viewing,isTrainer:true,onClientUpdate:handleClientUpdate}),
-    !effectiveIsTrainer&&activeClient&&h(ClientView,{client:activeClient,isTrainer:false,onClientUpdate:handleClientUpdate})
+    !effectiveIsTrainer&&h(ClientView,{
+      client:{
+        id:activeClient?.id||"client",
+        name:activeClient?.name||"Client",
+        email:activeClient?.email||"",
+        role:"client",
+        phase:activeClient?.phase||1,
+        focus:activeClient?.focus||"Your trainer is building your program.",
+        restrictions:activeClient?.restrictions||[],
+        days:Array.isArray(activeClient?.days)?activeClient.days:[],
+        schedule:activeClient?.schedule||[],
+        nutrition:activeClient?.nutrition||null
+      },
+      isTrainer:false,
+      onClientUpdate:handleClientUpdate
+    })
   );
 }
 
