@@ -820,15 +820,14 @@ function ExerciseModal({ex,onClose}){
         !db&&!cue&&h("div",{style:{marginBottom:14}},
           h("div",{style:{fontSize:10,fontWeight:"bold",color:C.navy,letterSpacing:1,marginBottom:8}},"GENERAL FORM PRINCIPLES"),
           h("div",{style:{background:C.tealLight,borderRadius:8,padding:"10px 12px",fontSize:13,color:C.navy,lineHeight:1.7}},
-            [
-              "✦ Brace your core before each rep — like you're about to take a punch.",
-              "✦ Control the eccentric (lowering) phase — 2-3 seconds down.",
-              "✦ Drive through your target muscle, not momentum.",
-              "✦ Breathe out on the effort, in on the release.",
-              "✦ Stop 1-2 reps before form breaks down."
-            ].join("
-")
-          )
+            h("div",null,
+              ["Brace your core before each rep.",
+               "Control the eccentric — 2-3 seconds down.",
+               "Drive through your target muscle, not momentum.",
+               "Breathe out on the effort, in on the release.",
+               "Stop 1-2 reps before form breaks down."
+              ].map((tip,i)=>h("div",{key:i,style:{marginBottom:4}},h("span",{style:{color:C.teal,marginRight:4}},"x"),tip))
+            )
         ),
         // Cues
         (cue||db?.setup)&&h("div",{style:{marginBottom:14}},
