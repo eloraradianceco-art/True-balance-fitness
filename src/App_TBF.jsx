@@ -839,16 +839,9 @@ function ExCard({ex,cid,di,si,ei,isTrainer,onShowInfo}){
         h("span",null,p),h("span",{style:{color:C.teal,fontSize:10}},"Swap →")
       ))
     ),
-    isSuperset&&panel==="super"&&h("div",{style:{marginTop:8}},
-      h(Inp,{value:supersetWith,onChange:doSupersetWith,placeholder:"Paired with exercise name..."}),
-      h(Btn,{onClick:()=>setPanel(null),color:C.amber,small:true,st:{marginTop:6}},"Done")
-    ),
-    isSuperset&&panel!=="super"&&h("div",{style:{marginTop:6}},
-      h("div",{style:{fontSize:11,color:C.amber,marginBottom:4}},"Superset paired with:"),
-      h("div",{style:{display:"flex",gap:6}},
-        h(Inp,{value:supersetWith,onChange:doSupersetWith,placeholder:"Exercise name..."}),
-        h("div",{style:{fontSize:11,color:C.gray,alignSelf:"center"}},{/*inline*/})
-      )
+    isSuperset&&h("div",{style:{marginTop:8,display:"flex",gap:6,alignItems:"center"}},
+      h("div",{style:{fontSize:11,color:C.amber,flexShrink:0}},"Paired with:"),
+      h(Inp,{value:supersetWith,onChange:doSupersetWith,placeholder:"Exercise name..."})
     )
   );
 }
