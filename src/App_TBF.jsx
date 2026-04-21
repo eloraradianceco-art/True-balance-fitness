@@ -1667,8 +1667,13 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
   const [screen,setScreen]=useState(()=>LS.get("tbf_session")?"app":"login");
   const [viewing,setViewing]=useState(null);
   const [showAdd,setShowAdd]=useState(false);
-  const [clients,setClients]=useState(()=>LS.get("tbf_clients",INIT));
-  const [clientsLoaded,setClientsLoaded]=useState(false);
+  // When Supabase is available, start empty and wait for server data
+  // This prevents stale localStorage from showing on any device
+  const [clients,setClients]=useState(()=>{
+    if(supabase) return [];
+    return LS.get("tbf_clients",INIT);
+  });
+  const [clientsLoaded,setClientsLoaded]=useState(!supabase);
 
   // Load clients from Supabase on mount (trainer only)
   useEffect(()=>{
@@ -1689,7 +1694,7 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
             schedule:[],nutrition:null,password:"",supabase_id:r.id
           }));
           setClients(mapped);
-          LS.set("tbf_clients",mapped);
+          // Do not cache to localStorage — Supabase is source of truth
         }catch(e){console.warn("Client map error:",e.message);}
         setClientsLoaded(true);
       })
@@ -1697,7 +1702,7 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
   },[autoTrainer]);
 
   const handleAddClient=async c=>{
-    const u=[...clients,c];setClients(u);LS.set("tbf_clients",u);setShowAdd(false);
+    const u=[...clients,c];setClients(u);setShowAdd(false);
     if(supabase){
       try{
         await supabase.from("tbf_clients").upsert({
@@ -1712,7 +1717,7 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
   };
   const handleDeleteClient=async c=>{
     const updated=clients.filter(x=>x.id!==c.id);
-    setClients(updated);LS.set("tbf_clients",updated);
+    setClients(updated);
     if(viewing?.id===c.id) setViewing(null);
     if(supabase){
       try{
@@ -1720,7 +1725,19 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
       }catch(e){console.warn("Supabase client delete:",e.message);}
     }
   };
-  const handleClientUpdate=updated=>{const list=clients.map(c=>c.id===updated.id?updated:c);setClients(list);LS.set("tbf_clients",list);if(viewing?.id===updated.id) setViewing(updated);};
+  const handleClientUpdate=async updated=>{
+    const list=clients.map(c=>c.id===updated.id?updated:c);
+    setClients(list);
+    if(supabase&&updated.email){
+      try{
+        await supabase.from("tbf_clients").update({
+          name:updated.name,phase:updated.phase,focus:updated.focus,
+          restrictions:JSON.stringify(updated.restrictions||[]),
+          days:JSON.stringify(updated.days||[])
+        }).eq("email",updated.email);
+      }catch(e){console.warn("Client update:",e.message);}
+    }
+  };
   const isTrainer=user?.role==="trainer";
   // If signed in via Supabase and not the hardcoded trainer,
   // find this user's client profile by email
@@ -1734,6 +1751,9 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
   if(autoTrainer){
     const effectiveUser = TRAINER_U;
     const effectiveIsTrainer = true;
+    if(!clientsLoaded) return h("div",{style:{minHeight:"100vh",background:C.navy,display:"flex",alignItems:"center",justifyContent:"center"}},
+      h("div",{style:{color:C.tealLight,fontFamily:"Georgia,serif",fontSize:14,letterSpacing:2}},"LOADING ROSTER...")
+    );
     return h("div",{style:{minHeight:"100vh",background:C.cream}},
       h("div",{style:{background:C.navy,padding:"14px 18px",display:"flex",alignItems:"center",justifyContent:"space-between"}},
         h("div",null,h("div",{style:{color:C.white,fontWeight:"bold",fontSize:17}},viewing?viewing.name:"True Balance Fitness"),h("div",{style:{color:C.tealLight,fontSize:11}},viewing?"Client View":"Trainer Dashboard")),
