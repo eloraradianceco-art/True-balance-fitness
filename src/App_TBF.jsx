@@ -1819,20 +1819,57 @@ function WorkoutHistory({client, isTrainer}) {
 // ── Trainer Notes ───────────────────────────────────────────────────────
 function TrainerNotes({client, isTrainer, onClientUpdate}) {
   const notesKey = `tbf_notes_${client.id}`;
-  const [notes, setNotes] = useState(() => {
-    // Prefer Supabase-synced notes from client record, fallback to localStorage
-    if (client.notes && Array.isArray(client.notes) && client.notes.length > 0) {
-      return client.notes;
-    }
-    return LS.get(notesKey, []);
-  });
+
+  // Merge: take whichever source has MORE notes (handles existing localStorage data)
+  const initNotes = () => {
+    const fromSupabase = (client.notes && Array.isArray(client.notes)) ? client.notes : [];
+    const fromLS = LS.get(notesKey, []);
+    if (fromSupabase.length === 0 && fromLS.length === 0) return [];
+    if (fromSupabase.length === 0) return fromLS;
+    if (fromLS.length === 0) return fromSupabase;
+    // Merge by id — combine both, deduplicate, sort newest first
+    const all = [...fromSupabase, ...fromLS];
+    const seen = new Set();
+    const merged = all.filter(n => {
+      if (seen.has(n.id)) return false;
+      seen.add(n.id);
+      return true;
+    }).sort((a,b) => b.id - a.id);
+    return merged;
+  };
+
+  const [notes, setNotes] = useState(initNotes);
   const [newNote, setNewNote] = useState('');
-  const [noteType, setNoteType] = useState('note'); // note | cue | flag | checkin
+  const [noteType, setNoteType] = useState('note');
+  const [synced, setSynced] = useState(false);
+
+  // On mount: if localStorage has notes Supabase doesn't have, push them up
+  useEffect(() => {
+    if (synced) return;
+    setSynced(true);
+    const fromLS = LS.get(notesKey, []);
+    const fromSupabase = (client.notes && Array.isArray(client.notes)) ? client.notes : [];
+    // If LS has notes that aren't in Supabase, merge and push
+    if (fromLS.length > 0 && onClientUpdate) {
+      const all = [...fromSupabase, ...fromLS];
+      const seen = new Set();
+      const merged = all.filter(n => {
+        if (seen.has(n.id)) return false;
+        seen.add(n.id);
+        return true;
+      }).sort((a,b) => b.id - a.id);
+      if (merged.length > fromSupabase.length) {
+        // Push merged notes to Supabase
+        setNotes(merged);
+        LS.set(notesKey, merged);
+        onClientUpdate({...client, notes: merged});
+      }
+    }
+  }, []);
 
   const saveNotes = (updated) => {
     setNotes(updated);
     LS.set(notesKey, updated);
-    // Sync to Supabase via client record
     if (onClientUpdate) {
       onClientUpdate({...client, notes: updated});
     }
