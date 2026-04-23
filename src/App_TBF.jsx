@@ -1819,13 +1819,23 @@ function WorkoutHistory({client, isTrainer}) {
 // ── Trainer Notes ───────────────────────────────────────────────────────
 function TrainerNotes({client, isTrainer, onClientUpdate}) {
   const notesKey = `tbf_notes_${client.id}`;
-  const [notes, setNotes] = useState(() => LS.get(notesKey, []));
+  const [notes, setNotes] = useState(() => {
+    // Prefer Supabase-synced notes from client record, fallback to localStorage
+    if (client.notes && Array.isArray(client.notes) && client.notes.length > 0) {
+      return client.notes;
+    }
+    return LS.get(notesKey, []);
+  });
   const [newNote, setNewNote] = useState('');
   const [noteType, setNoteType] = useState('note'); // note | cue | flag | checkin
 
   const saveNotes = (updated) => {
     setNotes(updated);
     LS.set(notesKey, updated);
+    // Sync to Supabase via client record
+    if (onClientUpdate) {
+      onClientUpdate({...client, notes: updated});
+    }
   };
 
   const addNote = () => {
@@ -3358,7 +3368,9 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
             goal:r.goal_template||"posture",
             invitedAt:r.invited_at,
             days:r.days?JSON.parse(r.days):TEMPLATES[r.goal_template||"posture"]?.days||[],
-            schedule:[],nutrition:null,password:"",supabase_id:r.id
+            notes:r.notes?JSON.parse(r.notes):[],
+            nutrition:r.nutrition?JSON.parse(r.nutrition):null,
+            schedule:[],password:"",supabase_id:r.id
           }));
           setClients(mapped);
         }catch(e){console.warn("Client map error:",e.message);}
@@ -3380,7 +3392,9 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
             phase:data.phase||1,focus:data.focus||"",
             restrictions:typeof data.restrictions==="string"?JSON.parse(data.restrictions||"[]"):data.restrictions||[],
             days:data.days?JSON.parse(data.days):TEMPLATES[data.goal_template||"posture"]?.days||[],
-            schedule:[],nutrition:null
+            notes:data.notes?JSON.parse(data.notes):[],
+            nutrition:data.nutrition?JSON.parse(data.nutrition):null,
+            schedule:[]
           });
         }catch(e){console.warn("Client self profile:",e.message);}
       })
@@ -3399,6 +3413,8 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
           focus:c.focus,restrictions:JSON.stringify(c.restrictions||[]),
           goal_template:c.goal||"posture",invited_at:c.invitedAt,
           days:JSON.stringify(c.days||[]),
+          notes:JSON.stringify(c.notes||[]),
+          nutrition:JSON.stringify(c.nutrition||{}),
           trainer_id:window.__tbf_user?.id||null
         },{onConflict:"email"});
       }catch(e){console.warn("Supabase client save:",e.message);}
@@ -3424,7 +3440,9 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
         await supabase.from("tbf_clients").update({
           name:updated.name,phase:updated.phase,focus:updated.focus,
           restrictions:JSON.stringify(updated.restrictions||[]),
-          days:JSON.stringify(updated.days||[])
+          days:JSON.stringify(updated.days||[]),
+          notes:JSON.stringify(updated.notes||[]),
+          nutrition:JSON.stringify(updated.nutrition||{})
         }).eq("email",updated.email);
       }catch(e){console.warn("Client update:",e.message);}
     }
