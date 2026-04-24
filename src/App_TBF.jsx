@@ -3236,7 +3236,7 @@ function CardioBuilder({client,onUpdate,onClose}){
             h(CardB,null,
               h(G2,null,
                 h(Fld,{label:"DAY"},h(Sel,{value:s.day,onChange:v=>updateSession(i,"day",v),
-                  options:["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]})),
+                  options:[["Monday","Monday"],["Tuesday","Tuesday"],["Wednesday","Wednesday"],["Thursday","Thursday"],["Friday","Friday"],["Saturday","Saturday"],["Sunday","Sunday"]]})),
                 h(Fld,{label:"TYPE"},h(Sel,{value:s.type,onChange:v=>updateSession(i,"type",v),
                   options:CARDIO_TYPES.map(t=>[t.id,t.label])}))
               ),
@@ -3253,7 +3253,7 @@ function CardioBuilder({client,onUpdate,onClose}){
                 ? h(Fld,{label:"SPORT / ACTIVITY"},h(Sel,{value:s.sport||"",onChange:v=>updateSession(i,"sport",v),
                     options:[["","Select sport..."],...SPORT_OPTIONS.map(o=>[o,o])]}))
                 : h(Fld,{label:"EQUIPMENT / MODALITY"},h(Sel,{value:s.equipment,onChange:v=>updateSession(i,"equipment",v),
-                    options:EQUIPMENT_OPTIONS})),
+                    options:EQUIPMENT_OPTIONS.map(o=>[o,o])})),
               h(Fld,{label:"TRAINER NOTES",mb:0},h(TA,{value:s.notes,onChange:v=>updateSession(i,"notes",v),
                 placeholder:"RPE targets, pacing notes, heart rate zones, progressions..."}))
             )
