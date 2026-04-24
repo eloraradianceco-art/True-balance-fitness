@@ -3133,9 +3133,18 @@ function ClientView({client,isTrainer,onClientUpdate}){
   const [di,setDi]=useState(0);
   const [assessment,setAssessment]=useState(()=>LS.get(`tbf_assess_${client.id}`,null));
   const [pendingProg,setPendingProg]=useState(null);
+  // localClient mirrors the client prop but updates immediately when onClientUpdate fires
+  const [localClient,setLocalClient]=useState(client);
+  // Sync localClient whenever the parent passes a new client reference
+  useEffect(()=>{setLocalClient(client);},[client.id,JSON.stringify(client.days)]);
+  // Wrap onClientUpdate to also update localClient immediately
+  const handleLocalUpdate=(updated)=>{
+    setLocalClient(updated);
+    onClientUpdate(updated);
+  };
   const compLogs=LS.get(`tbf_comp_${client.id}`,[]);
   const recentCount=compLogs.filter(l=>(new Date()-new Date(l.date))/(1000*60*60*24)<7).length;
-  const hasProgram=client.days&&client.days.length>0;
+  const hasProgram=localClient.days&&localClient.days.length>0;
   const handleSaveAssessment=data=>{
     // Save current assessment
     LS.set(`tbf_assess_${client.id}`,data);
@@ -3184,8 +3193,8 @@ function ClientView({client,isTrainer,onClientUpdate}){
             h("div",{style:{fontWeight:"bold",color:C.navy,marginBottom:4}},"📅 How Workout Days Work"),
             "Days shown here are based on the template assigned to this client. As the trainer, you can add, remove, or reorder days using the workout builder. Frequency is determined by the program template — e.g. 3x/week means 3 session days will appear. You can customize each day's exercises using the Swap and Progress buttons on each exercise card."
           ),
-          h("div",{className:"sc",style:{display:"flex",gap:8,paddingBottom:8,marginBottom:10}},client.days.map((d,i)=>h("button",{key:i,onClick:()=>setDi(i),style:{background:i===di?C.teal:C.grayLight,color:i===di?C.white:C.navy,border:"none",borderRadius:7,padding:"6px 12px",fontSize:11,fontWeight:"bold",cursor:"pointer",flexShrink:0,whiteSpace:"nowrap"}},d.title.split("—")[0].replace("SESSION","Session").replace("MONDAY","Mon").replace("TUESDAY","Tue").replace("EVERY OTHER DAY","E/O Day").replace("DAILY","Daily").replace("HOME","Home").replace("ASSESSMENT-BASED CORRECTIVE PROGRAM","Corrective").trim()))),
-          h(DayView,{client,di,isTrainer}),
+          h("div",{className:"sc",style:{display:"flex",gap:8,paddingBottom:8,marginBottom:10}},localClient.days.map((d,i)=>h("button",{key:i,onClick:()=>setDi(i),style:{background:i===di?C.teal:C.grayLight,color:i===di?C.white:C.navy,border:"none",borderRadius:7,padding:"6px 12px",fontSize:11,fontWeight:"bold",cursor:"pointer",flexShrink:0,whiteSpace:"nowrap"}},d.title.split("—")[0].replace("SESSION","Session").replace("MONDAY","Mon").replace("TUESDAY","Tue").replace("EVERY OTHER DAY","E/O Day").replace("DAILY","Daily").replace("HOME","Home").replace("ASSESSMENT-BASED CORRECTIVE PROGRAM","Corrective").trim()))),
+          h(DayView,{client:localClient,di,isTrainer}),
           isTrainer&&h("div",{style:{marginTop:12}},
             h("div",{style:{background:C.navy,color:C.white,padding:"9px 14px",fontSize:11,fontWeight:"bold",letterSpacing:1,borderRadius:"8px 8px 0 0"}},"CARDIO RECOMMENDATIONS"),
             h("div",{style:{background:C.white,border:"1px solid "+C.grayBorder,borderRadius:"0 0 8px 8px",padding:12}},
@@ -3212,17 +3221,17 @@ tab==="assess"&&h("div",null,
       ),
       tab==="history"&&h(WorkoutHistory,{client,isTrainer}),
       tab==="notes"&&h("div",null,
-        h(TrainerNotes,{client,isTrainer,onClientUpdate}),
+        h(TrainerNotes,{client:localClient,isTrainer,onClientUpdate:handleLocalUpdate}),
         !isTrainer&&h(ChangePassword,null)
       ),
-      tab==="nutrition"&&h(NutritionProfile,{client,isTrainer,onClientUpdate}),
+      tab==="nutrition"&&h(NutritionProfile,{client:localClient,isTrainer,onClientUpdate:handleLocalUpdate}),
       tab==="nutrition_legacy"&&h(NutritionView,{client}),
       tab==="notes"&&h(SessionNotes,{client,isTrainer}),
       tab==="pain"&&h(PainLog,{client}),
       tab==="comp"&&h(Compliance,{client})
     ),
-    showBuilder&&h(WorkoutBuilder,{client,onUpdate:c=>{onClientUpdate(c);setShowBuilder(false);},onClose:()=>setShowBuilder(false)}),
-    showCardio&&h(CardioBuilder,{client,onUpdate:c=>{onClientUpdate(c);setShowCardio(false);},onClose:()=>setShowCardio(false)})
+    showBuilder&&h(WorkoutBuilder,{client:localClient,onUpdate:c=>{handleLocalUpdate(c);setShowBuilder(false);},onClose:()=>setShowBuilder(false)}),
+    showCardio&&h(CardioBuilder,{client:localClient,onUpdate:c=>{handleLocalUpdate(c);setShowCardio(false);},onClose:()=>setShowCardio(false)})
   );
 }
 
