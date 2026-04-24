@@ -3404,7 +3404,20 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
             restrictions:typeof r.restrictions==="string"?JSON.parse(r.restrictions||"[]"):r.restrictions||[],
             goal:r.goal_template||"posture",
             invitedAt:r.invited_at,
-            days:r.days?JSON.parse(r.days):TEMPLATES[r.goal_template||"posture"]?.days||[],
+            days:(()=>{
+              const supabaseDays=r.days?JSON.parse(r.days):TEMPLATES[r.goal_template||"posture"]?.days||[];
+              // Check localStorage backup - use whichever is newer
+              try{
+                const clientId=r.email.toLowerCase().replace(/[^a-z0-9]/g,"_");
+                const backup=JSON.parse(localStorage.getItem("tbf_client_"+clientId)||"null");
+                if(backup?.days?.length>0&&backup.savedAt){
+                  const backupDate=new Date(backup.savedAt);
+                  const supabaseDate=r.updated_at?new Date(r.updated_at):new Date(0);
+                  if(backupDate>supabaseDate) return backup.days;
+                }
+              }catch(e){}
+              return supabaseDays;
+            })(),
             notes:r.notes?JSON.parse(r.notes):[],
             nutrition:r.nutrition?JSON.parse(r.nutrition):null,
             schedule:[],password:"",supabase_id:r.id
@@ -3472,16 +3485,28 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
     const list=clients.map(c=>c.id===updated.id?updated:c);
     setClients(list);
     if(viewing?.id===updated.id) setViewing(updated);
+    // Always save to localStorage as backup
+    try{
+      const lsKey="tbf_client_"+updated.id;
+      localStorage.setItem(lsKey, JSON.stringify({
+        days: updated.days||[],
+        notes: updated.notes||[],
+        nutrition: updated.nutrition||{},
+        savedAt: new Date().toISOString()
+      }));
+    }catch(e){}
     if(supabase&&updated.email){
       try{
-        await supabase.from("tbf_clients").update({
+        const result=await supabase.from("tbf_clients").update({
           name:updated.name,phase:updated.phase,focus:updated.focus,
           restrictions:JSON.stringify(updated.restrictions||[]),
           days:JSON.stringify(updated.days||[]),
           notes:JSON.stringify(updated.notes||[]),
           nutrition:JSON.stringify(updated.nutrition||{})
         }).eq("email",updated.email);
-      }catch(e){console.warn("Client update:",e.message);}
+        if(result.error) console.error("Supabase save failed:",result.error.message);
+        else console.log("Supabase save OK for",updated.name,"- days:",updated.days?.length,"day(s)");
+      }catch(e){console.error("Client update error:",e.message);}
     }
   };
 
