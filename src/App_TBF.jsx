@@ -1127,6 +1127,111 @@ const EX_EXTENDED = [
    mistakes:["Using arms to push off","Sitting down too fast — crash landing","Not standing fully tall at the top","Feet too far back — makes it harder to press through heels"],
    progression:["Goblet Squat","Bodyweight Squat","Box Squat"],regression:["Higher Chair — Reduces Range","Arms Assisted"]},
 
+
+  // ── ANKLE / FOOT / DORSIFLEXION ───────────────────────────────────────
+  {name:"Dorsiflexion — Banded",cat:"Mobility",region:"Ankle",pattern:"Ankle Mobility",muscles:["Tibialis Anterior","Gastrocnemius","Soleus"],secondary:["Peroneals","Ankle Stabilizers"],equip:["Band"],diff:"Beginner",
+   video:"https://www.youtube.com/results?search_query=banded+dorsiflexion+ankle+mobility",
+   setup:"Loop a band around a rack or fixed anchor at floor level. Place the band around the front of your ankle just above the foot. Step back to create tension. Foot flat on the floor, toes forward.",
+   action:"Drive your knee forward over your toes — push it as far forward as possible while keeping your heel on the floor. Hold 2-3 seconds at end range. Return. The band distracts the joint and allows greater range.",
+   feel:"Stretch in the back of the ankle and calf. A pulling sensation in the front of the ankle as the joint opens.",
+   breath:"Exhale as you drive the knee forward. Breathe normally.",
+   mistakes:["Heel rising off the floor — the whole point is heel stays down","Not enough band tension — too loose defeats the purpose","Moving too fast — slow and controlled to end range"],
+   progression:["Weighted Dorsiflexion","Deep Squat Hold","Pistol Squat Prep"],regression:["Wall Ankle Mobilization","Standing Calf Stretch"]},
+
+  {name:"Dorsiflexion — Wall Ankle Mobilization",cat:"Mobility",region:"Ankle",pattern:"Ankle Mobility",muscles:["Gastrocnemius","Soleus","Tibialis Anterior"],secondary:["Plantar Fascia","Achilles Tendon"],equip:["Bodyweight","Wall"],diff:"Beginner",
+   video:"https://www.youtube.com/results?search_query=wall+ankle+dorsiflexion+mobilization",
+   setup:"Stand facing a wall about 4-5 inches away. Place one foot forward, toes touching the wall. Other foot back for balance.",
+   action:"Drive your front knee toward the wall — try to touch it — while keeping the heel flat. Move foot progressively farther from the wall as range improves. Measure progress by how far back you can stand and still touch.",
+   feel:"Stretch deep in the back of the ankle. The further from the wall, the greater the demand.",
+   breath:"Breathe normally throughout.",
+   mistakes:["Heel lifting — defeats the purpose entirely","Foot turned out — keep it straight","Not progressing the distance as range improves"],
+   progression:["Banded Dorsiflexion","Deep Squat with Heel Elevation","Pistol Squat"],regression:["Seated Towel Calf Stretch"]},
+
+  {name:"Tibialis Anterior Raise",cat:"Activation",region:"Shin/Ankle",pattern:"Dorsiflexion Strengthening",muscles:["Tibialis Anterior"],secondary:["Extensor Digitorum","Peroneals"],equip:["Bodyweight","Resistance Band"],diff:"Beginner",
+   video:"https://www.youtube.com/results?search_query=tibialis+anterior+raise+shin+strengthening",
+   setup:"Sit or stand with heels on the floor. Start with toes on the floor in a relaxed position.",
+   action:"Pull toes and forefoot up toward your shin — maximum dorsiflexion. Hold 2 seconds at the top. Lower slowly. Progress to standing with back against a wall, walking the feet forward and performing raises.",
+   feel:"Front of shin — tibialis anterior burning. This is the muscle that prevents shin splints and stabilizes the ankle.",
+   breath:"Exhale raising up. Inhale lowering.",
+   mistakes:["Moving too fast — no time under tension","Not reaching full range — toes all the way up","Skipping this — tibialis weakness is often overlooked in programming"],
+   progression:["Banded Tibialis Raise","Tib Bar Raise","Single Leg Tibialis Walk"],regression:["Seated Toe Raises — Gravity Only"]},
+
+  // ── GLUTE / HIP ────────────────────────────────────────────────────────
+  {name:"Hip 90/90 Stretch",cat:"Mobility",region:"Hips",pattern:"Hip Internal/External Rotation",muscles:["Piriformis","Glute Med","Hip Internal Rotators","Hip External Rotators"],secondary:["TFL","Adductors"],equip:["Bodyweight"],diff:"Beginner",
+   video:"https://www.youtube.com/results?search_query=90+90+hip+stretch+mobility",
+   setup:"Sit on the floor. Front leg at 90 degrees in front of you, rear leg at 90 degrees to the side. Both knees bent at 90. Sit as upright as possible — do not round forward.",
+   action:"Maintain an upright torso and sit tall into the position. Lean forward over the front shin to deepen the external rotation stretch. Switch sides — the weaker direction is the one that needs more work.",
+   feel:"Deep glute and hip stretch in the front leg. Hip flexor and internal rotator stretch in the back leg.",
+   breath:"Exhale to sink deeper. Long slow breaths.",
+   mistakes:["Rounding the back — maintain a tall spine","Collapsing to one side","Not spending enough time — needs 60-120 seconds per side minimum"],
+   progression:["90/90 Hip Rotation with Transition","Hip Flow","Deep Squat with Hip Rotation"],regression:["Figure 4 Stretch Supine","Seated External Rotation"]},
+
+  {name:"Glute Bridge — Single Leg",cat:"Activation",region:"Glutes",pattern:"Hip Extension",muscles:["Glute Max","Glute Med","Hamstrings"],secondary:["Core","Hip Stabilizers"],equip:["Bodyweight"],diff:"Beginner",
+   video:"https://www.youtube.com/results?search_query=single+leg+glute+bridge+form",
+   setup:"Lie on back, knees bent, feet flat. Extend one leg straight. Drive through the heel of the planted foot.",
+   action:"Squeeze glute and drive hips up. Hold at the top for 2 seconds. Lower slowly. The extended leg stays level with the torso — do not let the hip drop on that side.",
+   feel:"Glute of the working leg. If you feel hamstring cramping — drive more through the heel and focus on squeezing the glute first.",
+   breath:"Exhale driving up. Inhale lowering.",
+   mistakes:["Hip dropping on the unsupported side","Using lower back to extend","Not squeezing the glute first"],
+   progression:["Hip Thrust — Single Leg","Nordic Hamstring Curl"],regression:["Double Leg Glute Bridge"]},
+
+  // ── ROTATOR CUFF / SHOULDER ────────────────────────────────────────────
+  {name:"Band Pull Apart",cat:"Activation",region:"Upper Back/Shoulders",pattern:"Shoulder External Rotation",muscles:["Rear Delts","Rhomboids","External Rotators"],secondary:["Mid Traps","Infraspinatus"],equip:["Band"],diff:"Beginner",
+   video:"https://www.youtube.com/results?search_query=band+pull+apart+exercise+form",
+   setup:"Hold a resistance band with both hands at shoulder width, arms extended in front at shoulder height. Palms down or thumbs up.",
+   action:"Pull the band apart by driving elbows back and squeezing shoulder blades together. The band should touch your chest at the end range. Control the return. Do NOT let the band snap back.",
+   feel:"Rear delts and mid-back. Not the neck or traps.",
+   breath:"Exhale pulling apart. Inhale returning.",
+   mistakes:["Shrugging traps","Bending elbows — keep them nearly straight","Moving too fast — no squeeze at end range","Band too heavy — compensating with neck"],
+   progression:["Band Pull Apart — Overhead","Face Pull","Prone Y Raise"],regression:["Lighter Band","Seated Scapular Retraction"]},
+
+  {name:"Cuban Press",cat:"Activation",region:"Rotator Cuff",pattern:"External Rotation + Press",muscles:["Infraspinatus","Teres Minor","Deltoids"],secondary:["Supraspinatus","Upper Traps"],equip:["Dumbbell"],diff:"Intermediate",
+   video:"https://www.youtube.com/results?search_query=cuban+press+rotator+cuff+exercise",
+   setup:"Stand with dumbbells at sides. Light weight — this is a corrective exercise not a strength move.",
+   action:"3-part movement: (1) Upright row — lift elbows to shoulder height. (2) External rotation — rotate forearms up so hands point to ceiling. (3) Press — press overhead. Reverse the sequence to lower.",
+   feel:"Full rotator cuff cycle. A great pre-hab and warm-up movement for overhead athletes.",
+   breath:"Exhale pressing up. Inhale lowering.",
+   mistakes:["Using too much weight","Moving too fast — each phase should be deliberate","Losing external rotation before pressing"],
+   progression:["Overhead Press","Arnold Press"],regression:["Sidelying External Rotation","Band ER"]},
+
+  // ── CORE / ANTI-EXTENSION ──────────────────────────────────────────────
+  {name:"Ab Wheel Rollout",cat:"Core",region:"Core",pattern:"Anti-Extension",muscles:["Rectus Abdominis","Transverse Abdominis","Lats"],secondary:["Shoulder Stabilizers","Hip Flexors"],equip:["Ab Wheel"],diff:"Intermediate",
+   video:"https://www.youtube.com/results?search_query=ab+wheel+rollout+form+tutorial",
+   setup:"Kneel on floor, ab wheel in both hands directly under shoulders. Brace core hard before starting. Posterior pelvic tilt — flatten lower back.",
+   action:"Roll the wheel forward slowly — only go as far as you can without your lower back arching. Pause at end range. Pull back using your lats and abs. Stop before your hips flex to return.",
+   feel:"Deep core and lats working together. If your lower back arches — your range is too large.",
+   breath:"Exhale rolling out. Inhale pulling back.",
+   mistakes:["Letting lower back arch — the biggest mistake","Going too far too soon","Using hip flexors to return instead of lats and abs"],
+   progression:["Standing Ab Wheel Rollout","Dragon Flag"],regression:["Dead Bug","Plank — RKC"]},
+
+  {name:"Hollow Body Hold",cat:"Core",region:"Core",pattern:"Anti-Extension",muscles:["Rectus Abdominis","Transverse Abdominis","Hip Flexors"],secondary:["Serratus","Shoulder Stabilizers"],equip:["Bodyweight"],diff:"Intermediate",
+   video:"https://www.youtube.com/results?search_query=hollow+body+hold+gymnastics+core",
+   setup:"Lie on back. Press lower back into the floor — this position must be maintained throughout. Arms overhead, legs extended.",
+   action:"Lift shoulders and legs off the floor simultaneously — hold. The key is lower back stays pressed into the floor. If it arches, raise legs higher or bend knees. This is a gymnastic core position.",
+   feel:"Deep abdominal tension. Nothing should feel like hip flexors alone — the abs create the tension.",
+   breath:"Breathe in short controlled breaths while holding. Do not hold breath.",
+   mistakes:["Lower back arching off the floor","Legs too low before core is strong enough","Holding breath"],
+   progression:["Hollow Body Rock","Hollow Body with Rotation","Toes to Bar"],regression:["Dead Bug","Legs up Hollow Hold — knees bent"]},
+
+  // ── LOWER LEG / CALF ───────────────────────────────────────────────────
+  {name:"Single Leg Calf Raise",cat:"Lower",region:"Calves/Ankle",pattern:"Plantarflexion",muscles:["Gastrocnemius","Soleus"],secondary:["Tibialis Posterior","Peroneals"],equip:["Bodyweight","Step"],diff:"Beginner",
+   video:"https://www.youtube.com/results?search_query=single+leg+calf+raise+form",
+   setup:"Stand on the edge of a step, one foot. Other leg slightly bent and lifted. Hold something for balance — NOT to support weight.",
+   action:"Lower heel as far as possible below the step (full stretch). Drive up onto the ball of the foot as high as possible. 3 second lowering — full range matters more than how many you do.",
+   feel:"Full calf stretch at the bottom. Gastrocnemius at the top. If only feeling one part of the range — you're cheating.",
+   breath:"Exhale rising. Inhale lowering slowly.",
+   mistakes:["Short range — not dropping heel below step level","Going too fast — no time under tension","Holding the support for balance assistance"],
+   progression:["Weighted Single Leg Calf Raise","Seated Calf Raise — Soleus focus"],regression:["Double Leg Calf Raise","Seated Calf Raise"]},
+
+  {name:"Soleus Raise — Seated",cat:"Activation",region:"Calves/Ankle",pattern:"Plantarflexion",muscles:["Soleus"],secondary:["Tibialis Posterior"],equip:["Bodyweight","Weight Plate"],diff:"Beginner",
+   video:"https://www.youtube.com/results?search_query=seated+soleus+raise+exercise",
+   setup:"Seated with knees bent at 90 degrees, feet flat. Place a weight plate or dumbbell on your thigh near the knee for load. The bent knee position isolates the soleus — it removes the gastrocnemius.",
+   action:"Drive the ball of the foot into the floor and raise the heel as high as possible. Hold 1-2 seconds at the top. Lower with control. The soleus is the deep calf — critical for Achilles health and ankle stability.",
+   feel:"Deep lower calf — different from standing calf raises. Burn appears lower and closer to the Achilles.",
+   breath:"Exhale rising. Inhale lowering.",
+   mistakes:["Using a standing raise and thinking it works the soleus — it does not","No load — soleus needs resistance","Moving too fast"],
+   progression:["Heavy Seated Calf Raise Machine","Single Leg Seated Soleus Raise"],regression:["Unloaded Seated Heel Raise"]},
+
 ];
 
 // Merge all exercises
@@ -3020,15 +3125,41 @@ function CardioBuilder({client,onUpdate,onClose}){
   const [saved,setSaved]=useState(false);
 
   const CARDIO_TYPES=[
-    {id:"zone2",label:"Zone 2",desc:"Aerobic base building",rx:"HR 120-140 | Conversational pace",color:C.teal,equipment:["Incline Treadmill","Stationary Bike","Outdoor Walk","Elliptical","Row Machine"]},
-    {id:"hiit",label:"HIIT",desc:"High intensity intervals",rx:"Max effort intervals | 1x/week only",color:C.red,equipment:["Treadmill Sprints","Bike Sprints","Jump Rope","Battle Ropes","Sled Push"]},
-    {id:"liss",label:"LISS",desc:"Low intensity steady state",rx:"HR 100-120 | Easy effort",color:C.green,equipment:["Walking","Swimming","Cycling","Light Bike","Elliptical"]},
-    {id:"active_recovery",label:"Active Recovery",desc:"Blood flow & recovery",rx:"Very light movement | No fatigue",color:C.navy2,equipment:["Easy Walk","Gentle Bike","Light Yoga","Foam Rolling","Swimming"]},
-    {id:"sport",label:"Sport Specific",desc:"In-season training",rx:"Per sport demands",color:C.purple,equipment:["Agility Ladder","Cone Drills","Sport Drills","Jump Training","Speed Work"]},
+    {id:"zone2",label:"Zone 2",desc:"Aerobic base building — the foundation of all cardio fitness",rx:"HR 120-140 | Conversational pace | 45-60 min",color:C.teal},
+    {id:"hiit",label:"HIIT",desc:"High intensity intervals — maximum output, full recovery",rx:"Max effort 20-40s | Rest 2-4x work | 1x/week only",color:C.red},
+    {id:"liss",label:"LISS",desc:"Low intensity steady state — easy aerobic maintenance",rx:"HR 100-120 | Easy effort | 30-45 min",color:C.green},
+    {id:"tempo",label:"Tempo",desc:"Sustained moderate-high effort — lactate threshold training",rx:"HR 150-165 | Comfortably hard | 20-40 min",color:C.amber},
+    {id:"active_recovery",label:"Active Recovery",desc:"Blood flow, mobility, and nervous system recovery",rx:"Very light movement | No fatigue | 20-30 min",color:C.gray},
+    {id:"sport",label:"Sport Specific",desc:"In-season training aligned to sport demands",rx:"Per sport protocol — see notes",color:C.purple},
+  ];
+
+  const EQUIPMENT_OPTIONS=[
+    "Stationary Bike","Outdoor Bike","Long Distance Bike","Rowing Machine",
+    "Treadmill — Walk","Treadmill — Run","Stair Master","Stair Climb — Outdoor",
+    "Elliptical","Ski Erg","Assault Bike","Swimming",
+    "Jump Rope","Walking — Outdoor","Running — Outdoor","Trail Run",
+    "Incline Walk","Rucking","Sled Push/Pull","Battle Ropes",
+    "Basketball","Soccer","Tennis","Pickleball","Cycling Class","Sport Practice","Custom",
+  ];
+
+  const SPORT_OPTIONS=[
+    "Basketball — Full Court","Basketball — Half Court","Soccer","Baseball / Softball",
+    "Tennis","Pickleball","Swimming — Laps","Swimming — Open Water",
+    "Cycling — Road","Cycling — Mountain","Cycling — Peloton",
+    "Rowing — Ergometer","Rowing — Open Water","CrossFit WOD",
+    "Martial Arts / BJJ","Wrestling","Track & Field","Custom",
+  ];
+
+  const DURATION_OPTIONS=[
+    ["15","15 min"],["20","20 min"],["25","25 min"],["30","30 min"],
+    ["35","35 min"],["40","40 min"],["45","45 min"],["50","50 min"],
+    ["55","55 min"],["60","60 min"],["75","75 min"],["90","90 min"],
+    ["custom","Custom..."],
   ];
 
   const addSession=()=>{
-    const s={day:"Monday",type:"zone2",duration:"30",intensity:"moderate",equipment:"Stationary Bike",notes:""};
+    const s={day:"Monday",type:"zone2",duration:"30",customDuration:"",intensity:"moderate",
+             equipment:"Stationary Bike",sport:"",notes:""};
     setPlan(p=>({...p,sessions:[...p.sessions,s]}));
   };
   const updateSession=(i,field,val)=>setPlan(p=>({...p,sessions:p.sessions.map((s,j)=>j===i?{...s,[field]:val}:s)}));
@@ -3038,9 +3169,10 @@ function CardioBuilder({client,onUpdate,onClose}){
   const weekTotal=plan.sessions.length;
   const zone2Count=plan.sessions.filter(s=>s.type==="zone2").length;
   const hiitCount=plan.sessions.filter(s=>s.type==="hiit").length;
+  const getDisplayDuration=s=>s.duration==="custom"&&s.customDuration?s.customDuration+" min":s.duration+" min";
 
-  return h("div",{style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:999,display:"flex",flexDirection:"column"}},
-    h("div",{style:{background:C.white,height:"100%",display:"flex",flexDirection:"column",maxWidth:700,margin:"0 auto",width:"100%",boxShadow:"0 0 40px rgba(0,0,0,0.4)"}},
+  return h("div",{style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:999,display:"flex",flexDirection:"column",alignItems:"center"}},
+    h("div",{style:{background:C.white,height:"100%",display:"flex",flexDirection:"column",maxWidth:700,margin:"0 auto",width:"100%",overflowY:"hidden"}},
       // Header
       h("div",{style:{background:C.navy,color:C.white,padding:"14px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}},
         h("div",null,
@@ -3054,13 +3186,15 @@ function CardioBuilder({client,onUpdate,onClose}){
       ),
       h("div",{style:{flex:1,overflowY:"auto",padding:14}},
         // Summary
-        h(Card,null,h(CardH,{t:"WEEKLY CARDIO SUMMARY",color:C.teal}),h(CardB,null,
+        h(Card,null,h(CardH,{t:"WEEKLY CARDIO PLAN",color:C.teal}),h(CardB,null,
           h(G2,null,
-            h(Fld,{label:"WEEKLY CARDIO GOAL (sessions)"},
-              h(Sel,{value:plan.weeklyGoal,onChange:v=>setPlan(p=>({...p,weeklyGoal:v})),options:[["1","1x/week"],["2","2x/week"],["3","3x/week"],["4","4x/week"],["5","5x/week"],["6","6x/week"],["7","Daily"]]})
+            h(Fld,{label:"WEEKLY SESSIONS GOAL"},
+              h(Sel,{value:plan.weeklyGoal,onChange:v=>setPlan(p=>({...p,weeklyGoal:v})),
+                options:[["1","1x/week"],["2","2x/week"],["3","3x/week"],["4","4x/week"],["5","5x/week"],["6","6x/week"],["7","Daily"]]})
             ),
             h(Fld,{label:"PRIMARY FOCUS"},
-              h(Sel,{value:plan.primaryType,onChange:v=>setPlan(p=>({...p,primaryType:v})),options:CARDIO_TYPES.map(t=>[t.id,t.label+" — "+t.desc])})
+              h(Sel,{value:plan.primaryType,onChange:v=>setPlan(p=>({...p,primaryType:v})),
+                options:CARDIO_TYPES.map(t=>[t.id,t.label])})
             )
           ),
           h("div",{style:{display:"flex",gap:8,marginTop:4}},
@@ -3071,12 +3205,14 @@ function CardioBuilder({client,onUpdate,onClose}){
               )
             )
           ),
-          hiitCount>1&&h("div",{style:{background:C.amberLight,border:"1px solid "+C.amber+"44",borderRadius:8,padding:"8px 12px",marginTop:10,fontSize:12,color:C.amber,fontWeight:"bold"}},"⚠️ HIIT Warning: More than 1 HIIT session per week increases injury and overtraining risk. Consider replacing with Zone 2 or Active Recovery.")
+          hiitCount>1&&h("div",{style:{background:C.amberLight,border:"1px solid "+C.amber+"44",borderRadius:8,padding:"10px 12px",marginTop:8,fontSize:12,color:C.navy}},
+            "⚠ "+hiitCount+" HIIT sessions scheduled. Limit to 1x/week to avoid overtraining and injury."
+          )
         )),
         // Cardio type reference
         h(Card,null,h(CardH,{t:"CARDIO TYPE REFERENCE"}),h(CardB,{p:10},
-          CARDIO_TYPES.map(t=>h("div",{key:t.id,style:{display:"flex",gap:10,alignItems:"flex-start",marginBottom:10,paddingBottom:10,borderBottom:"1px solid "+C.grayBorder}},
-            h("div",{style:{background:t.color,borderRadius:6,padding:"4px 8px",fontSize:10,fontWeight:"bold",color:C.white,flexShrink:0,minWidth:80,textAlign:"center"}},t.label),
+          CARDIO_TYPES.map(t=>h("div",{key:t.id,style:{display:"flex",gap:10,alignItems:"flex-start",marginBottom:10}},
+            h("div",{style:{background:t.color,borderRadius:6,padding:"4px 8px",fontSize:10,fontWeight:"bold",color:C.white,whiteSpace:"nowrap",flexShrink:0}},t.label),
             h("div",{style:{flex:1}},
               h("div",{style:{fontSize:12,color:C.navy,fontWeight:"bold"}},t.rx),
               h("div",{style:{fontSize:11,color:C.gray}},t.desc)
@@ -3088,35 +3224,49 @@ function CardioBuilder({client,onUpdate,onClose}){
           h("div",{style:{fontWeight:"bold",color:C.navy,fontSize:14}},"Weekly Sessions"),
           h(Btn,{onClick:addSession,color:C.teal,small:true},"+ Add Session")
         ),
-        plan.sessions.length===0&&h("div",{style:{textAlign:"center",padding:24,color:C.gray,fontStyle:"italic",background:C.grayLight,borderRadius:8,marginBottom:12}},"No cardio sessions yet. Tap + Add Session to build the weekly plan."),
+        plan.sessions.length===0&&h("div",{style:{textAlign:"center",padding:24,color:C.gray,fontStyle:"italic"}},"No sessions added yet. Tap + Add Session to build the week."),
         plan.sessions.map((s,i)=>{
           const typeInfo=CARDIO_TYPES.find(t=>t.id===s.type)||CARDIO_TYPES[0];
+          const isSport=s.type==="sport";
           return h(Card,{key:i},
-            h("div",{style:{background:typeInfo.color,color:C.white,padding:"8px 12px",display:"flex",justifyContent:"space-between",alignItems:"center"}},
+            h("div",{style:{background:typeInfo.color,color:C.white,padding:"8px 12px",display:"flex",justifyContent:"space-between",alignItems:"center",borderRadius:"8px 8px 0 0",margin:"-14px -14px 12px"}},
               h("span",{style:{fontWeight:"bold",fontSize:12}},s.day+" — "+typeInfo.label),
-              h("button",{onClick:()=>removeSession(i),style:{background:"none",border:"none",color:C.white,cursor:"pointer",fontSize:16}},"×")
+              h("button",{onClick:()=>removeSession(i),style:{background:"none",border:"none",color:C.white,cursor:"pointer",fontSize:16,padding:"0 4px"}},"✕")
             ),
             h(CardB,null,
               h(G2,null,
-                h(Fld,{label:"DAY"},h(Sel,{value:s.day,onChange:v=>updateSession(i,"day",v),options:["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"].map(d=>[d,d])})),
-                h(Fld,{label:"TYPE"},h(Sel,{value:s.type,onChange:v=>updateSession(i,"type",v),options:CARDIO_TYPES.map(t=>[t.id,t.label])}))
+                h(Fld,{label:"DAY"},h(Sel,{value:s.day,onChange:v=>updateSession(i,"day",v),
+                  options:["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]})),
+                h(Fld,{label:"TYPE"},h(Sel,{value:s.type,onChange:v=>updateSession(i,"type",v),
+                  options:CARDIO_TYPES.map(t=>[t.id,t.label])}))
               ),
               h(G2,null,
-                h(Fld,{label:"DURATION (min)"},h(Sel,{value:s.duration,onChange:v=>updateSession(i,"duration",v),options:[["15","15 min"],["20","20 min"],["25","25 min"],["30","30 min"],["35","35 min"],["40","40 min"],["45","45 min"],["50","50 min"],["60","60 min"]]})),
-                h(Fld,{label:"INTENSITY"},h(Sel,{value:s.intensity,onChange:v=>updateSession(i,"intensity",v),options:[["light","Light — Easy effort"],["moderate","Moderate — Zone 2"],["hard","Hard — HIIT"],["max","Max — All out"]]}))
+                h(Fld,{label:"DURATION"},h("div",null,
+                  h(Sel,{value:s.duration,onChange:v=>updateSession(i,"duration",v),options:DURATION_OPTIONS}),
+                  s.duration==="custom"&&h(Inp,{value:s.customDuration||"",onChange:v=>updateSession(i,"customDuration",v),
+                    placeholder:"Enter minutes",st:{marginTop:6}})
+                )),
+                h(Fld,{label:"INTENSITY"},h(Sel,{value:s.intensity,onChange:v=>updateSession(i,"intensity",v),
+                  options:[["light","Light — Zone 1-2"],["moderate","Moderate — Zone 2-3"],["hard","Hard — Zone 3-4"],["max","Max — Zone 5 (HIIT)"]]}))
               ),
-              h(Fld,{label:"EQUIPMENT / MODALITY"},h(Sel,{value:s.equipment,onChange:v=>updateSession(i,"equipment",v),options:typeInfo.equipment.map(e=>[e,e])})),
-              h(Fld,{label:"TRAINER NOTES",mb:0},h(TA,{value:s.notes,onChange:v=>updateSession(i,"notes",v),placeholder:"HR target, intensity cues, specific instructions...",rows:2}))
+              isSport
+                ? h(Fld,{label:"SPORT / ACTIVITY"},h(Sel,{value:s.sport||"",onChange:v=>updateSession(i,"sport",v),
+                    options:[["","Select sport..."],...SPORT_OPTIONS.map(o=>[o,o])]}))
+                : h(Fld,{label:"EQUIPMENT / MODALITY"},h(Sel,{value:s.equipment,onChange:v=>updateSession(i,"equipment",v),
+                    options:EQUIPMENT_OPTIONS})),
+              h(Fld,{label:"TRAINER NOTES",mb:0},h(TA,{value:s.notes,onChange:v=>updateSession(i,"notes",v),
+                placeholder:"RPE targets, pacing notes, heart rate zones, progressions..."}))
             )
           );
         }),
-        plan.sessions.length>0&&h("div",{style:{background:C.tealLight,border:"1px solid "+C.teal+"44",borderRadius:10,padding:12,marginTop:4}},
-          h("div",{style:{fontWeight:"bold",color:C.navy,fontSize:13,marginBottom:8}},"Weekly Cardio Summary for Client"),
+        plan.sessions.length>0&&h("div",{style:{background:C.tealLight,border:"1px solid "+C.teal+"44",borderRadius:10,padding:"12px 14px",marginTop:8}},
+          h("div",{style:{fontWeight:"bold",color:C.navy,fontSize:13,marginBottom:8}},"Weekly Cardio Summary for "+client.name),
           plan.sessions.map((s,i)=>{
             const t=CARDIO_TYPES.find(ct=>ct.id===s.type)||CARDIO_TYPES[0];
+            const modality=s.type==="sport"?(s.sport||"Sport"):s.equipment;
             return h("div",{key:i,style:{display:"flex",gap:8,alignItems:"center",marginBottom:6}},
-              h("div",{style:{background:t.color,color:C.white,borderRadius:4,padding:"2px 8px",fontSize:10,fontWeight:"bold",minWidth:80,textAlign:"center"}},s.day),
-              h("div",{style:{fontSize:12,color:C.navy}},t.label+" | "+s.duration+" min | "+s.equipment),
+              h("div",{style:{background:t.color,color:C.white,borderRadius:4,padding:"2px 8px",fontSize:10,fontWeight:"bold",whiteSpace:"nowrap"}},s.day),
+              h("div",{style:{fontSize:12,color:C.navy}},t.label+" | "+getDisplayDuration(s)+" | "+modality),
               s.notes&&h("div",{style:{fontSize:11,color:C.gray,fontStyle:"italic"}}," — "+s.notes)
             );
           })
@@ -3125,6 +3275,7 @@ function CardioBuilder({client,onUpdate,onClose}){
     )
   );
 }
+
 
 function ClientView({client,isTrainer,onClientUpdate}){
   const [tab,setTab]=useState("plan");
