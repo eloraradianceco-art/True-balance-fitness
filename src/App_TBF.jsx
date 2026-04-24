@@ -3346,6 +3346,35 @@ function ClientView({client,isTrainer,onClientUpdate}){
           ),
           h("div",{className:"sc",style:{display:"flex",gap:8,paddingBottom:8,marginBottom:10}},localClient.days.map((d,i)=>h("button",{key:i,onClick:()=>setDi(i),style:{background:i===di?C.teal:C.grayLight,color:i===di?C.white:C.navy,border:"none",borderRadius:7,padding:"6px 12px",fontSize:11,fontWeight:"bold",cursor:"pointer",flexShrink:0,whiteSpace:"nowrap"}},d.title.split("—")[0].replace("SESSION","Session").replace("MONDAY","Mon").replace("TUESDAY","Tue").replace("EVERY OTHER DAY","E/O Day").replace("DAILY","Daily").replace("HOME","Home").replace("ASSESSMENT-BASED CORRECTIVE PROGRAM","Corrective").trim()))),
           h(DayView,{client:localClient,di,isTrainer}),
+          // Show saved cardio plan if exists
+          (localClient.cardioPlan||LS.get("tbf_cardio_"+localClient.id,null))&&h(Card,null,
+            h(CardH,{t:"CARDIO PLAN",color:C.teal}),
+            h(CardB,null,
+              (()=>{
+                const cp=localClient.cardioPlan||LS.get("tbf_cardio_"+localClient.id,null);
+                const CTYPE_COLORS={zone2:C.teal,hiit:C.red,liss:C.green,tempo:C.amber,active_recovery:C.gray,sport:C.purple};
+                return h("div",null,
+                  h("div",{style:{display:"flex",gap:8,marginBottom:10,flexWrap:"wrap"}},
+                    h("div",{style:{fontSize:11,color:C.gray}},cp.weeklyGoal+"x/week goal"),
+                    h("div",{style:{fontSize:11,color:C.gray,fontWeight:"bold"}},cp.sessions.length+" sessions planned")
+                  ),
+                  cp.sessions.map((s,i)=>{
+                    const col=CTYPE_COLORS[s.type]||C.navy;
+                    const dur=s.duration==="custom"&&s.customDuration?s.customDuration+" min":s.duration+" min";
+                    const modality=s.type==="sport"?(s.sport||"Sport"):s.equipment;
+                    return h("div",{key:i,style:{display:"flex",gap:10,alignItems:"flex-start",padding:"8px 0",borderBottom:"1px solid "+C.grayBorder}},
+                      h("div",{style:{background:col,color:C.white,borderRadius:5,padding:"3px 8px",fontSize:10,fontWeight:"bold",flexShrink:0,minWidth:70,textAlign:"center"}},s.day),
+                      h("div",{style:{flex:1}},
+                        h("div",{style:{fontSize:13,fontWeight:"bold",color:C.navy}},s.type.replace("_"," ").toUpperCase()+" | "+dur),
+                        h("div",{style:{fontSize:11,color:C.gray,marginTop:2}},modality),
+                        s.notes&&h("div",{style:{fontSize:11,color:C.teal,marginTop:2,fontStyle:"italic"}},s.notes)
+                      )
+                    );
+                  })
+                );
+              })()
+            )
+          ),
           isTrainer&&h("div",{style:{marginTop:12}},
             h("div",{style:{background:C.navy,color:C.white,padding:"9px 14px",fontSize:11,fontWeight:"bold",letterSpacing:1,borderRadius:"8px 8px 0 0"}},"CARDIO RECOMMENDATIONS"),
             h("div",{style:{background:C.white,border:"1px solid "+C.grayBorder,borderRadius:"0 0 8px 8px",padding:12}},
