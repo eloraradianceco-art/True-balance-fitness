@@ -3469,12 +3469,12 @@ tab==="assess"&&h("div",null,
               const col=CTYPE_COLORS[s.type]||C.navy;
               const dur=s.duration==="custom"&&s.customDuration?s.customDuration+" min":s.duration+" min";
               const modality=s.type==="sport"?(s.sport||"Sport"):s.equipment;
-              return h(Card,{key:i},
-                h("div",{style:{background:col,color:C.white,padding:"8px 14px",borderRadius:"8px 8px 0 0",margin:"-14px -14px 12px",display:"flex",justifyContent:"space-between",alignItems:"center"}},
+              return h("div",{key:i,style:{border:"1px solid "+col+"44",borderRadius:10,overflow:"hidden",marginBottom:10}},
+                h("div",{style:{background:col,color:C.white,padding:"10px 14px",display:"flex",justifyContent:"space-between",alignItems:"center"}},
                   h("span",{style:{fontWeight:"bold",fontSize:13}},s.day+" — "+CTYPE_LABEL[s.type]),
                   h("span",{style:{fontSize:12,opacity:0.9}},dur)
                 ),
-                h(CardB,null,
+                h("div",{style:{padding:"12px 14px",background:C.white}},
                   h("div",{style:{fontSize:13,fontWeight:"bold",color:C.navy,marginBottom:4}},modality),
                   s.notes&&h("div",{style:{fontSize:12,color:C.gray,fontStyle:"italic",marginBottom:4}},s.notes),
                   h("div",{style:{display:"flex",gap:8,flexWrap:"wrap",marginTop:4}},
