@@ -1881,17 +1881,21 @@ function WorkoutHistory({client, isTrainer}) {
   // Group by exercise for trend view
   const exerciseTrends = {};
   history.forEach(session => {
-    session.exercises.forEach(ex => {
+    const exercises = Array.isArray(session.exercises) ? session.exercises : [];
+    exercises.forEach(ex => {
+      if (!ex || !ex.name) return;
+      const sets = Array.isArray(ex.sets) && ex.sets.length > 0 ? ex.sets : null;
+      if (!sets) return; // skip cardio-only or empty entries
       if (!exerciseTrends[ex.name]) exerciseTrends[ex.name] = [];
       exerciseTrends[ex.name].push({
         date: session.date,
         dayTitle: session.dayTitle,
-        sets: ex.sets,
-        bestSet: ex.sets.reduce((best, s) => {
+        sets,
+        bestSet: sets.reduce((best, s) => {
           const vol = (parseFloat(s.weight)||0) * (parseFloat(s.reps)||0);
           const bestVol = (parseFloat(best.weight)||0) * (parseFloat(best.reps)||0);
           return vol > bestVol ? s : best;
-        }, ex.sets[0] || {})
+        }, sets[0] || {})
       });
     });
   });
@@ -1919,7 +1923,7 @@ function WorkoutHistory({client, isTrainer}) {
             h(Btn, {onClick:()=>setSelectedSession(null), color:C.grayLight, fg:C.navy, small:true, st:{marginBottom:12}}, '← Back'),
             h('div', {style:{fontWeight:'bold', color:C.navy, fontSize:15, marginBottom:4}}, selectedSession.dayTitle),
             h('div', {style:{fontSize:11, color:C.gray, marginBottom:12}}, selectedSession.date),
-            selectedSession.exercises.map((ex, i) =>
+            (Array.isArray(selectedSession.exercises)?selectedSession.exercises:[]).filter(ex=>ex&&Array.isArray(ex.sets)&&ex.sets.length>0).map((ex, i) =>
               h(Card, {key:i},
                 h(CardH, {t:ex.name, color:C.navy2}),
                 h(CardB, null,
