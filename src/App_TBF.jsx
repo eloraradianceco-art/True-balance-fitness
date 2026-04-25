@@ -3343,6 +3343,98 @@ function CardioBuilder({client,onUpdate,onClose}){
 }
 
 
+function CardioTabView({localClient,isTrainer,onEdit}){
+  const today=new Date().toISOString().slice(0,10);
+  const logKey="tbf_cardio_log_"+localClient.id;
+  const [cardioCompleted,setCardioCompleted]=useState(()=>{
+    try{const logs=JSON.parse(localStorage.getItem(logKey)||'[]');return logs.find(l=>l.date===today)?.completed||false;}catch(e){return false;}
+  });
+
+  const saveCardioLog=async(completedVal)=>{
+    try{
+      const logs=JSON.parse(localStorage.getItem(logKey)||'[]');
+      const existing=logs.find(l=>l.date===today)||{date:today};
+      existing.completed=completedVal;existing.completedAt=completedVal?new Date().toISOString():null;
+      localStorage.setItem(logKey,JSON.stringify([existing,...logs.filter(l=>l.date!==today)].slice(0,60)));
+    }catch(e){}
+    if(supabase&&localClient.email){
+      try{
+        await supabase.from("tbf_workout_logs").upsert({
+          client_email:localClient.email,log_date:today,day_title:"Cardio Session",
+          completed:completedVal,completed_at:completedVal?new Date().toISOString():null,
+          exercises:JSON.stringify([{name:"Cardio",type:"cardio"}]),
+          updated_at:new Date().toISOString()
+        },{onConflict:"client_email,log_date"});
+      }catch(e){console.warn("Cardio log sync:",e.message);}
+    }
+  };
+  const markCardioComplete=async()=>{await saveCardioLog(true);setCardioCompleted(true);};
+  const undoCardioComplete=async()=>{await saveCardioLog(false);setCardioCompleted(false);};
+
+  const cp=localClient.cardioPlan||LS.get("tbf_cardio_"+localClient.id,null);
+  if(!cp||!cp.sessions||cp.sessions.length===0) return h("div",null,
+    isTrainer&&h("div",{style:{marginBottom:12}},h(Btn,{onClick:onEdit,color:C.teal,full:true,st:{fontSize:12}},"🏃 Edit Cardio Plan")),
+    h("div",{style:{padding:32,textAlign:"center",color:C.gray,fontStyle:"italic"}},"No cardio plan yet."+(isTrainer?" Tap Edit Cardio Plan to build one.":""))
+  );
+
+  const CTYPE_COLORS={zone2:C.teal,hiit:C.red,liss:C.green,tempo:C.amber,active_recovery:C.gray,sport:C.purple};
+  const CTYPE_LABEL={zone2:"Zone 2",hiit:"HIIT",liss:"LISS",tempo:"Tempo",active_recovery:"Active Recovery",sport:"Sport Specific"};
+
+  return h("div",null,
+    isTrainer&&h("div",{style:{marginBottom:12}},h(Btn,{onClick:onEdit,color:C.teal,full:true,st:{fontSize:12}},"🏃 Edit Cardio Plan")),
+    h(Card,null,
+      h(CardH,{t:"WEEKLY CARDIO OVERVIEW",color:C.teal}),
+      h(CardB,null,
+        h("div",{style:{display:"flex",gap:12,marginBottom:12}},
+          h("div",{style:{flex:1,background:C.tealLight,borderRadius:8,padding:"10px 12px",textAlign:"center"}},
+            h("div",{style:{fontSize:22,fontWeight:"bold",color:C.teal}},cp.sessions.length),
+            h("div",{style:{fontSize:10,color:C.gray}},"Sessions")
+          ),
+          h("div",{style:{flex:1,background:"#f0f4f8",borderRadius:8,padding:"10px 12px",textAlign:"center"}},
+            h("div",{style:{fontSize:22,fontWeight:"bold",color:C.navy}},cp.weeklyGoal+"x"),
+            h("div",{style:{fontSize:10,color:C.gray}},"Weekly Goal")
+          ),
+          h("div",{style:{flex:1,background:C.amberLight,borderRadius:8,padding:"10px 12px",textAlign:"center"}},
+            h("div",{style:{fontSize:22,fontWeight:"bold",color:C.amber}},cp.sessions.filter(s=>s.type==="hiit").length),
+            h("div",{style:{fontSize:10,color:C.gray}},"HIIT Days")
+          )
+        )
+      )
+    ),
+    cp.sessions.map((s,i)=>{
+      const col=CTYPE_COLORS[s.type]||C.navy;
+      const dur=s.duration==="custom"&&s.customDuration?s.customDuration+" min":s.duration+" min";
+      const modality=s.type==="sport"?(s.sport||"Sport"):s.equipment;
+      return h("div",{key:i,style:{border:"1px solid "+col+"44",borderRadius:10,overflow:"hidden",marginBottom:10}},
+        h("div",{style:{background:col,color:C.white,padding:"10px 14px",display:"flex",justifyContent:"space-between",alignItems:"center"}},
+          h("span",{style:{fontWeight:"bold",fontSize:13}},s.day+" — "+CTYPE_LABEL[s.type]),
+          h("span",{style:{fontSize:12,opacity:0.9}},dur)
+        ),
+        h("div",{style:{padding:"12px 14px",background:C.white}},
+          h("div",{style:{fontSize:13,fontWeight:"bold",color:C.navy,marginBottom:4}},modality),
+          s.notes&&h("div",{style:{fontSize:12,color:C.gray,fontStyle:"italic",marginBottom:6}},s.notes),
+          h("div",{style:{display:"flex",gap:8,flexWrap:"wrap",marginTop:4}},
+            h("div",{style:{background:col+"15",border:"1px solid "+col+"33",borderRadius:6,padding:"3px 9px",fontSize:11,color:col,fontWeight:"bold"}},CTYPE_LABEL[s.type]),
+            s.intensity&&h("div",{style:{background:C.grayBorder,borderRadius:6,padding:"3px 9px",fontSize:11,color:C.gray}},s.intensity)
+          )
+        )
+      );
+    }),
+    cardioCompleted
+      ?h("div",{style:{background:C.green,borderRadius:10,padding:"14px 16px",marginTop:4,display:"flex",justifyContent:"space-between",alignItems:"center"}},
+          h("div",null,
+            h("div",{style:{color:C.white,fontWeight:"bold",fontSize:15}},"✓ Cardio Complete!"),
+            h("div",{style:{color:C.white,fontSize:12,opacity:0.85,marginTop:2}},"Great work. Session logged.")
+          ),
+          h("button",{onClick:undoCardioComplete,style:{background:"none",border:"1px solid rgba(255,255,255,0.5)",color:C.white,borderRadius:6,padding:"5px 10px",fontSize:11,cursor:"pointer"}},"Undo")
+        )
+      :h("button",{onClick:markCardioComplete,style:{width:"100%",marginTop:12,padding:"13px",background:C.navy,color:C.white,border:"2px solid "+C.teal,borderRadius:10,fontSize:14,fontWeight:"bold",cursor:"pointer",letterSpacing:0.5}},
+          "✓ Mark Cardio Complete"
+        )
+  );
+}
+
+
 function ClientView({client,isTrainer,onClientUpdate}){
   const [tab,setTab]=useState("plan");
   const [showBuilder,setShowBuilder]=useState(false);
@@ -3436,16 +3528,9 @@ tab==="assess"&&h("div",null,
         h(AssessmentHistory,{client,isTrainer,onLoadAssessment:data=>{LS.set(`tbf_assess_${client.id}`,data);setAssessment(data);}}),
         h(AssessmentForm,{client,isTrainer,existing:assessment,onSave:handleSaveAssessment})
       ),
-      tab==="cardio"&&h("div",null,
-        isTrainer&&h("div",{style:{marginBottom:12}},
-          h(Btn,{onClick:()=>setShowCardio(true),color:C.teal,full:true,st:{fontSize:12}},"🏃 Edit Cardio Plan")
-        ),
-        (()=>{
-          const cp=localClient.cardioPlan||LS.get("tbf_cardio_"+localClient.id,null);
-          if(!cp||!cp.sessions||cp.sessions.length===0) return h("div",{style:{padding:32,textAlign:"center",color:C.gray,fontStyle:"italic"}},"No cardio plan yet."+(isTrainer?" Tap Edit Cardio Plan to build one.":""));
-          const CTYPE_COLORS={zone2:C.teal,hiit:C.red,liss:C.green,tempo:C.amber,active_recovery:C.gray,sport:C.purple};
-          const CTYPE_LABEL={zone2:"Zone 2",hiit:"HIIT",liss:"LISS",tempo:"Tempo",active_recovery:"Active Recovery",sport:"Sport Specific"};
-          return h("div",null,
+      tab==="cardio"&&h(CardioTabView,{localClient,isTrainer,onEdit:()=>setShowCardio(true)}),
+      false&&h("div",null,
+        (()=>{return h("div",null,
             h(Card,null,
               h(CardH,{t:"WEEKLY CARDIO OVERVIEW",color:C.teal}),
               h(CardB,null,
