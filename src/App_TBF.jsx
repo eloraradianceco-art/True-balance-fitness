@@ -3374,8 +3374,7 @@ function ClientView({client,isTrainer,onClientUpdate}){
               );
             })()
           ),
-          h(DayView,{client:localClient,di,isTrainer})
-          ),
+          h(DayView,{client:localClient,di,isTrainer}),
           isTrainer&&h("div",{style:{marginTop:12}},
             h("div",{style:{background:C.navy,color:C.white,padding:"9px 14px",fontSize:11,fontWeight:"bold",letterSpacing:1,borderRadius:"8px 8px 0 0"}},"CARDIO RECOMMENDATIONS"),
             h("div",{style:{background:C.white,border:"1px solid "+C.grayBorder,borderRadius:"0 0 8px 8px",padding:12}},
