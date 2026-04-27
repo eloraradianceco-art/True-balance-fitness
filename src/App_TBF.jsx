@@ -2407,6 +2407,22 @@ function NutritionProfile({client, isTrainer, onClientUpdate}) {
 
 function AssessmentHistory({client, isTrainer, onLoadAssessment}) {
   const histKey = `tbf_assess_history_${client.id}`;
+  // Load assessment history from Supabase
+  useEffect(()=>{
+    if(!supabase||!client.email) return;
+    supabase.from("tbf_assessment_history")
+      .select("assessment,saved_date")
+      .eq("client_email",client.email)
+      .order("saved_date",{ascending:false})
+      .limit(10)
+      .then(({data,error})=>{
+        if(error||!data?.length) return;
+        try{
+          const parsed=data.map(r=>JSON.parse(r.assessment));
+          LS.set(histKey,parsed);
+        }catch(e){}
+      });
+  },[client.email]);
   const [history] = useState(() => LS.get(histKey, []));
   const [compare, setCompare] = useState(null);
 
@@ -3528,6 +3544,21 @@ function ClientView({client,isTrainer,onClientUpdate}){
   const [showCardio,setShowCardio]=useState(false);
   const [di,setDi]=useState(0);
   const [assessment,setAssessment]=useState(()=>LS.get(`tbf_assess_${client.id}`,null));
+  // Load assessment from Supabase on mount (source of truth)
+  useEffect(()=>{
+    if(!supabase||!client.email) return;
+    supabase.from("tbf_clients")
+      .select("assessment")
+      .eq("email",client.email)
+      .single()
+      .then(({data,error})=>{
+        if(error||!data?.assessment) return;
+        try{
+          const a=JSON.parse(data.assessment);
+          if(a){setAssessment(a);LS.set(`tbf_assess_${client.id}`,a);}
+        }catch(e){}
+      });
+  },[client.email]);
   const [pendingProg,setPendingProg]=useState(null);
   // localClient mirrors the client prop but updates immediately when onClientUpdate fires
   const [localClient,setLocalClient]=useState(client);
@@ -3541,18 +3572,34 @@ function ClientView({client,isTrainer,onClientUpdate}){
   const compLogs=LS.get(`tbf_comp_${client.id}`,[]);
   const recentCount=compLogs.filter(l=>(new Date()-new Date(l.date))/(1000*60*60*24)<7).length;
   const hasProgram=localClient.days&&localClient.days.length>0;
-  const handleSaveAssessment=data=>{
-    // Save current assessment
+  const handleSaveAssessment=async data=>{
+    // Save current assessment locally
     LS.set(`tbf_assess_${client.id}`,data);
     setAssessment(data);
-    // Save to assessment history
+    // Save to assessment history locally
     const histKey=`tbf_assess_history_${client.id}`;
     const history=LS.get(histKey,[]);
     const dated={...data,savedDate:data.date||new Date().toISOString().slice(0,10)};
-    // Replace if same date, otherwise prepend
     const existing=history.findIndex(a=>a.savedDate===dated.savedDate);
     const updated=existing>=0?history.map((a,i)=>i===existing?dated:a):[dated,...history];
     LS.set(histKey,updated.slice(0,10));
+    // Save to Supabase
+    if(supabase&&client.email){
+      try{
+        // Save current assessment to tbf_clients.assessment column
+        await supabase.from("tbf_clients").update({
+          assessment:JSON.stringify(data)
+        }).eq("email",client.email);
+        // Save to assessment history table
+        await supabase.from("tbf_assessment_history").upsert({
+          client_email:client.email,
+          saved_date:dated.savedDate,
+          assessment:JSON.stringify(dated),
+          updated_at:new Date().toISOString()
+        },{onConflict:"client_email,saved_date"});
+        console.log("✓ Assessment saved to Supabase");
+      }catch(e){console.warn("Assessment save error:",e.message);}
+    }
     if(isTrainer){const sugg=genSugg(data);if(!hasProgram){const prog=buildProg(sugg);onClientUpdate({...client,days:[prog]});}else if(sugg.findings.length>0) setPendingProg(buildProg(sugg));}
   };
   const TABS=[{id:"plan",label:"Training"},{id:"cardio",label:"Cardio"},{id:"history",label:"History"},{id:"notes",label:"Notes"},{id:"nutrition",label:"Nutrition"},{id:"assess",label:"Assessment"}];
