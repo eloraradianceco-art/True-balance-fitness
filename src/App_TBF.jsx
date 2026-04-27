@@ -1390,7 +1390,28 @@ function buildProg(sugg){
   return{title:"ASSESSMENT-BASED CORRECTIVE PROGRAM — Phase 1",type:"session",sections};
 }
 
-const exK=(cid,t,di,si,ei)=>`tbf_${t}_${cid}_${di}_${si}_${ei}`;
+const TODAY_STR = new Date().toISOString().slice(0,10);
+
+// Clean up old daily localStorage keys (older than 7 days) to prevent bloat
+;(()=>{
+  try {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 7);
+    const cutoffStr = cutoff.toISOString().slice(0,10);
+    Object.keys(localStorage).forEach(key => {
+      // Match daily keys: tbf_chk_... or tbf_setlog_... ending in YYYY-MM-DD
+      const m = key.match(/^tbf_(chk|setlog)_.+_(\d{4}-\d{2}-\d{2})$/);
+      if (m && m[2] < cutoffStr) localStorage.removeItem(key);
+    });
+  } catch(e) {}
+})();
+const exK=(cid,t,di,si,ei)=>{
+  // Daily keys (reset each day): chk (checkbox done)
+  // Program keys (persist): swap, presc, rest, super, superwith
+  const daily = ['chk'];
+  const prefix = daily.includes(t) ? `tbf_${t}_${cid}_${di}_${si}_${ei}_${TODAY_STR}` : `tbf_${t}_${cid}_${di}_${si}_${ei}`;
+  return prefix;
+};
 
 
 function ExerciseModal({ex,onClose}){
@@ -1480,13 +1501,36 @@ function SetLogger({ex, cid, di, si, ei, prescription}) {
   const parseReps = (p) => { if(!p)return ''; const m=p.match(/[x×]\s*([\d\-]+)/i); return m?m[1]:''; };
   const parseWeight = (p) => { if(!p)return ''; const m=p.match(/(\d+(?:\.\d+)?)\s*(?:lbs?|kg)/i); return m?m[1]:''; };
 
-  const logKey = `tbf_setlog_${cid}_${di}_${si}_${ei}`;
+  const logKey = `tbf_setlog_${cid}_${di}_${si}_${ei}_${TODAY_STR}`;
   const totalSets = parseSets(prescription);
 
   // ── Load today's logged sets ──────────────────────────────────────────
   const [sets, setSets] = useState(() => {
     try { return JSON.parse(localStorage.getItem(logKey) || 'null') || []; } catch { return []; }
   });
+
+  // Load from Supabase on mount (overrides localStorage with server truth)
+  useEffect(() => {
+    if (!supabase || !cid) return;
+    supabase.from("tbf_set_logs")
+      .select("sets")
+      .eq("client_id", cid)
+      .eq("log_date", TODAY_STR)
+      .eq("day_index", di)
+      .eq("section_index", si)
+      .eq("exercise_index", ei)
+      .single()
+      .then(({ data, error }) => {
+        if (error || !data) return;
+        try {
+          const serverSets = JSON.parse(data.sets || "[]");
+          if (serverSets.length > 0) {
+            setSets(serverSets);
+            localStorage.setItem(logKey, JSON.stringify(serverSets));
+          }
+        } catch(e) {}
+      });
+  }, [cid, di, si, ei, TODAY_STR]);
 
   // ── Load PREVIOUS session data for this exercise ──────────────────────
   const prevSession = (() => {
@@ -1524,9 +1568,25 @@ function SetLogger({ex, cid, di, si, ei, prescription}) {
   const [entryRpe, setEntryRpe] = useState('');
   const [autoNote, setAutoNote] = useState('');
 
-  const save = (updated) => {
+  const save = async (updated) => {
     setSets(updated);
+    // Always cache locally for instant UI
     try { localStorage.setItem(logKey, JSON.stringify(updated)); } catch {}
+    // Sync to Supabase
+    if(supabase && cid) {
+      try {
+        await supabase.from("tbf_set_logs").upsert({
+          client_id: cid,
+          log_date: TODAY_STR,
+          day_index: di,
+          section_index: si,
+          exercise_index: ei,
+          exercise_name: ex,
+          sets: JSON.stringify(updated),
+          updated_at: new Date().toISOString()
+        }, { onConflict: "client_id,log_date,day_index,section_index,exercise_index" });
+      } catch(e) { console.warn("Set log sync:", e.message); }
+    }
   };
 
   const checkProgression = (logs) => {
@@ -1705,6 +1765,18 @@ function SetLogger({ex, cid, di, si, ei, prescription}) {
 
 function ExCard({ex,cid,di,si,ei,isTrainer,onShowInfo}){
   const [checked,setChecked]=useState(()=>LS.get(exK(cid,"chk",di,si,ei),false));
+  useEffect(()=>{
+    if(!supabase||!cid) return;
+    supabase.from("tbf_exercise_checks")
+      .select("checked").eq("client_id",cid).eq("log_date",TODAY_STR)
+      .eq("day_index",di).eq("section_index",si).eq("exercise_index",ei)
+      .single()
+      .then(({data,error})=>{
+        if(error||!data) return;
+        setChecked(data.checked);
+        LS.set(exK(cid,"chk",di,si,ei),data.checked);
+      });
+  },[cid,di,si,ei,TODAY_STR]);
   const [curName,setCurName]=useState(()=>LS.get(exK(cid,"swap",di,si,ei),ex.name));
   const [curPresc,setCurPresc]=useState(()=>LS.get(exK(cid,"presc",di,si,ei),ex.prescription));
   const [restPeriod,setRestPeriod]=useState(()=>LS.get(exK(cid,"rest",di,si,ei),ex.rest||""));
@@ -1718,7 +1790,18 @@ function ExCard({ex,cid,di,si,ei,isTrainer,onShowInfo}){
   const progs=PROG[ex.name]||PROG[curName]||[];
   const results=search.length>1?ALL_EX_FULL2.filter(e=>e.name.toLowerCase().includes(search.toLowerCase())).slice(0,12):[];
   const tog=(p)=>setPanel(panel===p?null:p);
-  const checkToggle=()=>{const v=!checked;setChecked(v);LS.set(exK(cid,"chk",di,si,ei),v);};
+  const checkToggle=async()=>{
+    const v=!checked;setChecked(v);
+    LS.set(exK(cid,"chk",di,si,ei),v);
+    if(supabase&&cid){
+      try{
+        await supabase.from("tbf_exercise_checks").upsert({
+          client_id:cid,log_date:TODAY_STR,day_index:di,section_index:si,exercise_index:ei,
+          exercise_name:curName,checked:v,updated_at:new Date().toISOString()
+        },{onConflict:"client_id,log_date,day_index,section_index,exercise_index"});
+      }catch(e){console.warn("Check sync:",e.message);}
+    }
+  };
   const savePresc=()=>{setCurPresc(prescEdit);LS.set(exK(cid,"presc",di,si,ei),prescEdit);setPanel(null);};
   const saveRest=()=>{setRestPeriod(restEdit);LS.set(exK(cid,"rest",di,si,ei),restEdit);setPanel(null);};
   const doSwap=(name)=>{setCurName(name);LS.set(exK(cid,"swap",di,si,ei),name);setSearch("");setPanel(null);};
@@ -3845,16 +3928,19 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
     }catch(e){}
     if(supabase&&updated.email){
       try{
-        const result=await supabase.from("tbf_clients").update({
+        const result=await supabase.from("tbf_clients").upsert({
+          email:updated.email,
           name:updated.name,phase:updated.phase,focus:updated.focus,
           restrictions:JSON.stringify(updated.restrictions||[]),
+          goal_template:updated.goal||"posture",
           days:JSON.stringify(updated.days||[]),
           notes:JSON.stringify(updated.notes||[]),
           nutrition:JSON.stringify(updated.nutrition||{}),
-          cardio_plan:JSON.stringify(updated.cardioPlan||null)
-        }).eq("email",updated.email);
+          cardio_plan:JSON.stringify(updated.cardioPlan||null),
+          trainer_id:window.__tbf_user?.id||null
+        },{onConflict:"email"});
         if(result.error) console.error("Supabase save failed:",result.error.message);
-        else console.log("Supabase save OK for",updated.name,"- days:",updated.days?.length,"day(s)");
+        else console.log("✓ Supabase saved:",updated.name,"days:",updated.days?.length);
       }catch(e){console.error("Client update error:",e.message);}
     }
   };
