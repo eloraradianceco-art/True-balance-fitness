@@ -3705,7 +3705,7 @@ function Register({onRegister,onBack}){
 }
 
 const TRAINER_U={id:"trainer",name:"Anthony Anderson",password:"",role:"trainer"};
-const TRAINER_EMAIL="";
+const TRAINER_EMAIL="aja2012@gmail.com";  // Your Supabase login email
 const TRAINER_PASS="TBF228!";
 const INIT=[];
 
@@ -4131,7 +4131,8 @@ onClick:async()=>{
 
   window.__tbf_signout = () => supabase.auth.signOut();
   window.__tbf_user = session.user;
-  const isTrainerEmail = session.user.email === TRAINER_EMAIL;
+  const TRAINER_EMAILS = [TRAINER_EMAIL, "aja2012@gmail.com"].filter(Boolean);
+  const isTrainerEmail = TRAINER_EMAILS.some(e => e.toLowerCase() === (session.user.email||"").toLowerCase());
   return h(App, {supabaseUser: session.user, supabaseProfile: profile, autoTrainer: isTrainerEmail});
 }
 
