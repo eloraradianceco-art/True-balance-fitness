@@ -4111,6 +4111,35 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
     h("div",{style:{background:C.navy,padding:"14px 18px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:100,boxShadow:"0 2px 12px rgba(0,0,0,0.25)"}},
       h("div",null,
         h("div",{style:{color:C.white,fontWeight:"bold",fontSize:17}},effectiveIsTrainer&&viewing?viewing.name:"True Balance Fitness"),
+        // Push to Cloud button for trainer
+        effectiveIsTrainer&&!viewing&&h("button",{
+          onClick:async()=>{
+            if(!supabase) return alert("Supabase not connected");
+            let synced=0;
+            for(const c of clients){
+              if(!c.email) continue;
+              const {error}=await supabase.from("tbf_clients").upsert({
+                email:c.email,name:c.name,phase:c.phase,focus:c.focus,
+                goal_template:c.goal||"posture",
+                restrictions:JSON.stringify(c.restrictions||[]),
+                days:JSON.stringify(c.days||[]),
+                notes:JSON.stringify(c.notes||LS.get(`tbf_notes_${c.id}`,[])),
+                nutrition:JSON.stringify(c.nutrition||{}),
+                cardio_plan:JSON.stringify(c.cardioPlan||null),
+                assessment:JSON.stringify(LS.get(`tbf_assess_${c.id}`,null)),
+                macros:JSON.stringify(LS.get(`tbf_macros_${c.id}`,null)),
+                calories:JSON.stringify(LS.get(`tbf_cals_${c.id}`,null)),
+                meal_foods:JSON.stringify(LS.get(`tbf_meals_${c.id}`,null)),
+                pain_logs:JSON.stringify(LS.get(`tbf_pain_${c.id}`,[])),
+                trainer_id:window.__tbf_user?.id||null
+              },{onConflict:"email"});
+              if(!error) synced++;
+            }
+            alert("☁ Synced "+synced+" of "+clients.length+" clients to Supabase");
+          },
+          style:{background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.25)",
+          color:C.white,borderRadius:6,padding:"4px 10px",fontSize:11,cursor:"pointer",marginTop:6,display:"block"}
+        },"☁ Push All to Cloud"),
         h("div",{style:{color:C.tealLight,fontSize:11,marginTop:1}},effectiveIsTrainer&&!viewing?"Trainer Dashboard":effectiveIsTrainer?"Client View":(effectiveUser?.focus||"").split("|")[0]?.trim()||"My Program")
       ),
       h("div",{style:{display:"flex",gap:8}},
