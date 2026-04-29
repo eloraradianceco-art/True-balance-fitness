@@ -4083,11 +4083,19 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
           !viewing&&h("button",{
             onClick:async()=>{
               if(!supabase) return alert("Supabase not connected");
+              // Get current session user ID
+              const {data:{session}}=await supabase.auth.getSession();
+              const trainerId=session?.user?.id||window.__tbf_user?.id||null;
+              if(!trainerId) return alert("Not signed in to Supabase. Please sign out and sign back in.");
               let synced=0;
+              const errors=[];
               for(const c of clients){
                 if(!c.email) continue;
-                const {error}=await supabase.from("tbf_clients").upsert({
-                  email:c.email,name:c.name,phase:c.phase,focus:c.focus,
+                const payload={
+                  email:c.email,
+                  name:c.name||"",
+                  phase:c.phase||1,
+                  focus:c.focus||"",
                   goal_template:c.goal||"posture",
                   restrictions:JSON.stringify(c.restrictions||[]),
                   days:JSON.stringify(c.days||[]),
@@ -4099,11 +4107,26 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
                   calories:JSON.stringify(LS.get(`tbf_cals_${c.id}`,null)),
                   meal_foods:JSON.stringify(LS.get(`tbf_meals_${c.id}`,null)),
                   pain_logs:JSON.stringify(LS.get(`tbf_pain_${c.id}`,[])),
-                  trainer_id:window.__tbf_user?.id||null
-                },{onConflict:"email"});
-                if(!error) synced++;
+                  trainer_id:trainerId
+                };
+                const {error}=await supabase.from("tbf_clients").upsert(payload,{onConflict:"email"});
+                if(error){
+                  console.error("Failed to sync",c.name,":",error.message,error.details,error.hint);
+                  errors.push(c.name+": "+error.message);
+                } else {
+                  synced++;
+                  console.log("Synced",c.name);
+                }
               }
-              alert("Synced "+synced+" of "+clients.length+" clients to cloud");
+              if(errors.length>0){
+                alert("Synced "+synced+" of "+clients.length+".
+
+Errors:
+"+errors.slice(0,3).join("
+"));
+              } else {
+                alert("✓ All "+synced+" clients synced to cloud!");
+              }
             },
             style:{marginTop:6,background:"rgba(42,157,143,0.3)",border:"1px solid "+C.teal,
             color:C.teal,borderRadius:6,padding:"5px 12px",fontSize:12,cursor:"pointer",fontWeight:"bold"}
