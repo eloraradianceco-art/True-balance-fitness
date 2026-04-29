@@ -3941,6 +3941,44 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
       .catch(e=>{console.warn("tbf_clients fetch failed:",e.message);setClientsLoaded(true);});
   },[autoTrainer]);
 
+  // Refresh clients when app comes back to foreground
+  useEffect(()=>{
+    if(!supabase||!autoTrainer) return;
+    const refresh = () => {
+      if(document.visibilityState === 'visible') {
+        supabase.from("tbf_clients").select("*")
+          .then(({data,error})=>{
+            if(error||!data) return;
+            try{
+              const mapped=data.map(r=>{
+                const safeJson=(str,fb)=>{try{return str&&str!=="null"?JSON.parse(str):fb;}catch{return fb;}};
+                return {
+                  id:r.email.toLowerCase().replace(/[^a-z0-9]/g,"_"),
+                  name:r.name,email:r.email,role:"client",
+                  phase:r.phase||1,focus:r.focus||"",
+                  restrictions:safeJson(r.restrictions,[]),
+                  goal:r.goal_template||"posture",
+                  days:safeJson(r.days,TEMPLATES[r.goal_template||"posture"]?.days||[]),
+                  notes:safeJson(r.notes,[]),
+                  nutrition:safeJson(r.nutrition,null),
+                  cardioPlan:safeJson(r.cardio_plan,null),
+                  assessment:safeJson(r.assessment,null),
+                  macros:safeJson(r.macros,null),
+                  calories:safeJson(r.calories,null),
+                  meal_foods:safeJson(r.meal_foods,null),
+                  pain_logs:safeJson(r.pain_logs,[]),
+                  schedule:[],password:"",supabase_id:r.id
+                };
+              });
+              setClients(mapped);
+            }catch(e){}
+          });
+      }
+    };
+    document.addEventListener('visibilitychange', refresh);
+    return ()=>document.removeEventListener('visibilitychange', refresh);
+  },[autoTrainer]);
+
   // Realtime: refresh client data when Supabase row changes
   useEffect(()=>{
     if(!supabase||!autoTrainer) return;
@@ -4077,7 +4115,7 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
           notes:JSON.stringify(updated.notes||[]),
           nutrition:JSON.stringify(updated.nutrition||{}),
           cardio_plan:JSON.stringify(updated.cardioPlan||null),
-          trainer_id:window.__tbf_user?.id||null
+          trainer_id:supabaseUser?.id||window.__tbf_user?.id||'1c5ec66c-9a39-40fb-8d08-e79d6dd6785f'
         },{onConflict:"email"});
         if(result.error) console.error("Supabase save failed:",result.error.message);
         else console.log("✓ Supabase saved:",updated.name,"days:",updated.days?.length);
