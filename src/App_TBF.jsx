@@ -3906,19 +3906,34 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
         if(error){console.warn("Load clients:",error.message);setClientsLoaded(true);return;}
         if(!data||data.length===0){setClientsLoaded(true);return;}
         try{
-          const mapped=data.map(r=>({
-            id:r.email.toLowerCase().replace(/[^a-z0-9]/g,"_"),
-            name:r.name,email:r.email,role:"client",
-            phase:r.phase||1,focus:r.focus||"",
-            restrictions:typeof r.restrictions==="string"?JSON.parse(r.restrictions||"[]"):r.restrictions||[],
-            goal:r.goal_template||"posture",
-            invitedAt:r.invited_at,
-            days:r.days?JSON.parse(r.days):TEMPLATES[r.goal_template||"posture"]?.days||[],
-            notes:r.notes?JSON.parse(r.notes):[],
-            nutrition:r.nutrition?JSON.parse(r.nutrition):null,
-            cardioPlan:r.cardio_plan?JSON.parse(r.cardio_plan):null,
-            schedule:[],password:"",supabase_id:r.id
-          }));
+          const mapped=data.map(r=>{
+            const safeJson=(str,fallback)=>{try{return str&&str!=="null"?JSON.parse(str):fallback;}catch{return fallback;}};
+            const cid=r.email.toLowerCase().replace(/[^a-z0-9]/g,"_");
+            const obj={
+              id:cid,
+              name:r.name,email:r.email,role:"client",
+              phase:r.phase||1,focus:r.focus||"",
+              restrictions:safeJson(r.restrictions,[]),
+              goal:r.goal_template||"posture",
+              invitedAt:r.invited_at,
+              days:safeJson(r.days,TEMPLATES[r.goal_template||"posture"]?.days||[]),
+              notes:safeJson(r.notes,[]),
+              nutrition:safeJson(r.nutrition,null),
+              cardioPlan:safeJson(r.cardio_plan,null),
+              assessment:safeJson(r.assessment,null),
+              macros:safeJson(r.macros,null),
+              calories:safeJson(r.calories,null),
+              meal_foods:safeJson(r.meal_foods,null),
+              pain_logs:safeJson(r.pain_logs,[]),
+              schedule:[],password:"",supabase_id:r.id
+            };
+            // Cache to localStorage for offline use
+            try{localStorage.setItem("tbf_client_"+cid,JSON.stringify({
+              days:obj.days,notes:obj.notes,nutrition:obj.nutrition,
+              cardioPlan:obj.cardioPlan,savedAt:r.updated_at||new Date().toISOString()
+            }));}catch(e){}
+            return obj;
+          });
           setClients(mapped);
         }catch(e){console.warn("Client map error:",e.message);}
         setClientsLoaded(true);
@@ -3960,14 +3975,22 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
       .then(({data,error})=>{
         if(error||!data) return;
         try{
+          const safeJson=(str,fb)=>{try{return str&&str!=="null"?JSON.parse(str):fb;}catch{return fb;}};
           setClientSelfProfile({
             id:data.email.toLowerCase().replace(/[^a-z0-9]/g,"_"),
             name:data.name,email:data.email,role:"client",
             phase:data.phase||1,focus:data.focus||"",
-            restrictions:typeof data.restrictions==="string"?JSON.parse(data.restrictions||"[]"):data.restrictions||[],
-            days:data.days?JSON.parse(data.days):TEMPLATES[data.goal_template||"posture"]?.days||[],
-            notes:data.notes?JSON.parse(data.notes):[],
-            nutrition:data.nutrition?JSON.parse(data.nutrition):null,
+            restrictions:safeJson(data.restrictions,[]),
+            goal:data.goal_template||"posture",
+            days:safeJson(data.days,TEMPLATES[data.goal_template||"posture"]?.days||[]),
+            notes:safeJson(data.notes,[]),
+            nutrition:safeJson(data.nutrition,null),
+            cardioPlan:safeJson(data.cardio_plan,null),
+            assessment:safeJson(data.assessment,null),
+            macros:safeJson(data.macros,null),
+            calories:safeJson(data.calories,null),
+            meal_foods:safeJson(data.meal_foods,null),
+            pain_logs:safeJson(data.pain_logs,[]),
             schedule:[]
           });
         }catch(e){console.warn("Client self profile:",e.message);}
@@ -4091,6 +4114,8 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
               const errors=[];
               for(const c of clients){
                 if(!c.email) continue;
+                // Only include fields that actually have data — never overwrite with empty
+                const safeStr=(v,fallback)=>v&&v!=="null"&&JSON.stringify(v)!=="null"?JSON.stringify(v):null;
                 const payload={
                   email:c.email,
                   name:c.name||"",
@@ -4098,17 +4123,23 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
                   focus:c.focus||"",
                   goal_template:c.goal||"posture",
                   restrictions:JSON.stringify(c.restrictions||[]),
-                  days:JSON.stringify(c.days||[]),
-                  notes:JSON.stringify(c.notes||LS.get(`tbf_notes_${c.id}`,[])),
-                  nutrition:JSON.stringify(c.nutrition||{}),
-                  cardio_plan:JSON.stringify(c.cardioPlan||null),
-                  assessment:JSON.stringify(LS.get(`tbf_assess_${c.id}`,null)),
-                  macros:JSON.stringify(LS.get(`tbf_macros_${c.id}`,null)),
-                  calories:JSON.stringify(LS.get(`tbf_cals_${c.id}`,null)),
-                  meal_foods:JSON.stringify(LS.get(`tbf_meals_${c.id}`,null)),
-                  pain_logs:JSON.stringify(LS.get(`tbf_pain_${c.id}`,[])),
                   trainer_id:trainerId
                 };
+                // Only add data fields if they actually contain something
+                if(c.days?.length>0) payload.days=JSON.stringify(c.days);
+                if(c.notes?.length>0) payload.notes=JSON.stringify(c.notes);
+                if(c.nutrition) payload.nutrition=JSON.stringify(c.nutrition);
+                if(c.cardioPlan) payload.cardio_plan=JSON.stringify(c.cardioPlan);
+                const lsAssess=LS.get(`tbf_assess_${c.id}`,null);
+                if(lsAssess) payload.assessment=JSON.stringify(lsAssess);
+                const lsMacros=LS.get(`tbf_macros_${c.id}`,null);
+                if(lsMacros) payload.macros=JSON.stringify(lsMacros);
+                const lsCals=LS.get(`tbf_cals_${c.id}`,null);
+                if(lsCals) payload.calories=JSON.stringify(lsCals);
+                const lsMeals=LS.get(`tbf_meals_${c.id}`,null);
+                if(lsMeals) payload.meal_foods=JSON.stringify(lsMeals);
+                const lsPain=LS.get(`tbf_pain_${c.id}`,[]);
+                if(lsPain?.length>0) payload.pain_logs=JSON.stringify(lsPain);
                 const {error}=await supabase.from("tbf_clients").upsert(payload,{onConflict:"email"});
                 if(error){
                   console.error("Failed to sync",c.name,":",error.message,error.details,error.hint);
