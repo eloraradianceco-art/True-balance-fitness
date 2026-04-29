@@ -3,7 +3,9 @@ import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "";
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
-const supabase = SUPABASE_URL ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+const supabase = SUPABASE_URL ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  realtime: { params: { eventsPerSecond: 10 } }
+}) : null;
 
 const C={navy:"#1C2B39",navy2:"#243447",teal:"#2A8C8C",teal2:"#1E6E6E",tealLight:"#E8F4F4",cream:"#F7F6F1",white:"#FFFFFF",gray:"#6B7280",grayLight:"#F3F4F6",grayBorder:"#E5E7EB",red:"#C0392B",greenLight:"#F0FDF4",green:"#1E7A4A",amber:"#D97706",amberLight:"#FFFBEB",purple:"#7C3AED"};
 const LS={get:(k,d=null)=>{try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch{return d;}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}},del:(k)=>{try{localStorage.removeItem(k);}catch{}}};
@@ -2673,7 +2675,7 @@ function NutritionMealPlan({client, calories, protein, carbs, fat, mealFrequency
   const swapFood = (mealKey, idx, newFood, newCat) => {
     const current = getMealFoods(mealKey);
     const updated = [...current]; updated[idx] = {name:newFood,cat:newCat||updated[idx].cat};
-    const nm = {...mealFoods,[mealKey]:updated}; setMealFoods(nm); LS.set("tbf_meals_"+client.id, nm);
+    const nm = {...mealFoods,[mealKey]:updated}; setMealFoods(nm); LS.set("tbf_meals_"+client.id, nm); syncToSupabase(client.email,"meal_foods",nm);
     setSwapTarget(null); setSwapSearch("");
   };
   const regenMeal = (key) => { const nm={...mealFoods,[key]:genMeal(key)}; setMealFoods(nm); LS.set("tbf_meals_"+client.id,nm); };
@@ -2814,6 +2816,20 @@ function NutritionView({client}){
   const dM=client.nutrition?.macros||{protein:{pct:32,grams:160},carbs:{pct:43,grams:215},fat:{pct:25,grams:56}};
   const dC=client.nutrition?.calories||2000;
   const [calories,setCalories]=useState(()=>LS.get("tbf_cals_"+client.id,dC));
+  // Load nutrition from Supabase on mount
+  useEffect(()=>{
+    if(!supabase||!client.email) return;
+    supabase.from("tbf_clients").select("calories,macros,meal_foods,notes")
+      .eq("email",client.email).single()
+      .then(({data,error})=>{
+        if(error||!data) return;
+        try{
+          if(data.calories){const c=JSON.parse(data.calories);setCalories(c);LS.set("tbf_cals_"+client.id,c);}
+          if(data.macros){const m=JSON.parse(data.macros);setMacros(m);LS.set("tbf_macros_"+client.id,m);}
+          if(data.meal_foods){const mf=JSON.parse(data.meal_foods);setMealFoods(mf);LS.set("tbf_meals_"+client.id,mf);}
+        }catch(e){}
+      });
+  },[client.email]);
   const [macros,setMacros]=useState(()=>LS.get("tbf_macros_"+client.id,dM));
   const [goalFilter,setGoalFilter]=useState(()=>LS.get("tbf_goal_"+client.id,"recomp"));
   const [mealFoods,setMealFoods]=useState(()=>LS.get("tbf_meals_"+client.id,{}));
@@ -2916,7 +2932,7 @@ function NutritionView({client}){
     const rem=100-pct;const total=oth.reduce((s,t)=>s+macros[t].pct,0);
     const newM={...macros,[type]:{pct,grams:Math.round(calories*(pct/100)/(type==="fat"?9:4))}};
     oth.forEach(t=>{const np=total===0?Math.round(rem/2):Math.round(macros[t].pct*(rem/total));newM[t]={pct:np,grams:Math.round(calories*(np/100)/(t==="fat"?9:4))};});
-    setMacros(newM);LS.set("tbf_macros_"+client.id,newM);
+    setMacros(newM);LS.set("tbf_macros_"+client.id,newM);syncToSupabase(client.email,"macros",newM);
   };
 
   const calc=()=>{
@@ -2931,7 +2947,7 @@ function NutritionView({client}){
     const protPct=Math.round((protG*4/goalCals)*100);const fatPct=Math.round((fatG*9/goalCals)*100);
     setCr({calories:goalCals,protein:{pct:protPct,grams:protG},carbs:{pct:100-protPct-fatPct,grams:carbG},fat:{pct:fatPct,grams:fatG},tdee});
   };
-  const applyCalc=()=>{if(!cr)return;setCalories(cr.calories);setMacros(cr);LS.set("tbf_cals_"+client.id,cr.calories);LS.set("tbf_macros_"+client.id,cr);};
+  const applyCalc=()=>{if(!cr)return;setCalories(cr.calories);setMacros(cr);LS.set("tbf_cals_"+client.id,cr.calories);LS.set("tbf_macros_"+client.id,cr);syncToSupabase(client.email,"calories",cr.calories);syncToSupabase(client.email,"macros",cr);};
 
   const MB=({label,pct,grams,color,type})=>h("div",{style:{marginBottom:16}},
     h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:4}},
@@ -3109,6 +3125,14 @@ function NutritionView({client}){
 
 function PainLog({client}){
   const [logs,setLogs]=useState(()=>LS.get(`tbf_pain_${client.id}`,[]));
+  useEffect(()=>{
+    if(!supabase||!client.email) return;
+    supabase.from("tbf_clients").select("pain_logs").eq("email",client.email).single()
+      .then(({data,error})=>{
+        if(error||!data?.pain_logs) return;
+        try{const p=JSON.parse(data.pain_logs);if(Array.isArray(p)&&p.length>0){setLogs(p);LS.set(`tbf_pain_${client.id}`,p);}}catch(e){}
+      });
+  },[client.email]);
   const [score,setScore]=useState(5);const [loc,setLoc]=useState("");const [notes,setNotes]=useState("");
   const submit=()=>{const e={date:new Date().toISOString().slice(0,10),time:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}),score,location:loc,notes};const u=[e,...logs].slice(0,30);setLogs(u);LS.set(`tbf_pain_${client.id}`,u);setLoc("");setNotes("");setScore(5);};
   const sc=s=>s<=3?C.green:s<=6?C.amber:C.red;
@@ -3142,8 +3166,16 @@ function Compliance({client}){
 
 function SessionNotes({client,isTrainer}){
   const [notes,setNotes]=useState(()=>LS.get(`tbf_notes_${client.id}`,[]));
+  useEffect(()=>{
+    if(!supabase||!client.email) return;
+    supabase.from("tbf_clients").select("notes").eq("email",client.email).single()
+      .then(({data,error})=>{
+        if(error||!data?.notes) return;
+        try{const n=JSON.parse(data.notes);if(Array.isArray(n)&&n.length>0){setNotes(n);LS.set(`tbf_notes_${client.id}`,n);}}catch(e){}
+      });
+  },[client.email]);
   const [newNote,setNewNote]=useState("");
-  const addNote=()=>{if(!newNote.trim()) return;const e={date:new Date().toISOString().slice(0,10),text:newNote,from:"Anthony Anderson"};const u=[e,...notes];setNotes(u);LS.set(`tbf_notes_${client.id}`,u);setNewNote("");};
+  const addNote=()=>{if(!newNote.trim()) return;const e={date:new Date().toISOString().slice(0,10),text:newNote,from:"Anthony Anderson"};const u=[e,...notes];setNotes(u);LS.set(`tbf_notes_${client.id}`,u);setNewNote("");syncToSupabase(client.email,"notes",u);};
   return h("div",{style:{paddingBottom:24}},
     isTrainer&&h(Card,null,h(CardH,{t:"ADD SESSION NOTE"}),h(CardB,null,h(TA,{value:newNote,onChange:setNewNote,placeholder:"Session observations, corrections, next steps...",rows:4}),h(Btn,{onClick:addNote,color:C.teal,full:true,st:{marginTop:10}},"Add Note"))),
     notes.length===0&&h("div",{style:{textAlign:"center",color:C.gray,fontStyle:"italic",padding:32}},"No session notes yet."),
@@ -3881,19 +3913,7 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
             restrictions:typeof r.restrictions==="string"?JSON.parse(r.restrictions||"[]"):r.restrictions||[],
             goal:r.goal_template||"posture",
             invitedAt:r.invited_at,
-            days:(()=>{
-              const supabaseDays=r.days?JSON.parse(r.days):TEMPLATES[r.goal_template||"posture"]?.days||[];
-              try{
-                const clientId=r.email.toLowerCase().replace(/[^a-z0-9]/g,"_");
-                const backup=JSON.parse(localStorage.getItem("tbf_client_"+clientId)||"null");
-                if(backup?.days?.length>0&&backup.savedAt){
-                  const backupDate=new Date(backup.savedAt);
-                  const supabaseDate=r.updated_at?new Date(r.updated_at):new Date(0);
-                  if(backupDate>supabaseDate) return backup.days;
-                }
-              }catch(e){}
-              return supabaseDays;
-            })(),
+            days:r.days?JSON.parse(r.days):TEMPLATES[r.goal_template||"posture"]?.days||[],
             notes:r.notes?JSON.parse(r.notes):[],
             nutrition:r.nutrition?JSON.parse(r.nutrition):null,
             cardioPlan:r.cardio_plan?JSON.parse(r.cardio_plan):null,
@@ -3904,6 +3924,33 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
         setClientsLoaded(true);
       })
       .catch(e=>{console.warn("tbf_clients fetch failed:",e.message);setClientsLoaded(true);});
+  },[autoTrainer]);
+
+  // Realtime: refresh client data when Supabase row changes
+  useEffect(()=>{
+    if(!supabase||!autoTrainer) return;
+    const channel=supabase.channel('tbf_clients_changes')
+      .on('postgres_changes',{event:'UPDATE',schema:'public',table:'tbf_clients'},
+        payload=>{
+          const r=payload.new;
+          if(!r?.email) return;
+          const updated={
+            id:r.email.toLowerCase().replace(/[^a-z0-9]/g,"_"),
+            name:r.name,email:r.email,role:"client",
+            phase:r.phase||1,focus:r.focus||"",
+            restrictions:typeof r.restrictions==="string"?JSON.parse(r.restrictions||"[]"):r.restrictions||[],
+            goal:r.goal_template||"posture",
+            days:r.days?JSON.parse(r.days):TEMPLATES[r.goal_template||"posture"]?.days||[],
+            notes:r.notes?JSON.parse(r.notes):[],
+            nutrition:r.nutrition?JSON.parse(r.nutrition):null,
+            cardioPlan:r.cardio_plan?JSON.parse(r.cardio_plan):null,
+            schedule:[],password:"",supabase_id:r.id
+          };
+          setClients(prev=>prev.map(c=>c.email===r.email?updated:c));
+          if(viewing?.email===r.email) setViewing(updated);
+        })
+      .subscribe();
+    return ()=>supabase.removeChannel(channel);
   },[autoTrainer]);
 
   // Load own profile if signed in as client
@@ -3926,6 +3973,29 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
         }catch(e){console.warn("Client self profile:",e.message);}
       })
       .catch(e=>console.warn("Client self load:",e.message));
+  },[supabaseUser?.email,autoTrainer]);
+
+  // Realtime: client sees their own program update live when trainer changes it
+  useEffect(()=>{
+    if(!supabase||!supabaseUser||autoTrainer) return;
+    const channel=supabase.channel('my_client_data')
+      .on('postgres_changes',{event:'UPDATE',schema:'public',table:'tbf_clients',
+        filter:`email=eq.${supabaseUser.email}`},
+        payload=>{
+          const r=payload.new;
+          if(!r) return;
+          setClientSelfProfile(prev=>({
+            ...prev,
+            phase:r.phase||prev?.phase,
+            focus:r.focus||prev?.focus,
+            days:r.days?JSON.parse(r.days):prev?.days||[],
+            notes:r.notes?JSON.parse(r.notes):prev?.notes||[],
+            nutrition:r.nutrition?JSON.parse(r.nutrition):prev?.nutrition||null,
+            cardioPlan:r.cardio_plan?JSON.parse(r.cardio_plan):prev?.cardioPlan||null,
+          }));
+        })
+      .subscribe();
+    return ()=>supabase.removeChannel(channel);
   },[supabaseUser?.email,autoTrainer]);
 
   const handleLogin=u=>{setUser(u);setScreen("app");};
