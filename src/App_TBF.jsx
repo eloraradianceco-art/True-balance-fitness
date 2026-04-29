@@ -4119,11 +4119,7 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
                 }
               }
               if(errors.length>0){
-                alert("Synced "+synced+" of "+clients.length+".
-
-Errors:
-"+errors.slice(0,3).join("
-"));
+                alert("Synced "+synced+" of "+clients.length+". Errors: "+errors.slice(0,3).join(" | "));
               } else {
                 alert("✓ All "+synced+" clients synced to cloud!");
               }
