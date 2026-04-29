@@ -1,4 +1,27 @@
-import React, { createElement as h, useState, useEffect } from "react";
+// Realtime: client sees trainer changes instantly
+  useEffect(()=>{
+    if(!supabase||!supabaseUser||autoTrainer) return;
+    const channel=supabase.channel('tbf_client_sync_'+supabaseUser.id)
+      .on('postgres_changes',{
+        event:'UPDATE', schema:'public', table:'tbf_clients',
+        filter:`email=eq.${supabaseUser.email}`
+      }, payload=>{
+        const r=payload.new;
+        if(!r) return;
+        setClientSelfProfile(prev=>({
+          ...prev,
+          phase:r.phase||prev?.phase,
+          focus:r.focus||prev?.focus,
+          days:safeJson(r.days,prev?.days||[]),
+          notes:safeJson(r.notes,prev?.notes||[]),
+          nutrition:safeJson(r.nutrition,prev?.nutrition||null),
+          cardioPlan:safeJson(r.cardio_plan,prev?.cardioPlan||null),
+          assessment:safeJson(r.assessment,prev?.assessment||null),
+        }));
+      })
+      .subscribe(status=>console.log('Client realtime:',status));
+    return ()=>supabase.removeChannel(channel);
+  },[supabaseUser?.email,autoTrainer])import React, { createElement as h, useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "";
@@ -1392,6 +1415,54 @@ function buildProg(sugg){
   return{title:"ASSESSMENT-BASED CORRECTIVE PROGRAM — Phase 1",type:"session",sections};
 }
 
+
+// ═══════════════════════════════════════════════════════════════════
+// PHASE 4: UNIVERSAL SYNC HELPERS
+// ═══════════════════════════════════════════════════════════════════
+const safeJson = (str, fallback) => {
+  try { return (str && str !== 'null' && str !== 'undefined') ? JSON.parse(str) : fallback; }
+  catch { return fallback; }
+};
+
+const syncClient = async (email, fields) => {
+  if (!supabase || !email) return;
+  try {
+    const { error } = await supabase.from('tbf_clients')
+      .upsert({ email, ...fields }, { onConflict: 'email' });
+    if (error) console.error('syncClient:', error.message);
+    else console.log('✓ Synced', Object.keys(fields).join(','), 'for', email);
+  } catch(e) { console.error('syncClient:', e.message); }
+};
+
+const mapClientRow = (r) => {
+  if (!r) return null;
+  const sj = (str, fb) => { try { return (str&&str!=='null') ? JSON.parse(str) : fb; } catch { return fb; }};
+  return {
+    id:          r.email.toLowerCase().replace(/[^a-z0-9]/g,'_'),
+    name:        r.name||'',
+    email:       r.email,
+    role:        'client',
+    phase:       r.phase||1,
+    focus:       r.focus||'',
+    restrictions: sj(r.restrictions,[]),
+    goal:        r.goal_template||'posture',
+    invitedAt:   r.invited_at,
+    days:        sj(r.days, TEMPLATES[r.goal_template||'posture']?.days||[]),
+    notes:       sj(r.notes,[]),
+    nutrition:   sj(r.nutrition,null),
+    cardioPlan:  sj(r.cardio_plan,null),
+    assessment:  sj(r.assessment,null),
+    macros:      sj(r.macros,null),
+    calories:    sj(r.calories,null),
+    meal_foods:  sj(r.meal_foods,null),
+    pain_logs:   sj(r.pain_logs,[]),
+    schedule:    [],
+    password:    '',
+    supabase_id: r.id,
+    trainer_id:  r.trainer_id,
+  };
+};
+
 const TODAY_STR = new Date().toISOString().slice(0,10);
 
 // Clean up old daily localStorage keys (older than 7 days) to prevent bloat
@@ -1765,8 +1836,36 @@ function SetLogger({ex, cid, di, si, ei, prescription}) {
 }
 
 
-function ExCard({ex,cid,di,si,ei,isTrainer,onShowInfo}){
+function ExCard({ex,cid,di,si,ei,isTrainer,onEdit,onDelete,onInfo,onMoveUp,onMoveDown,isFirst,isLast}){
   const [checked,setChecked]=useState(()=>LS.get(exK(cid,"chk",di,si,ei),false));
+  const [curName,setCurName]=useState(()=>LS.get(exK(cid,"swap",di,si,ei),ex.name));
+  const [curPresc,setCurPresc]=useState(()=>LS.get(exK(cid,"presc",di,si,ei),ex.prescription));
+  const [restPeriod,setRestPeriod]=useState(()=>LS.get(exK(cid,"rest",di,si,ei),ex.rest||""));
+  const [isSuperset,setIsSuperset]=useState(()=>LS.get(exK(cid,"super",di,si,ei),false));
+  const [supersetWith,setSupersetWith]=useState(()=>LS.get(exK(cid,"superwith",di,si,ei),""));
+  const [panel,setPanel]=useState(null);
+  const [prescEdit,setPrescEdit]=useState(curPresc);
+  const [restEdit,setRestEdit]=useState(restPeriod);
+  const [search,setSearch]=useState("");
+
+  // Load from Supabase on mount
+  useEffect(()=>{
+    if(!supabase||!cid) return;
+    supabase.from("tbf_exercise_settings")
+      .select("*")
+      .eq("client_id",cid).eq("day_index",di).eq("section_index",si).eq("exercise_index",ei)
+      .single()
+      .then(({data,error})=>{
+        if(error||!data) return;
+        if(data.swap_name){setCurName(data.swap_name);LS.set(exK(cid,"swap",di,si,ei),data.swap_name);}
+        if(data.prescription){setCurPresc(data.prescription);setPrescEdit(data.prescription);LS.set(exK(cid,"presc",di,si,ei),data.prescription);}
+        if(data.rest_period){setRestPeriod(data.rest_period);setRestEdit(data.rest_period);LS.set(exK(cid,"rest",di,si,ei),data.rest_period);}
+        if(data.is_superset!=null){setIsSuperset(data.is_superset);LS.set(exK(cid,"super",di,si,ei),data.is_superset);}
+        if(data.superset_with){setSupersetWith(data.superset_with);LS.set(exK(cid,"superwith",di,si,ei),data.superset_with);}
+      });
+  },[cid,di,si,ei]);
+
+  // Load checkbox from Supabase daily
   useEffect(()=>{
     if(!supabase||!cid) return;
     supabase.from("tbf_exercise_checks")
@@ -1779,94 +1878,91 @@ function ExCard({ex,cid,di,si,ei,isTrainer,onShowInfo}){
         LS.set(exK(cid,"chk",di,si,ei),data.checked);
       });
   },[cid,di,si,ei,TODAY_STR]);
-  const [curName,setCurName]=useState(()=>LS.get(exK(cid,"swap",di,si,ei),ex.name));
-  const [curPresc,setCurPresc]=useState(()=>LS.get(exK(cid,"presc",di,si,ei),ex.prescription));
-  const [restPeriod,setRestPeriod]=useState(()=>LS.get(exK(cid,"rest",di,si,ei),ex.rest||""));
-  const [isSuperset,setIsSuperset]=useState(()=>LS.get(exK(cid,"super",di,si,ei),false));
-  const [supersetWith,setSupersetWith]=useState(()=>LS.get(exK(cid,"superwith",di,si,ei),""));
-  const [panel,setPanel]=useState(null);
-  const [search,setSearch]=useState("");
-  const [prescEdit,setPrescEdit]=useState(curPresc);
-  const [restEdit,setRestEdit]=useState(restPeriod);
-  const [showCue,setShowCue]=useState(false);
-  const progs=PROG[ex.name]||PROG[curName]||[];
-  const results=search.length>1?ALL_EX_FULL2.filter(e=>e.name.toLowerCase().includes(search.toLowerCase())).slice(0,12):[];
-  const tog=(p)=>setPanel(panel===p?null:p);
+
+  const syncSettings = async (fields) => {
+    LS.set(exK(cid,"swap",di,si,ei),fields.swap_name||curName);
+    LS.set(exK(cid,"presc",di,si,ei),fields.prescription||curPresc);
+    LS.set(exK(cid,"rest",di,si,ei),fields.rest_period||restPeriod);
+    if(!supabase||!cid) return;
+    await supabase.from("tbf_exercise_settings").upsert({
+      client_id:cid,day_index:di,section_index:si,exercise_index:ei,
+      swap_name:fields.swap_name||curName,
+      prescription:fields.prescription||curPresc,
+      rest_period:fields.rest_period||restPeriod,
+      is_superset:fields.is_superset!=null?fields.is_superset:isSuperset,
+      superset_with:fields.superset_with||supersetWith,
+    },{onConflict:"client_id,day_index,section_index,exercise_index"});
+  };
+
   const checkToggle=async()=>{
     const v=!checked;setChecked(v);
     LS.set(exK(cid,"chk",di,si,ei),v);
     if(supabase&&cid){
-      try{
-        await supabase.from("tbf_exercise_checks").upsert({
-          client_id:cid,log_date:TODAY_STR,day_index:di,section_index:si,exercise_index:ei,
-          exercise_name:curName,checked:v,updated_at:new Date().toISOString()
-        },{onConflict:"client_id,log_date,day_index,section_index,exercise_index"});
-      }catch(e){console.warn("Check sync:",e.message);}
+      await supabase.from("tbf_exercise_checks").upsert({
+        client_id:cid,log_date:TODAY_STR,day_index:di,section_index:si,
+        exercise_index:ei,exercise_name:curName,checked:v,
+        updated_at:new Date().toISOString()
+      },{onConflict:"client_id,log_date,day_index,section_index,exercise_index"});
     }
   };
-  const savePresc=()=>{setCurPresc(prescEdit);LS.set(exK(cid,"presc",di,si,ei),prescEdit);setPanel(null);};
-  const saveRest=()=>{setRestPeriod(restEdit);LS.set(exK(cid,"rest",di,si,ei),restEdit);setPanel(null);};
-  const doSwap=(name)=>{setCurName(name);LS.set(exK(cid,"swap",di,si,ei),name);setSearch("");setPanel(null);};
-  const doSuperset=(v)=>{setIsSuperset(v);LS.set(exK(cid,"super",di,si,ei),v);};
-  const doSupersetWith=(v)=>{setSupersetWith(v);LS.set(exK(cid,"superwith",di,si,ei),v);};
 
-  return h("div",{style:{background:C.white,border:`1px solid ${isSuperset?C.amber:C.grayBorder}`,borderRadius:10,padding:"12px 14px",marginBottom:8,
-    borderLeft:isSuperset?`4px solid ${C.amber}`:`4px solid ${checked?C.green:C.teal}`}},
-    h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8}},
-      h("div",{style:{flex:1,minWidth:0}},
-        isSuperset&&h("div",{style:{fontSize:10,color:C.amber,fontWeight:"bold",letterSpacing:1,marginBottom:3}},"SUPERSET"+(supersetWith?` w/ ${supersetWith}`:"")),
-        h("div",{style:{fontWeight:"bold",fontSize:14,color:checked?C.gray:C.navy,textDecoration:checked?"line-through":"none",marginBottom:3}},curName),
-        h("div",{style:{fontSize:12,color:C.teal2}},curPresc),
-        restPeriod&&h("div",{style:{fontSize:11,color:C.amber,marginTop:2}},"Rest: "+restPeriod)
+  const savePresc=()=>{setCurPresc(prescEdit);LS.set(exK(cid,"presc",di,si,ei),prescEdit);setPanel(null);syncSettings({prescription:prescEdit});};
+  const saveRest=()=>{setRestPeriod(restEdit);LS.set(exK(cid,"rest",di,si,ei),restEdit);setPanel(null);syncSettings({rest_period:restEdit});};
+  const doSwap=(name)=>{setCurName(name);LS.set(exK(cid,"swap",di,si,ei),name);setSearch("");setPanel(null);syncSettings({swap_name:name});};
+  const doSuperset=(v)=>{setIsSuperset(v);LS.set(exK(cid,"super",di,si,ei),v);syncSettings({is_superset:v});};
+  const doSupersetWith=(v)=>{setSupersetWith(v);LS.set(exK(cid,"superwith",di,si,ei),v);syncSettings({superset_with:v});};
+
+  const filtered=ALL_EXERCISES.filter(e=>e.name.toLowerCase().includes(search.toLowerCase())).slice(0,20);
+  const isChecked=checked;
+
+  return h("div",{style:{borderRadius:10,marginBottom:8,overflow:"hidden",border:`1px solid ${isChecked?C.green:C.grayBorder}`,background:isChecked?"#f0fff4":C.white}},
+    // Main exercise row
+    h("div",{style:{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",cursor:"pointer"},onClick:checkToggle},
+      h("div",{style:{width:22,height:22,borderRadius:6,border:`2px solid ${isChecked?C.green:C.grayBorder}`,
+        background:isChecked?C.green:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}},
+        isChecked&&h("span",{style:{color:"white",fontWeight:700,fontSize:".8rem"}},"✓")
       ),
-      h("div",{onClick:checkToggle,style:{width:26,height:26,borderRadius:6,border:`2px solid ${checked?C.green:C.grayBorder}`,background:checked?C.green:"transparent",display:"grid",placeItems:"center",cursor:"pointer",flexShrink:0}},
-        checked&&h("span",{style:{color:C.white,fontSize:14,fontWeight:"bold"}},"✓")
+      h("div",{style:{flex:1,minWidth:0}},
+        h("div",{style:{fontWeight:600,fontSize:13,color:C.navy,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}},curName),
+        h("div",{style:{fontSize:11,color:C.gray,marginTop:1}},curPresc+(restPeriod?" · Rest: "+restPeriod:"")),
+        ex.cue&&h("div",{style:{fontSize:10,color:C.teal,marginTop:1,fontStyle:"italic"}},ex.cue),
+        isSuperset&&h("div",{style:{fontSize:10,color:C.amber,marginTop:1}},"🔗 Superset"+(supersetWith?" with "+supersetWith:""))
+      ),
+      isTrainer&&h("div",{style:{display:"flex",gap:4,flexShrink:0}},
+        h("button",{onClick:e=>{e.stopPropagation();onInfo&&onInfo(curName);},style:{background:"none",border:"none",color:C.teal,cursor:"pointer",fontSize:14,padding:"2px 4px"}},"ℹ"),
+        h("button",{onClick:e=>{e.stopPropagation();setPanel(panel==="menu"?null:"menu");},style:{background:"none",border:"none",color:C.gray,cursor:"pointer",fontSize:18,padding:"2px 4px"}},"⋯")
       )
     ),
-    h("div",{style:{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}},
-      h(Btn,{onClick:()=>onShowInfo&&onShowInfo(curName),color:C.navy,small:true},"ℹ Info"),
-      isTrainer&&h(Btn,{onClick:()=>tog("presc"),color:panel==="presc"?C.navy:C.grayLight,fg:panel==="presc"?C.white:C.navy,small:true},"✏ Rx"),
-      isTrainer&&h(Btn,{onClick:()=>tog("rest"),color:panel==="rest"?C.amber:C.grayLight,fg:panel==="rest"?C.white:C.navy,small:true},"⏱ Rest"),
-      isTrainer&&h(Btn,{onClick:()=>tog("swap"),color:panel==="swap"?C.teal:C.grayLight,fg:panel==="swap"?C.white:C.navy,small:true},"⇄ Swap"),
-      isTrainer&&h(Btn,{onClick:()=>doSuperset(!isSuperset),color:isSuperset?C.amber:C.grayLight,fg:isSuperset?C.white:C.navy,small:true},isSuperset?"✓ Superset":"+ Superset"),
-      progs.length>0&&h(Btn,{onClick:()=>tog("prog"),color:C.teal,small:true},"↑ Progress")
+    // Panel menu
+    panel==="menu"&&isTrainer&&h("div",{style:{borderTop:`1px solid ${C.grayBorder}`,padding:"8px 12px",background:C.cream,display:"flex",flexWrap:"wrap",gap:6}},
+      h(Btn,{onClick:()=>setPanel("swap"),color:C.navy,small:true},"⇄ Swap"),
+      h(Btn,{onClick:()=>{setPrescEdit(curPresc);setPanel("presc");},color:C.navy,small:true},"✏ Rx"),
+      h(Btn,{onClick:()=>{setRestEdit(restPeriod);setPanel("rest");},color:C.navy,small:true},"⏱ Rest"),
+      h(Btn,{onClick:()=>doSuperset(!isSuperset),color:isSuperset?C.amber:C.navy,small:true},"🔗 Super"),
+      onMoveUp&&!isFirst&&h(Btn,{onClick:onMoveUp,color:C.gray,small:true},"↑"),
+      onMoveDown&&!isLast&&h(Btn,{onClick:onMoveDown,color:C.gray,small:true},"↓"),
+      onDelete&&h(Btn,{onClick:onDelete,color:C.red,small:true},"✕"),
     ),
-    panel==="presc"&&h("div",{style:{marginTop:8,display:"flex",gap:6}},
-      h(Inp,{value:prescEdit,onChange:setPrescEdit,placeholder:"e.g. 3 x 12 | 2s hold"}),
+    panel==="swap"&&h("div",{style:{padding:"10px 12px",borderTop:`1px solid ${C.grayBorder}`}},
+      h("input",{placeholder:"Search exercises...",value:search,onChange:e=>setSearch(e.target.value),
+        autoFocus:true,style:{width:"100%",padding:"8px 10px",border:`1px solid ${C.grayBorder}`,borderRadius:6,fontSize:13,boxSizing:"border-box"}}),
+      h("div",{style:{maxHeight:180,overflowY:"auto",marginTop:6}},
+        filtered.map(e=>h("div",{key:e.name,onClick:()=>doSwap(e.name),
+          style:{padding:"8px 10px",cursor:"pointer",borderRadius:6,fontSize:13,
+          background:e.name===curName?C.teal:undefined,color:e.name===curName?"white":C.navy}},e.name))
+      )
+    ),
+    panel==="presc"&&h("div",{style:{padding:"10px 12px",borderTop:`1px solid ${C.grayBorder}`,display:"flex",gap:8}},
+      h("input",{value:prescEdit,onChange:e=>setPrescEdit(e.target.value),placeholder:"e.g. 3 x 12",autoFocus:true,
+        style:{flex:1,padding:"8px 10px",border:`1px solid ${C.grayBorder}`,borderRadius:6,fontSize:13}}),
       h(Btn,{onClick:savePresc,color:C.teal,small:true},"Save")
     ),
-    panel==="rest"&&h("div",{style:{marginTop:8}},
-      h("div",{style:{fontSize:11,color:C.gray,marginBottom:6}},"Set rest period between sets"),
-      h("div",{style:{display:"flex",gap:6,flexWrap:"wrap",marginBottom:6}},
-        ["30s","45s","60s","90s","2min","3min"].map(r=>h("button",{key:r,onClick:()=>{setRestEdit(r);},
-          style:{padding:"5px 10px",borderRadius:6,border:"1.5px solid",fontSize:11,cursor:"pointer",fontFamily:"Georgia,serif",
-            borderColor:restEdit===r?C.amber:C.grayBorder,background:restEdit===r?C.amberLight:"transparent",color:restEdit===r?C.navy:C.gray}},r))
-      ),
-      h("div",{style:{display:"flex",gap:6}},
-        h(Inp,{value:restEdit,onChange:setRestEdit,placeholder:"Custom (e.g. 2min 30s)"}),
-        h(Btn,{onClick:saveRest,color:C.amber,small:true},"Save"),
-        h(Btn,{onClick:()=>{setRestEdit("");setRestPeriod("");LS.set(exK(cid,"rest",di,si,ei),"");setPanel(null);},color:C.grayLight,fg:C.gray,small:true},"Clear")
-      )
-    ),
-    panel==="swap"&&h("div",{style:{marginTop:8}},
-      h(Inp,{value:search,onChange:setSearch,placeholder:"Search 1000+ exercises..."}),
-      results.length>0&&h("div",{style:{background:C.white,border:`1px solid ${C.grayBorder}`,borderRadius:6,marginTop:4,maxHeight:180,overflowY:"auto"}},
-        results.map((e,i)=>h("div",{key:i,onClick:()=>doSwap(e.name),style:{padding:"7px 10px",cursor:"pointer",fontSize:12,color:C.navy,borderBottom:`1px solid ${C.grayBorder}`,display:"flex",justifyContent:"space-between"}},
-          h("span",null,e.name),h(Tag,{label:e.cat,color:C.teal})
-        ))
-      )
-    ),
-    panel==="prog"&&h("div",{style:{marginTop:8}},
-      h("div",{style:{fontSize:11,color:C.gray,marginBottom:6}},"Progression options:"),
-      progs.map((p,i)=>h("div",{key:i,onClick:()=>doSwap(p),style:{padding:"7px 10px",cursor:"pointer",fontSize:12,color:C.navy,background:C.tealLight,borderRadius:6,marginBottom:4,display:"flex",justifyContent:"space-between",alignItems:"center"}},
-        h("span",null,p),h("span",{style:{color:C.teal,fontSize:10}},"Swap →")
-      ))
-    ),
-    isSuperset&&h("div",{style:{marginTop:8,display:"flex",gap:6,alignItems:"center"}},
-      h("div",{style:{fontSize:11,color:C.amber,flexShrink:0}},"Paired with:"),
-      h(Inp,{value:supersetWith,onChange:doSupersetWith,placeholder:"Exercise name..."})
-    ),
-    h(SetLogger,{ex:curName,cid,di,si,ei,prescription:curPresc})
+    panel==="rest"&&h("div",{style:{padding:"10px 12px",borderTop:`1px solid ${C.grayBorder}`,display:"flex",gap:8}},
+      h("input",{value:restEdit,onChange:e=>setRestEdit(e.target.value),placeholder:"e.g. 60 sec",autoFocus:true,
+        style:{flex:1,padding:"8px 10px",border:`1px solid ${C.grayBorder}`,borderRadius:6,fontSize:13}}),
+      h(Btn,{onClick:saveRest,color:C.teal,small:true},"Save"),
+      h(Btn,{onClick:()=>{setRestEdit("");setRestPeriod("");LS.set(exK(cid,"rest",di,si,ei),"");setPanel(null);syncSettings({rest_period:""});},color:C.gray,small:true},"Clear")
+    )
   );
 }
 
@@ -2099,6 +2195,20 @@ function TrainerNotes({client, isTrainer, onClientUpdate}) {
   };
 
   const [notes, setNotes] = useState(initNotes);
+  // Always prefer Supabase data on mount
+  useEffect(()=>{
+    if(!supabase||!client.email) return;
+    supabase.from('tbf_clients').select('notes').eq('email',client.email).single()
+      .then(({data,error})=>{
+        if(error||!data?.notes) return;
+        try{
+          const sb=JSON.parse(data.notes);
+          if(Array.isArray(sb)&&sb.length>0){
+            setNotes(sb);LS.set(notesKey,sb);
+          }
+        }catch{}
+      });
+  },[client.email]);
   const [newNote, setNewNote] = useState('');
   const [noteType, setNoteType] = useState('note');
   const [synced, setSynced] = useState(false);
@@ -2122,6 +2232,7 @@ function TrainerNotes({client, isTrainer, onClientUpdate}) {
         // Push merged notes to Supabase
         setNotes(merged);
         LS.set(notesKey, merged);
+    syncClient(client.email, {notes: JSON.stringify(merged)});
         onClientUpdate({...client, notes: merged});
       }
     }
@@ -2130,6 +2241,7 @@ function TrainerNotes({client, isTrainer, onClientUpdate}) {
   const saveNotes = (updated) => {
     setNotes(updated);
     LS.set(notesKey, updated);
+    syncClient(client.email, {notes: JSON.stringify(updated)});
     if (onClientUpdate) {
       onClientUpdate({...client, notes: updated});
     }
@@ -2249,7 +2361,6 @@ function NutritionProfile({client, isTrainer, onClientUpdate}) {
     const withDate = {...updated, updatedDate: new Date().toISOString().slice(0,10)};
     setProfile(withDate);
     LS.set(profileKey, withDate);
-    // Sync back to client record
     const nutrition = {
       goal: withDate.goal,
       calories: withDate.calories,
@@ -2259,7 +2370,15 @@ function NutritionProfile({client, isTrainer, onClientUpdate}) {
         fat: {grams: withDate.fat, pct: Math.round((withDate.fat*9/withDate.calories)*100)}
       }
     };
-    onClientUpdate({...client, nutrition, restrictions: withDate.restrictions});
+    const updated_client = {...client, nutrition, restrictions: withDate.restrictions,
+      macros: withDate, calories: withDate.calories, meal_foods: client.meal_foods};
+    onClientUpdate(updated_client);
+    // Also sync nutrition fields directly so they appear on all devices
+    syncClient(client.email, {
+      nutrition: JSON.stringify(nutrition),
+      macros: JSON.stringify(withDate),
+      calories: JSON.stringify(withDate.calories),
+    });
   };
 
   const totalCals = (profile.protein * 4) + (profile.carbs * 4) + (profile.fat * 9);
@@ -2409,22 +2528,6 @@ function NutritionProfile({client, isTrainer, onClientUpdate}) {
 
 function AssessmentHistory({client, isTrainer, onLoadAssessment}) {
   const histKey = `tbf_assess_history_${client.id}`;
-  // Load assessment history from Supabase
-  useEffect(()=>{
-    if(!supabase||!client.email) return;
-    supabase.from("tbf_assessment_history")
-      .select("assessment,saved_date")
-      .eq("client_email",client.email)
-      .order("saved_date",{ascending:false})
-      .limit(10)
-      .then(({data,error})=>{
-        if(error||!data?.length) return;
-        try{
-          const parsed=data.map(r=>JSON.parse(r.assessment));
-          LS.set(histKey,parsed);
-        }catch(e){}
-      });
-  },[client.email]);
   const [history] = useState(() => LS.get(histKey, []));
   const [compare, setCompare] = useState(null);
 
@@ -2814,25 +2917,11 @@ function NutritionCalculator({client}) {
 
 function NutritionView({client}){
   const dM=client.nutrition?.macros||{protein:{pct:32,grams:160},carbs:{pct:43,grams:215},fat:{pct:25,grams:56}};
-  const dC=client.nutrition?.calories||2000;
-  const [calories,setCalories]=useState(()=>LS.get("tbf_cals_"+client.id,dC));
-  // Load nutrition from Supabase on mount
-  useEffect(()=>{
-    if(!supabase||!client.email) return;
-    supabase.from("tbf_clients").select("calories,macros,meal_foods,notes")
-      .eq("email",client.email).single()
-      .then(({data,error})=>{
-        if(error||!data) return;
-        try{
-          if(data.calories){const c=JSON.parse(data.calories);setCalories(c);LS.set("tbf_cals_"+client.id,c);}
-          if(data.macros){const m=JSON.parse(data.macros);setMacros(m);LS.set("tbf_macros_"+client.id,m);}
-          if(data.meal_foods){const mf=JSON.parse(data.meal_foods);setMealFoods(mf);LS.set("tbf_meals_"+client.id,mf);}
-        }catch(e){}
-      });
-  },[client.email]);
-  const [macros,setMacros]=useState(()=>LS.get("tbf_macros_"+client.id,dM));
+  const dC=client.calories||client.nutrition?.calories||2000;
+  const [calories,setCalories]=useState(()=>client.calories||LS.get("tbf_cals_"+client.id,dC));
+  const [macros,setMacros]=useState(()=>client.macros||LS.get("tbf_macros_"+client.id,dM));
   const [goalFilter,setGoalFilter]=useState(()=>LS.get("tbf_goal_"+client.id,"recomp"));
-  const [mealFoods,setMealFoods]=useState(()=>LS.get("tbf_meals_"+client.id,{}));
+  const [mealFoods,setMealFoods]=useState(()=>client.meal_foods||LS.get("tbf_meals_"+client.id,{}));
   const [portionView,setPortionView]=useState("visual");
   const [swapTarget,setSwapTarget]=useState(null);
   const [swapSearch,setSwapSearch]=useState("");
@@ -3124,17 +3213,15 @@ function NutritionView({client}){
 }
 
 function PainLog({client}){
-  const [logs,setLogs]=useState(()=>LS.get(`tbf_pain_${client.id}`,[]));
-  useEffect(()=>{
-    if(!supabase||!client.email) return;
-    supabase.from("tbf_clients").select("pain_logs").eq("email",client.email).single()
-      .then(({data,error})=>{
-        if(error||!data?.pain_logs) return;
-        try{const p=JSON.parse(data.pain_logs);if(Array.isArray(p)&&p.length>0){setLogs(p);LS.set(`tbf_pain_${client.id}`,p);}}catch(e){}
-      });
-  },[client.email]);
+  const [logs,setLogs]=useState(()=>client.pain_logs||LS.get(`tbf_pain_${client.id}`,[]));/**pain_load*/
   const [score,setScore]=useState(5);const [loc,setLoc]=useState("");const [notes,setNotes]=useState("");
-  const submit=()=>{const e={date:new Date().toISOString().slice(0,10),time:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}),score,location:loc,notes};const u=[e,...logs].slice(0,30);setLogs(u);LS.set(`tbf_pain_${client.id}`,u);setLoc("");setNotes("");setScore(5);};
+  const submit=async()=>{
+    const e={date:new Date().toISOString().slice(0,10),time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),pain:pain,fatigue:fatigue,soreness:soreness,notes:pnotes};
+    const nl=[e,...logs];
+    setLogs(nl);
+    LS.set(`tbf_pain_${client.id}`,nl);
+    await sbSave(client.email,{pain_logs:nl});
+  };
   const sc=s=>s<=3?C.green:s<=6?C.amber:C.red;
   return h("div",{style:{paddingBottom:24}},
     h(Card,null,h(CardH,{t:"LOG TODAY'S FEEDBACK"}),h(CardB,null,
@@ -3154,7 +3241,22 @@ function PainLog({client}){
 }
 
 function Compliance({client}){
-  const logs=LS.get(`tbf_comp_${client.id}`,[]);
+  const [logs,setLogs]=useState(()=>LS.get(`tbf_comp_${client.id}`,[]));
+  useEffect(()=>{
+    if(!supabase||!client.email) return;
+    supabase.from('tbf_workout_logs')
+      .select('log_date,completed,day_title')
+      .eq('client_email',client.email)
+      .eq('completed',true)
+      .order('log_date',{ascending:false})
+      .limit(60)
+      .then(({data,error})=>{
+        if(error||!data) return;
+        const mapped=data.map(r=>({date:r.log_date,dayTitle:r.day_title,completed:r.completed}));
+        setLogs(mapped);
+        LS.set(`tbf_comp_${client.id}`,mapped);
+      });
+  },[client.email]);
   const today=new Date();
   const weeks=Array.from({length:6},(_,wi)=>{const ws=new Date(today);ws.setDate(today.getDate()-today.getDay()-wi*7);const days=Array.from({length:7},(_,di)=>{const d=new Date(ws);d.setDate(ws.getDate()+di);const ds=d.toISOString().slice(0,10);return{date:ds,count:logs.filter(l=>l.date===ds).length,day:["Su","Mo","Tu","We","Th","Fr","Sa"][di]};});return{label:wi===0?"This week":`${wi}w ago`,days};});
   const tw=weeks[0].days.filter(d=>d.count>0).length;
@@ -3165,17 +3267,17 @@ function Compliance({client}){
 }
 
 function SessionNotes({client,isTrainer}){
-  const [notes,setNotes]=useState(()=>LS.get(`tbf_notes_${client.id}`,[]));
-  useEffect(()=>{
-    if(!supabase||!client.email) return;
-    supabase.from("tbf_clients").select("notes").eq("email",client.email).single()
-      .then(({data,error})=>{
-        if(error||!data?.notes) return;
-        try{const n=JSON.parse(data.notes);if(Array.isArray(n)&&n.length>0){setNotes(n);LS.set(`tbf_notes_${client.id}`,n);}}catch(e){}
-      });
-  },[client.email]);
+  const [notes,setNotes]=useState(()=>client.notes||LS.get(`tbf_notes_${client.id}`,[]));
   const [newNote,setNewNote]=useState("");
-  const addNote=()=>{if(!newNote.trim()) return;const e={date:new Date().toISOString().slice(0,10),text:newNote,from:"Anthony Anderson"};const u=[e,...notes];setNotes(u);LS.set(`tbf_notes_${client.id}`,u);setNewNote("");syncToSupabase(client.email,"notes",u);};
+  const addNote=async()=>{
+    if(!newNote.trim()) return;
+    const e={date:new Date().toISOString().slice(0,10),text:newNote.trim(),from:isTrainer?'Trainer':'Client'};
+    const u=[e,...notes];
+    setNotes(u);
+    LS.set(`tbf_notes_${client.id}`,u);
+    setNewNote('');
+    await sbSave(client.email,{notes:u});
+  };
   return h("div",{style:{paddingBottom:24}},
     isTrainer&&h(Card,null,h(CardH,{t:"ADD SESSION NOTE"}),h(CardB,null,h(TA,{value:newNote,onChange:setNewNote,placeholder:"Session observations, corrections, next steps...",rows:4}),h(Btn,{onClick:addNote,color:C.teal,full:true,st:{marginTop:10}},"Add Note"))),
     notes.length===0&&h("div",{style:{textAlign:"center",color:C.gray,fontStyle:"italic",padding:32}},"No session notes yet."),
@@ -3365,7 +3467,7 @@ function CardioBuilder({client,onUpdate,onClose}){
   };
   const updateSession=(i,field,val)=>setPlan(p=>({...p,sessions:p.sessions.map((s,j)=>j===i?{...s,[field]:val}:s)}));
   const removeSession=i=>setPlan(p=>({...p,sessions:p.sessions.filter((_,j)=>j!==i)}));
-  const handleSave=()=>{LS.set("tbf_cardio_"+client.id,plan);onUpdate({...client,cardioPlan:plan});setSaved(true);setTimeout(()=>setSaved(false),2000);};
+  const handleSave=()=>{LS.set("tbf_cardio_"+client.id,plan);onUpdate({...client,cardioPlan:plan});syncClient(client.email,{cardio_plan:JSON.stringify(plan)});setSaved(true);setTimeout(()=>setSaved(false),2000);};
 
   const weekTotal=plan.sessions.length;
   const zone2Count=plan.sessions.filter(s=>s.type==="zone2").length;
@@ -3619,9 +3721,7 @@ function ClientView({client,isTrainer,onClientUpdate}){
     if(supabase&&client.email){
       try{
         // Save current assessment to tbf_clients.assessment column
-        await supabase.from("tbf_clients").update({
-          assessment:JSON.stringify(data)
-        }).eq("email",client.email);
+        await supabase.from('tbf_clients').upsert({email:client.email,assessment:JSON.stringify(data),trainer_id:'1c5ec66c-9a39-40fb-8d08-e79d6dd6785f'},{onConflict:'email'});
         // Save to assessment history table
         await supabase.from("tbf_assessment_history").upsert({
           client_email:client.email,
@@ -3906,34 +4006,7 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
         if(error){console.warn("Load clients:",error.message);setClientsLoaded(true);return;}
         if(!data||data.length===0){setClientsLoaded(true);return;}
         try{
-          const mapped=data.map(r=>{
-            const safeJson=(str,fallback)=>{try{return str&&str!=="null"?JSON.parse(str):fallback;}catch{return fallback;}};
-            const cid=r.email.toLowerCase().replace(/[^a-z0-9]/g,"_");
-            const obj={
-              id:cid,
-              name:r.name,email:r.email,role:"client",
-              phase:r.phase||1,focus:r.focus||"",
-              restrictions:safeJson(r.restrictions,[]),
-              goal:r.goal_template||"posture",
-              invitedAt:r.invited_at,
-              days:safeJson(r.days,TEMPLATES[r.goal_template||"posture"]?.days||[]),
-              notes:safeJson(r.notes,[]),
-              nutrition:safeJson(r.nutrition,null),
-              cardioPlan:safeJson(r.cardio_plan,null),
-              assessment:safeJson(r.assessment,null),
-              macros:safeJson(r.macros,null),
-              calories:safeJson(r.calories,null),
-              meal_foods:safeJson(r.meal_foods,null),
-              pain_logs:safeJson(r.pain_logs,[]),
-              schedule:[],password:"",supabase_id:r.id
-            };
-            // Cache to localStorage for offline use
-            try{localStorage.setItem("tbf_client_"+cid,JSON.stringify({
-              days:obj.days,notes:obj.notes,nutrition:obj.nutrition,
-              cardioPlan:obj.cardioPlan,savedAt:r.updated_at||new Date().toISOString()
-            }));}catch(e){}
-            return obj;
-          });
+          const mapped=data.map(r=>mapClientRow(r)).filter(Boolean);
           setClients(mapped);
         }catch(e){console.warn("Client map error:",e.message);}
         setClientsLoaded(true);
@@ -3941,70 +4014,79 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
       .catch(e=>{console.warn("tbf_clients fetch failed:",e.message);setClientsLoaded(true);});
   },[autoTrainer]);
 
-  // Refresh clients when app comes back to foreground
+  // Auto-refresh when tab becomes visible again
   useEffect(()=>{
     if(!supabase||!autoTrainer) return;
-    const refresh = () => {
-      if(document.visibilityState === 'visible') {
-        supabase.from("tbf_clients").select("*")
-          .then(({data,error})=>{
-            if(error||!data) return;
-            try{
-              const mapped=data.map(r=>{
-                const safeJson=(str,fb)=>{try{return str&&str!=="null"?JSON.parse(str):fb;}catch{return fb;}};
-                return {
-                  id:r.email.toLowerCase().replace(/[^a-z0-9]/g,"_"),
-                  name:r.name,email:r.email,role:"client",
-                  phase:r.phase||1,focus:r.focus||"",
-                  restrictions:safeJson(r.restrictions,[]),
-                  goal:r.goal_template||"posture",
-                  days:safeJson(r.days,TEMPLATES[r.goal_template||"posture"]?.days||[]),
-                  notes:safeJson(r.notes,[]),
-                  nutrition:safeJson(r.nutrition,null),
-                  cardioPlan:safeJson(r.cardio_plan,null),
-                  assessment:safeJson(r.assessment,null),
-                  macros:safeJson(r.macros,null),
-                  calories:safeJson(r.calories,null),
-                  meal_foods:safeJson(r.meal_foods,null),
-                  pain_logs:safeJson(r.pain_logs,[]),
-                  schedule:[],password:"",supabase_id:r.id
-                };
-              });
-              setClients(mapped);
-            }catch(e){}
-          });
-      }
+    const onVisible=()=>{
+      if(document.visibilityState!=='visible') return;
+      supabase.from('tbf_clients').select('*').then(({data,error})=>{
+        if(error||!data) return;
+        try{
+          const mapped=data.map(r=>({
+            id:r.email.toLowerCase().replace(/[^a-z0-9]/g,'_'),
+            name:r.name,email:r.email,role:'client',
+            phase:r.phase||1,focus:r.focus||'',
+            restrictions:safeJson(r.restrictions,[]),
+            goal:r.goal_template||'posture',
+            days:safeJson(r.days,TEMPLATES[r.goal_template||'posture']?.days||[]),
+            notes:safeJson(r.notes,[]),
+            nutrition:safeJson(r.nutrition,null),
+            cardioPlan:safeJson(r.cardio_plan,null),
+            assessment:safeJson(r.assessment,null),
+            macros:safeJson(r.macros,null),
+            calories:safeJson(r.calories,null),
+            meal_foods:safeJson(r.meal_foods,null),
+            pain_logs:safeJson(r.pain_logs,[]),
+            schedule:[],password:''
+          }));
+          setClients(mapped);
+          // Update viewing if open
+          setViewing(prev=>prev?mapped.find(c=>c.email===prev.email)||prev:null);
+        }catch(e){console.warn('Refresh map error:',e.message);}
+      });
     };
-    document.addEventListener('visibilitychange', refresh);
-    return ()=>document.removeEventListener('visibilitychange', refresh);
-  },[autoTrainer]);
+    document.addEventListener('visibilitychange',onVisible);
+    return ()=>document.removeEventListener('visibilitychange',onVisible);
+  },[autoTrainer])  },[autoTrainer]);
 
-  // Realtime: refresh client data when Supabase row changes
+  // ── PHASE 6: Realtime subscriptions ────────────────────────────────────
   useEffect(()=>{
     if(!supabase||!autoTrainer) return;
-    const channel=supabase.channel('tbf_clients_changes')
-      .on('postgres_changes',{event:'UPDATE',schema:'public',table:'tbf_clients'},
-        payload=>{
-          const r=payload.new;
-          if(!r?.email) return;
-          const updated={
-            id:r.email.toLowerCase().replace(/[^a-z0-9]/g,"_"),
-            name:r.name,email:r.email,role:"client",
-            phase:r.phase||1,focus:r.focus||"",
-            restrictions:typeof r.restrictions==="string"?JSON.parse(r.restrictions||"[]"):r.restrictions||[],
-            goal:r.goal_template||"posture",
-            days:r.days?JSON.parse(r.days):TEMPLATES[r.goal_template||"posture"]?.days||[],
-            notes:r.notes?JSON.parse(r.notes):[],
-            nutrition:r.nutrition?JSON.parse(r.nutrition):null,
-            cardioPlan:r.cardio_plan?JSON.parse(r.cardio_plan):null,
-            schedule:[],password:"",supabase_id:r.id
-          };
-          setClients(prev=>prev.map(c=>c.email===r.email?updated:c));
-          if(viewing?.email===r.email) setViewing(updated);
-        })
-      .subscribe();
+    const channel=supabase.channel('tbf_trainer_sync')
+      .on('postgres_changes',{
+        event:'*', schema:'public', table:'tbf_clients'
+      }, payload=>{
+        const r=payload.new;
+        if(!r?.email) return;
+        const cid=r.email.toLowerCase().replace(/[^a-z0-9]/g,'_');
+        const updated={
+          id:cid, name:r.name, email:r.email, role:'client',
+          phase:r.phase||1, focus:r.focus||'',
+          restrictions:safeJson(r.restrictions,[]),
+          goal:r.goal_template||'posture',
+          days:safeJson(r.days,TEMPLATES[r.goal_template||'posture']?.days||[]),
+          notes:safeJson(r.notes,[]),
+          nutrition:safeJson(r.nutrition,null),
+          cardioPlan:safeJson(r.cardio_plan,null),
+          assessment:safeJson(r.assessment,null),
+          macros:safeJson(r.macros,null),
+          calories:safeJson(r.calories,null),
+          meal_foods:safeJson(r.meal_foods,null),
+          pain_logs:safeJson(r.pain_logs,[]),
+          schedule:[],password:'',supabase_id:r.id
+        };
+        setClients(prev=>prev.map(c=>c.email===r.email?{...c,...updated}:c));
+        setViewing(prev=>prev?.email===r.email?{...prev,...updated}:prev);
+      })
+      .on('postgres_changes',{
+        event:'*', schema:'public', table:'tbf_workout_logs'
+      }, ()=>{
+        // Workout log changed — refresh will happen on next visibility
+        console.log('Workout log updated by client');
+      })
+      .subscribe(status=>console.log('Realtime trainer status:',status));
     return ()=>supabase.removeChannel(channel);
-  },[autoTrainer]);
+  },[autoTrainer])
 
   // Load own profile if signed in as client
   useEffect(()=>{
@@ -4013,47 +4095,37 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
       .then(({data,error})=>{
         if(error||!data) return;
         try{
-          const safeJson=(str,fb)=>{try{return str&&str!=="null"?JSON.parse(str):fb;}catch{return fb;}};
-          setClientSelfProfile({
-            id:data.email.toLowerCase().replace(/[^a-z0-9]/g,"_"),
-            name:data.name,email:data.email,role:"client",
-            phase:data.phase||1,focus:data.focus||"",
-            restrictions:safeJson(data.restrictions,[]),
-            goal:data.goal_template||"posture",
-            days:safeJson(data.days,TEMPLATES[data.goal_template||"posture"]?.days||[]),
-            notes:safeJson(data.notes,[]),
-            nutrition:safeJson(data.nutrition,null),
-            cardioPlan:safeJson(data.cardio_plan,null),
-            assessment:safeJson(data.assessment,null),
-            macros:safeJson(data.macros,null),
-            calories:safeJson(data.calories,null),
-            meal_foods:safeJson(data.meal_foods,null),
-            pain_logs:safeJson(data.pain_logs,[]),
-            schedule:[]
+          setClientSelfProfile({...mapClientRow(data),schedule:[]
           });
         }catch(e){console.warn("Client self profile:",e.message);}
       })
       .catch(e=>console.warn("Client self load:",e.message));
   },[supabaseUser?.email,autoTrainer]);
 
-  // Realtime: client sees their own program update live when trainer changes it
+  // Client: reload own data when app comes to foreground
   useEffect(()=>{
     if(!supabase||!supabaseUser||autoTrainer) return;
-    const channel=supabase.channel('my_client_data')
+    const refresh=()=>{
+      if(document.visibilityState!=='visible') return;
+      loadClientRow(supabaseUser.email).then(row=>{
+        if(row) setClientSelfProfile(mapClientRow(row));
+      });
+    };
+    document.addEventListener('visibilitychange',refresh);
+    return ()=>document.removeEventListener('visibilitychange',refresh);
+  },[supabaseUser?.email,autoTrainer]);
+
+  // PHASE 6: Realtime — client sees trainer's program changes instantly
+  useEffect(()=>{
+    if(!supabase||!supabaseUser||autoTrainer) return;
+    const channel=supabase.channel('my_program_rt')
       .on('postgres_changes',{event:'UPDATE',schema:'public',table:'tbf_clients',
         filter:`email=eq.${supabaseUser.email}`},
         payload=>{
-          const r=payload.new;
-          if(!r) return;
-          setClientSelfProfile(prev=>({
-            ...prev,
-            phase:r.phase||prev?.phase,
-            focus:r.focus||prev?.focus,
-            days:r.days?JSON.parse(r.days):prev?.days||[],
-            notes:r.notes?JSON.parse(r.notes):prev?.notes||[],
-            nutrition:r.nutrition?JSON.parse(r.nutrition):prev?.nutrition||null,
-            cardioPlan:r.cardio_plan?JSON.parse(r.cardio_plan):prev?.cardioPlan||null,
-          }));
+          const mapped=mapClientRow(payload.new);
+          if(!mapped) return;
+          setClientSelfProfile(mapped);
+          console.log('⚡ Program updated by trainer');
         })
       .subscribe();
     return ()=>supabase.removeChannel(channel);
@@ -4090,36 +4162,34 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
   };
 
   const handleClientUpdate=async updated=>{
+    // 1. Update local state immediately (snappy UI)
     const list=clients.map(c=>c.id===updated.id?updated:c);
     setClients(list);
     if(viewing?.id===updated.id) setViewing(updated);
-    // Always save to localStorage as backup
-    try{
-      const lsKey="tbf_client_"+updated.id;
-      localStorage.setItem(lsKey, JSON.stringify({
-        days: updated.days||[],
-        notes: updated.notes||[],
-        nutrition: updated.nutrition||{},
-        cardioPlan: updated.cardioPlan||null,
-        savedAt: new Date().toISOString()
-      }));
-    }catch(e){}
+
+    // 2. Supabase is the ONLY truth — always upsert full record
     if(supabase&&updated.email){
-      try{
-        const result=await supabase.from("tbf_clients").upsert({
-          email:updated.email,
-          name:updated.name,phase:updated.phase,focus:updated.focus,
-          restrictions:JSON.stringify(updated.restrictions||[]),
-          goal_template:updated.goal||"posture",
-          days:JSON.stringify(updated.days||[]),
-          notes:JSON.stringify(updated.notes||[]),
-          nutrition:JSON.stringify(updated.nutrition||{}),
-          cardio_plan:JSON.stringify(updated.cardioPlan||null),
-          trainer_id:supabaseUser?.id||window.__tbf_user?.id||'1c5ec66c-9a39-40fb-8d08-e79d6dd6785f'
-        },{onConflict:"email"});
-        if(result.error) console.error("Supabase save failed:",result.error.message);
-        else console.log("✓ Supabase saved:",updated.name,"days:",updated.days?.length);
-      }catch(e){console.error("Client update error:",e.message);}
+      const trainerId=supabaseUser?.id||window.__tbf_user?.id||'1c5ec66c-9a39-40fb-8d08-e79d6dd6785f';
+      const {error}=await supabase.from('tbf_clients').upsert({
+        email:        updated.email,
+        name:         updated.name||'',
+        phase:        updated.phase||1,
+        focus:        updated.focus||'',
+        restrictions: JSON.stringify(updated.restrictions||[]),
+        goal_template:updated.goal||'posture',
+        days:         JSON.stringify(updated.days||[]),
+        notes:        JSON.stringify(updated.notes||[]),
+        nutrition:    JSON.stringify(updated.nutrition||{}),
+        cardio_plan:  JSON.stringify(updated.cardioPlan||null),
+        assessment:   JSON.stringify(updated.assessment||null),
+        macros:       JSON.stringify(updated.macros||null),
+        calories:     JSON.stringify(updated.calories||null),
+        meal_foods:   JSON.stringify(updated.meal_foods||null),
+        pain_logs:    JSON.stringify(updated.pain_logs||[]),
+        trainer_id:   trainerId,
+      },{onConflict:'email'});
+      if(error) console.error('handleClientUpdate failed:',error.message);
+      else console.log('✓ Saved to Supabase:',updated.name);
     }
   };
 
