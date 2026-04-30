@@ -1,27 +1,4 @@
-// Realtime: client sees trainer changes instantly
-  useEffect(()=>{
-    if(!supabase||!supabaseUser||autoTrainer) return;
-    const channel=supabase.channel('tbf_client_sync_'+supabaseUser.id)
-      .on('postgres_changes',{
-        event:'UPDATE', schema:'public', table:'tbf_clients',
-        filter:`email=eq.${supabaseUser.email}`
-      }, payload=>{
-        const r=payload.new;
-        if(!r) return;
-        setClientSelfProfile(prev=>({
-          ...prev,
-          phase:r.phase||prev?.phase,
-          focus:r.focus||prev?.focus,
-          days:safeJson(r.days,prev?.days||[]),
-          notes:safeJson(r.notes,prev?.notes||[]),
-          nutrition:safeJson(r.nutrition,prev?.nutrition||null),
-          cardioPlan:safeJson(r.cardio_plan,prev?.cardioPlan||null),
-          assessment:safeJson(r.assessment,prev?.assessment||null),
-        }));
-      })
-      .subscribe(status=>console.log('Client realtime:',status));
-    return ()=>supabase.removeChannel(channel);
-  },[supabaseUser?.email,autoTrainer])import React, { createElement as h, useState, useEffect } from "react";
+import React, { createElement as h, useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "";
@@ -1986,20 +1963,45 @@ function DayView({client,di,isTrainer}){
     }
   }catch(e){}
   const saveWorkoutLog=async(completedVal)=>{
+    // Build exercise snapshot from set logs for this day
+    const buildExerciseSnapshot=async()=>{
+      if(!supabase||!client.email) return [];
+      try{
+        const {data}=await supabase.from('tbf_set_logs')
+          .select('exercise_name,section_index,exercise_index,sets')
+          .eq('client_id',client.email)
+          .eq('log_date',today)
+          .eq('day_index',di);
+        if(!data||!data.length) return [];
+        return data
+          .filter(r=>r.sets&&JSON.parse(r.sets).length>0)
+          .map(r=>({name:r.exercise_name,sets:JSON.parse(r.sets)}));
+      }catch(e){return [];}
+    };
+    const exercises=await buildExerciseSnapshot();
+    // Save to localStorage
     try{
       const history=JSON.parse(localStorage.getItem(histKey)||'[]');
       const existing=history.find(s=>s.date===today)||{date:today,dayTitle,exercises:[]};
-      existing.completed=completedVal;existing.completedAt=completedVal?new Date().toISOString():null;
+      existing.completed=completedVal;
+      existing.completedAt=completedVal?new Date().toISOString():null;
       existing.dayTitle=dayTitle;
+      if(exercises.length>0) existing.exercises=exercises;
       localStorage.setItem(histKey,JSON.stringify([existing,...history.filter(s=>s.date!==today)].slice(0,60)));
     }catch(e){}
+    // Save to Supabase
     if(supabase&&client.email){
       try{
         await supabase.from('tbf_workout_logs').upsert({
-          client_email:client.email,log_date:today,day_title:dayTitle,
-          completed:completedVal,completed_at:completedVal?new Date().toISOString():null,
+          client_email:client.email,
+          log_date:today,
+          day_title:dayTitle,
+          completed:completedVal,
+          completed_at:completedVal?new Date().toISOString():null,
+          exercises:JSON.stringify(exercises),
           updated_at:new Date().toISOString()
         },{onConflict:'client_email,log_date'});
+        console.log('✓ Workout logged with',exercises.length,'exercises');
       }catch(e){console.warn('Workout log sync:',e.message);}
     }
   };
@@ -2041,16 +2043,30 @@ function WorkoutHistory({client, isTrainer}) {
       .limit(60)
       .then(({data,error})=>{
         if(error||!data) return;
+        // For any session missing exercises, pull from tbf_set_logs
+        const enriched=await Promise.all(data.map(async row=>{
+          let exercises=row.exercises?JSON.parse(row.exercises):[];
+          if(exercises.length===0&&supabase){
+            try{
+              const {data:sets}=await supabase.from('tbf_set_logs')
+                .select('exercise_name,sets')
+                .eq('client_id',client.email)
+                .eq('log_date',row.log_date)
+                .neq('sets','[]');
+              if(sets?.length>0){
+                exercises=sets.map(s=>({name:s.exercise_name,sets:JSON.parse(s.sets||'[]')}));
+              }
+            }catch(e){}
+          }
+          return {date:row.log_date,dayTitle:row.day_title,completed:row.completed,
+            completedAt:row.completed_at,exercises};
+        }));
         setHistory(prev=>{
           const merged=[...prev];
-          data.forEach(row=>{
-            const idx=merged.findIndex(s=>s.date===row.log_date);
-            if(idx>=0){
-              merged[idx]={...merged[idx],completed:row.completed,completedAt:row.completed_at};
-            } else {
-              merged.push({date:row.log_date,dayTitle:row.day_title,completed:row.completed,
-                completedAt:row.completed_at,exercises:row.exercises?JSON.parse(row.exercises):[]});
-            }
+          enriched.forEach(row=>{
+            const idx=merged.findIndex(s=>s.date===row.date);
+            if(idx>=0) merged[idx]={...merged[idx],...row};
+            else merged.push(row);
           });
           const sorted=merged.sort((a,b)=>b.date.localeCompare(a.date));
           try{localStorage.setItem(histKey,JSON.stringify(sorted.slice(0,60)));}catch(e){}
