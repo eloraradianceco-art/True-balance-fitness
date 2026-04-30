@@ -2041,7 +2041,7 @@ function WorkoutHistory({client, isTrainer}) {
       .eq('client_email',client.email)
       .order('log_date',{ascending:false})
       .limit(60)
-      .then(({data,error})=>{
+      .then(async ({data,error})=>{
         if(error||!data) return;
         // For any session missing exercises, pull from tbf_set_logs
         const enriched=await Promise.all(data.map(async row=>{
