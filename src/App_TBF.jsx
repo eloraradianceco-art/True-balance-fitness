@@ -1889,7 +1889,7 @@ function ExCard({ex,cid,di,si,ei,isTrainer,onEdit,onDelete,onInfo,onMoveUp,onMov
   const doSuperset=(v)=>{setIsSuperset(v);LS.set(exK(cid,"super",di,si,ei),v);syncSettings({is_superset:v});};
   const doSupersetWith=(v)=>{setSupersetWith(v);LS.set(exK(cid,"superwith",di,si,ei),v);syncSettings({superset_with:v});};
 
-  const filtered=ALL_EXERCISES.filter(e=>e.name.toLowerCase().includes(search.toLowerCase())).slice(0,20);
+  const filtered=ALL_EX_FULL2.filter(e=>e.name.toLowerCase().includes(search.toLowerCase())).slice(0,20);
   const isChecked=checked;
 
   return h("div",{style:{borderRadius:10,marginBottom:8,overflow:"hidden",border:`1px solid ${isChecked?C.green:C.grayBorder}`,background:isChecked?"#f0fff4":C.white}},
