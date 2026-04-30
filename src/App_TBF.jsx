@@ -1,4 +1,4 @@
-!effectiveIsTrainer&&h(ErrorBoundary,null,h(ClientView,{)import React, { createElement as h, useState, useEffect } from "react";
+import React, { createElement as h, useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "";
