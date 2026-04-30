@@ -1424,7 +1424,7 @@ const mapClientRow = (r) => {
     restrictions: sj(r.restrictions,[]),
     goal:        r.goal_template||'posture',
     invitedAt:   r.invited_at,
-    days:        sj(r.days, TEMPLATES[r.goal_template||'posture']?.days||[]),
+    days:        sj(r.days, (TEMPLATES[r.goal_template||'posture']||TEMPLATES['posture'])?.days||[]),
     notes:       sj(r.notes,[]),
     nutrition:   sj(r.nutrition,null),
     cardioPlan:  sj(r.cardio_plan,null),
@@ -3965,7 +3965,7 @@ function TrainerRoster({clients,onSelect,onAddClient,onDeleteClient}){
       h("div",{style:{fontWeight:"bold",color:C.navy,fontSize:16}},"Client Roster"),
       h(Btn,{onClick:onAddClient,color:C.teal,small:true},"+ Add Client")
     ),
-    clients.length===0&&h("div",{style:{textAlign:"center",color:C.gray,padding:40,fontStyle:"italic"}},"No clients yet. Add your first client above."),
+    h("div",{style:{fontSize:10,color:C.gray,marginBottom:8}},"Loaded: "+clients.length+" clients | autoTrainer: "+String(autoTrainer)), clients.length===0&&h("div",{style:{textAlign:"center",color:C.gray,padding:40,fontStyle:"italic"}},"No clients yet. Add your first client above."),
     clients.map(c=>{
       const hasA=LS.get(`tbf_assess_${c.id}`,null)!==null;
       return h("div",{key:c.id,style:{background:C.white,borderRadius:10,boxShadow:"0 1px 6px rgba(0,0,0,0.07)",padding:"14px 16px",marginBottom:10,borderLeft:`4px solid ${C.teal}`,display:"flex",justifyContent:"space-between",alignItems:"center"}},
@@ -4046,9 +4046,13 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
         if(error){console.warn("Load clients:",error.message);setClientsLoaded(true);return;}
         if(!data||data.length===0){setClientsLoaded(true);return;}
         try{
-          const mapped=data.map(r=>mapClientRow(r)).filter(Boolean);
+          const mapped=data.map(r=>{
+            try{ return mapClientRow(r); }
+            catch(e){ console.warn('mapClientRow failed for',r?.email,e.message); return null; }
+          }).filter(Boolean);
+          console.log('Loaded',mapped.length,'clients from Supabase');
           setClients(mapped);
-        }catch(e){console.warn("Client map error:",e.message);}
+        }catch(e){console.error('Client load error:',e.message);}
         setClientsLoaded(true);
       })
       .catch(e=>{console.warn("tbf_clients fetch failed:",e.message);setClientsLoaded(true);});
@@ -4126,7 +4130,7 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
       })
       .subscribe(status=>console.log('Realtime trainer status:',status));
     return ()=>supabase.removeChannel(channel);
-  },[autoTrainer])
+  },[autoTrainer]);
 
   // Load own profile if signed in as client
   useEffect(()=>{
@@ -4244,7 +4248,7 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
   // AutoTrainer path — trainer signed in via Supabase
   if(autoTrainer){
     if(!clientsLoaded) return h("div",{style:{minHeight:"100vh",background:C.navy,display:"flex",alignItems:"center",justifyContent:"center"}},
-      h("div",{style:{color:C.tealLight,fontFamily:"Georgia,serif",fontSize:14,letterSpacing:2}},"LOADING ROSTER...")
+      h("div",{style:{color:C.tealLight,fontFamily:"Georgia,serif",fontSize:14,letterSpacing:2}},"LOADING ROSTER..."), h("div",{style:{color:"rgba(255,255,255,.4)",fontSize:11,marginTop:8}},"autoTrainer: "+String(autoTrainer)+" | supabase: "+String(!!supabase))
     );
     return h("div",{style:{minHeight:"100vh",background:C.cream}},
       h("div",{style:{background:C.navy,padding:"14px 18px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:100,boxShadow:"0 2px 12px rgba(0,0,0,0.25)"}},
