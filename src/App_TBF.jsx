@@ -1945,7 +1945,7 @@ function ExCard({ex,cid,di,si,ei,isTrainer,onEdit,onDelete,onInfo,onMoveUp,onMov
 
 
 function DayView({client,di,isTrainer}){
-  const day=client.days[di];
+  const day=(client.days||[])[di];
   const [infoEx,setInfoEx]=useState(null);
   const today=new Date().toISOString().slice(0,10);
   const histKey='tbf_history_'+client.id;
@@ -3751,6 +3751,9 @@ function ClientView({client,isTrainer,onClientUpdate}){
     if(isTrainer){const sugg=genSugg(data);if(!hasProgram){const prog=buildProg(sugg);onClientUpdate({...client,days:[prog]});}else if(sugg.findings.length>0) setPendingProg(buildProg(sugg));}
   };
   const TABS=[{id:"plan",label:"Training"},{id:"cardio",label:"Cardio"},{id:"history",label:"History"},{id:"notes",label:"Notes"},{id:"nutrition",label:"Nutrition"},{id:"assess",label:"Assessment"}];
+  // Safety guard
+  if (!client || !client.email) return h("div",{style:{padding:24,textAlign:"center",color:C.gray}},"Loading client...");
+
   return h("div",null,
     h("div",{style:{background:C.navy2,padding:"14px 16px",borderBottom:`3px solid ${C.teal}`}},
       h("div",{style:{color:C.white,fontWeight:"bold",fontSize:17}},client.name),
@@ -3784,7 +3787,7 @@ function ClientView({client,isTrainer,onClientUpdate}){
             h("div",{style:{fontWeight:"bold",color:C.navy,marginBottom:4}},"📅 How Workout Days Work"),
             "Days shown here are based on the template assigned to this client. As the trainer, you can add, remove, or reorder days using the workout builder. Frequency is determined by the program template — e.g. 3x/week means 3 session days will appear. You can customize each day's exercises using the Swap and Progress buttons on each exercise card."
           ),
-          h("div",{className:"sc",style:{display:"flex",gap:8,paddingBottom:8,marginBottom:10}},localClient.days.map((d,i)=>h("button",{key:i,onClick:()=>setDi(i),style:{background:i===di?C.teal:C.grayLight,color:i===di?C.white:C.navy,border:"none",borderRadius:7,padding:"6px 12px",fontSize:11,fontWeight:"bold",cursor:"pointer",flexShrink:0,whiteSpace:"nowrap"}},d.title.split("—")[0].replace("SESSION","Session").replace("MONDAY","Mon").replace("TUESDAY","Tue").replace("EVERY OTHER DAY","E/O Day").replace("DAILY","Daily").replace("HOME","Home").replace("ASSESSMENT-BASED CORRECTIVE PROGRAM","Corrective").trim()))),
+          h("div",{className:"sc",style:{display:"flex",gap:8,paddingBottom:8,marginBottom:10}},(localClient.days||[]).map((d,i)=>h("button",{key:i,onClick:()=>setDi(i),style:{background:i===di?C.teal:C.grayLight,color:i===di?C.white:C.navy,border:"none",borderRadius:7,padding:"6px 12px",fontSize:11,fontWeight:"bold",cursor:"pointer",flexShrink:0,whiteSpace:"nowrap"}},d.title.split("—")[0].replace("SESSION","Session").replace("MONDAY","Mon").replace("TUESDAY","Tue").replace("EVERY OTHER DAY","E/O Day").replace("DAILY","Daily").replace("HOME","Home").replace("ASSESSMENT-BASED CORRECTIVE PROGRAM","Corrective").trim()))),
           h(DayView,{client:localClient,di,isTrainer}),
           isTrainer&&h("div",{style:{marginTop:12}},
             h("div",{style:{background:C.navy,color:C.white,padding:"9px 14px",fontSize:11,fontWeight:"bold",letterSpacing:1,borderRadius:"8px 8px 0 0"}},"CARDIO RECOMMENDATIONS"),
@@ -3805,8 +3808,8 @@ function ClientView({client,isTrainer,onClientUpdate}){
           )
         )
       ),
-      
-tab==="assess"&&h("div",null,
+
+      tab==="assess"&&h("div",null,
         h(AssessmentHistory,{client,isTrainer,onLoadAssessment:data=>{LS.set(`tbf_assess_${client.id}`,data);setAssessment(data);}}),
         h(AssessmentForm,{client,isTrainer,existing:assessment,onSave:handleSaveAssessment})
       ),
