@@ -1,4 +1,4 @@
-import React, { createElement as h, useState, useEffect } from "react";
+!effectiveIsTrainer&&h(ErrorBoundary,null,h(ClientView,{)import React, { createElement as h, useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "";
@@ -3688,6 +3688,27 @@ function CardioTabView({localClient,isTrainer,onEdit}){
 }
 
 
+class ErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { error: null }; }
+  static getDerivedStateFromError(error) { return { error }; }
+  componentDidCatch(error, info) { console.error('ClientView crash:', error, info); }
+  render() {
+    if (this.state.error) {
+      return h('div', {style:{padding:24,background:'#fff0f0',borderRadius:12,margin:12}},
+        h('div', {style:{fontWeight:'bold',color:'red',marginBottom:8}}, '⚠ Error loading client view'),
+        h('div', {style:{fontSize:12,color:'#333',fontFamily:'monospace',whiteSpace:'pre-wrap'}},
+          this.state.error?.message || String(this.state.error)
+        ),
+        h('button', {
+          onClick:()=>this.setState({error:null}),
+          style:{marginTop:12,padding:'8px 16px',background:'#1C2B39',color:'white',border:'none',borderRadius:6,cursor:'pointer'}
+        }, 'Try Again')
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function ClientView({client,isTrainer,onClientUpdate}){
   const [tab,setTab]=useState("plan");
   const [showBuilder,setShowBuilder]=useState(false);
@@ -4293,7 +4314,7 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
       ),
       showAdd&&h(AddClientForm,{onAdd:handleAddClient,onClose:()=>setShowAdd(false)}),
       !viewing&&h(TrainerRoster,{clients:clients.filter(c=>c.role==="client"),onSelect:c=>setViewing(c),onAddClient:()=>setShowAdd(true),onDeleteClient:handleDeleteClient}),
-      viewing&&h(ClientView,{client:viewing,isTrainer:true,onClientUpdate:handleClientUpdate})
+      viewing&&h(ErrorBoundary,null,h(ClientView,{client:viewing,isTrainer:true,onClientUpdate:handleClientUpdate}))
     );
   }
 
@@ -4354,7 +4375,7 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
     ),
     showAdd&&h(AddClientForm,{onAdd:handleAddClient,onClose:()=>setShowAdd(false)}),
     effectiveIsTrainer&&!viewing&&h(TrainerRoster,{clients:clients.filter(c=>c.role==="client"),onSelect:c=>setViewing(c),onAddClient:()=>setShowAdd(true),onDeleteClient:handleDeleteClient}),
-    effectiveIsTrainer&&viewing&&h(ClientView,{client:viewing,isTrainer:true,onClientUpdate:handleClientUpdate}),
+    effectiveIsTrainer&&viewing&&h(ErrorBoundary,null,h(ClientView,{client:viewing,isTrainer:true,onClientUpdate:handleClientUpdate})),
     !effectiveIsTrainer&&h(ClientView,{
       client:{
         id:activeClient?.id||"client",
