@@ -4063,7 +4063,7 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
     };
     document.addEventListener('visibilitychange',onVisible);
     return ()=>document.removeEventListener('visibilitychange',onVisible);
-  },[autoTrainer])  },[autoTrainer]);
+  },[autoTrainer]);
 
   // ── PHASE 6: Realtime subscriptions ────────────────────────────────────
   useEffect(()=>{
