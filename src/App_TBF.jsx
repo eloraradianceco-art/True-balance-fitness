@@ -3965,7 +3965,7 @@ function TrainerRoster({clients,onSelect,onAddClient,onDeleteClient}){
       h("div",{style:{fontWeight:"bold",color:C.navy,fontSize:16}},"Client Roster"),
       h(Btn,{onClick:onAddClient,color:C.teal,small:true},"+ Add Client")
     ),
-    h("div",{style:{fontSize:10,color:C.gray,marginBottom:8}},"Loaded: "+clients.length+" clients | autoTrainer: "+String(autoTrainer)), clients.length===0&&h("div",{style:{textAlign:"center",color:C.gray,padding:40,fontStyle:"italic"}},"No clients yet. Add your first client above."),
+    clients.length===0&&h("div",{style:{textAlign:"center",color:C.gray,padding:40,fontStyle:"italic"}},"No clients yet. Add your first client above."),
     clients.map(c=>{
       const hasA=LS.get(`tbf_assess_${c.id}`,null)!==null;
       return h("div",{key:c.id,style:{background:C.white,borderRadius:10,boxShadow:"0 1px 6px rgba(0,0,0,0.07)",padding:"14px 16px",marginBottom:10,borderLeft:`4px solid ${C.teal}`,display:"flex",justifyContent:"space-between",alignItems:"center"}},
@@ -4248,7 +4248,7 @@ function App({supabaseUser=null, supabaseProfile=null, autoTrainer=false}){
   // AutoTrainer path — trainer signed in via Supabase
   if(autoTrainer){
     if(!clientsLoaded) return h("div",{style:{minHeight:"100vh",background:C.navy,display:"flex",alignItems:"center",justifyContent:"center"}},
-      h("div",{style:{color:C.tealLight,fontFamily:"Georgia,serif",fontSize:14,letterSpacing:2}},"LOADING ROSTER..."), h("div",{style:{color:"rgba(255,255,255,.4)",fontSize:11,marginTop:8}},"autoTrainer: "+String(autoTrainer)+" | supabase: "+String(!!supabase))
+      h("div",{style:{color:C.tealLight,fontFamily:"Georgia,serif",fontSize:14,letterSpacing:2}},"LOADING ROSTER...")
     );
     return h("div",{style:{minHeight:"100vh",background:C.cream}},
       h("div",{style:{background:C.navy,padding:"14px 18px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:100,boxShadow:"0 2px 12px rgba(0,0,0,0.25)"}},
@@ -4503,7 +4503,7 @@ function AuthGate() {
     h("div",{style:{color:C.tealLight,fontFamily:"Georgia,serif",fontSize:14,letterSpacing:2}},"LOADING...")
   );
 
-  if (!supabase) return h(App, null);
+  if (!supabase) return h(ErrorBoundary, null, h(App, null));
 
   // User clicked reset link in email — show new password form
   if (newPasswordMode) {
@@ -4595,7 +4595,7 @@ onClick:async()=>{
   window.__tbf_user = session.user;
   const TRAINER_EMAILS = [TRAINER_EMAIL, "aja2012@gmail.com"].filter(Boolean);
   const isTrainerEmail = TRAINER_EMAILS.some(e => e.toLowerCase() === (session.user.email||"").toLowerCase());
-  return h(App, {supabaseUser: session.user, supabaseProfile: profile, autoTrainer: isTrainerEmail});
+  return h(ErrorBoundary, null, h(App, {supabaseUser: session.user, supabaseProfile: profile, autoTrainer: isTrainerEmail}));
 }
 
 export default AuthGate;
