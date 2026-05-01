@@ -2010,7 +2010,7 @@ function DayView({client,di,isTrainer}){
   return h("div",null,
     infoEx&&h(ExerciseModal,{ex:infoEx,onClose:()=>setInfoEx(null)}),
     h("div",{style:{background:C.navy,color:C.white,padding:"12px 16px",borderRadius:"8px 8px 0 0",marginBottom:1}},h("div",{style:{fontSize:13,fontWeight:"bold",letterSpacing:0.5}},dayTitle)),
-    day.sections.map((sec,si)=>h(Card,{key:`${di}-${si}`},h(CardH,{t:sec.label,color:sec.color}),h(CardB,null,sec.exercises.map((ex,ei)=>h(ExCard,{key:`${di}-${si}-${ei}`,ex,cid:client.id,di,si,ei,isTrainer,onShowInfo:setInfoEx}))))),
+    day.sections.map((sec,si)=>h(Card,{key:`${di}-${si}`},h(CardH,{t:sec.label,color:sec.color}),h(CardB,null,sec.exercises.map((ex,ei)=>h(ExCard,{key:`${di}-${si}-${ei}`,ex,cid:client.id,di,si,ei,isTrainer,onInfo:name=>setInfoEx(name)}))))),
     completed
       ?h("div",{style:{background:C.green,borderRadius:10,padding:"14px 16px",marginTop:12,display:"flex",justifyContent:"space-between",alignItems:"center"}},
           h("div",null,
